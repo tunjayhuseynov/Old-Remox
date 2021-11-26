@@ -1,3 +1,4 @@
+import { error } from "console";
 import { useRef, useState } from "react";
 import { ClipLoader } from "react-spinners";
 import CreatePassword from "../../components/import/createPassword";
@@ -34,6 +35,7 @@ const Import = () => {
                 <div>
                     <textarea onChange={(e) => setInput(e.target.value)} className="border-2 p-3 outline-none" placeholder="fish boot hand foot" cols={55} rows={7}></textarea>
                 </div>
+                {reqError && <div className="text-redish">Something went wrong</div>}
                 <button onClick={Submitted} className="bg-primary text-white px-5 py-2 rounded-xl w-[200px]">{isLoading ? <ClipLoader /> : "Import Account"}</button>
             </div>
         </section>

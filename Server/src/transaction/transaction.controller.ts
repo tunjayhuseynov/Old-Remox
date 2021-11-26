@@ -20,8 +20,6 @@ export class TransactionController {
         return res.status(HttpStatus.OK).json(result)
     }
 
-    @UseGuards(AuthGuard('jwt'))
-    @ApiBearerAuth('JWT-auth')
     @Get('currency')
     async getCoinCurrency(@Res() res: Response, @Req() req: any): Promise<Response> {
         const result = await this.transactionService.getCoinCurrency();

@@ -7,8 +7,11 @@ import { useAppDispatch, useAppSelector } from '../../redux/hooks';
 import storage, { selectStorage } from '../../redux/reducers/storage';
 import { useGetBalanceQuery, useGetTransactionsQuery } from '../../redux/api';
 import { SelectCelo, SelectCeur, SelectCurrencies, SelectCusd, updateAllCurrencies } from '../../redux/reducers/currencies';
-import { AltCoins, Coins } from '../../types/coins';
+import { AltCoins, Coins, TransactionFeeTokenName } from '../../types/coins';
 import { generate } from 'shortid';
+import date from 'date-and-time';
+import Web3 from 'web3'
+
 
 interface Balance {
     amount: number,
@@ -45,6 +48,9 @@ const Main = () => {
     const [mooBalance, setMooBalance] = useState<Balance>()
     const [mobiBalance, setMobiBalance] = useState<Balance>()
     const [poofBalance, setPoofBalance] = useState<Balance>()
+
+    const [lastIn, setIn] = useState<number>()
+    const [lastOut, setOut] = useState<number>();
 
     const [allInOne, setAllInOne] = useState<Balance[]>()
 
@@ -91,15 +97,16 @@ const Main = () => {
 
             const total = pCelo + pCusd + pCeur + pUbe + pMoo + pMobi + pPoof;
             const currencObj = Object.values(currencies)
-            setCoin(total)
             const result: number = (celo.price! * parseFloat(data.celoBalance)) + (cusd.price! * parseFloat(data.cUSDBalance))
-            setBalance(result.toFixed(2))
-            const per = currencObj.reduce((a,c)=>{
+
+            const per = currencObj.reduce((a, c) => {
                 a += c.percent_24
                 return a;
             }, 0)
-            setPercent(per / currencObj.length)
 
+            setCoin(total)
+            setBalance(result.toFixed(2))
+            setPercent(per / currencObj.length)
 
 
             setCeloBalance({ amount: pCelo, per_24: currencies.CELO?.percent_24, percent: (pCelo * 100) / total, coins: Coins.celo, reduxValue: celo.price })
@@ -119,6 +126,26 @@ const Main = () => {
             setAllInOne(Object.values(all).sort((a, b) => b.percent.toLocaleString().localeCompare(a.percent.toLocaleString())).slice(0, 4))
         }
     }, [all])
+
+    useEffect(() => {
+        if (transactions) {
+            let myin = 0;
+            let myout = 0;
+            transactions.result.forEach(t => {
+                const coin = Coins[Object.entries(TransactionFeeTokenName).find(w => w[0] === t.tokenSymbol)![1]];
+                const tTime = new Date(parseInt(t.timeStamp) * 1e3)
+                if (tTime.getMonth() === new Date().getMonth()) {
+                    if (t.from.toLowerCase() === storage?.accountAddress.toLowerCase()) {
+                        myout += (parseFloat(Web3.utils.fromWei(t.value, 'ether')) * (currencies[coin.name]?.price ?? 0))
+                    } else {
+                        myin += (parseFloat(Web3.utils.fromWei(t.value, 'ether')) * (currencies[coin.name]?.price ?? 0))
+                    }
+                }
+            })
+            setIn(myin)
+            setOut(myout)
+        }
+    }, [transactions])
 
     return <main className="grid grid-cols-1 xl:grid-cols-2 w-full gap-5">
         <div className="grid grid-cols-2 gap-8">
@@ -145,7 +172,7 @@ const Main = () => {
                 </div>
                 <div className="flex justify-between shadow-custom rounded-xl px-8 py-4">
                     <div className="text-2xl opacity-80">
-                        {balance || (balance !== undefined && parseFloat(balance) === 0) ? `+ $8` : <ClipLoader />}
+                        {balance || (balance !== undefined && parseFloat(balance) === 0) ? `+ $${lastIn?.toFixed(2)}` : <ClipLoader />}
                     </div>
                 </div>
             </div>
@@ -156,7 +183,7 @@ const Main = () => {
                 </div>
                 <div className="flex justify-between shadow-custom rounded-xl px-8 py-4">
                     <div className="ttext-greylish opacity-80 text-2xl">
-                        {balance || (balance !== undefined && parseFloat(balance) === 0) ? `- $10` : <ClipLoader />}
+                        {balance || (balance !== undefined && parseFloat(balance) === 0) ? `- $${lastOut?.toFixed(2)}` : <ClipLoader />}
                     </div>
                 </div>
             </div>

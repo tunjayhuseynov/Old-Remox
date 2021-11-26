@@ -1,11 +1,21 @@
 import { MdDone } from 'react-icons/md'
 import { VscError } from 'react-icons/vsc'
-import { useState } from 'react'
+import { Dispatch, useEffect, useState } from 'react'
 
 // Input in SET
-const Input = ({ title, name, type = "text" }: { title: string, name: string, type?: string }) => {
+const Input = ({ title, name, type = "text", validation }: { title: string, name: string, type?: string, validation?: Dispatch<boolean> }) => {
     const [password, setPassword] = useState<string>();
     const [repeatPassword, setRepeatPassword] = useState<string>();
+
+    useEffect(() => {
+        if (validation) {
+            if (repeatPassword && password && repeatPassword === password) {
+                validation(true);
+            } else {
+                validation(false);
+            }
+        }
+    }, [repeatPassword, password])
     return <>
         <div className="flex flex-col">
             <div className="text-left text-greylish">{title}</div>

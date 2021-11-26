@@ -16,11 +16,13 @@ const CreatePassword = ({ phrase }: { phrase: string }) => {
     const router = useHistory();
 
     const storage = useAppSelector(selectStorage)
+    const [isValid, setValid] = useState(false)
 
 
     const Submitted = async (e: SyntheticEvent<HTMLFormElement>) => {
         e.preventDefault();
         const target = e.target as HTMLFormElement;
+        if(!isValid) return;
 
         try {
             const data = await createPassword({ phrase: phrase.trim(), password: target["password"]?.value?.trim() }).unwrap()
@@ -54,7 +56,7 @@ const CreatePassword = ({ phrase }: { phrase: string }) => {
                     <div className="text-center text-greylish tracking-wide font-light text-lg">This password encrypts your accounts on this device.</div>
                 </div>
                 <div className="grid grid-cols-2 gap-x-24 gap-y-8">
-                    <Input title="Password" name="password" type="password" />
+                    <Input title="Password" name="password" type="password" validation={setValid}/>
                 </div>
                 <div className="flex justify-center items-center gap-10 pt-8">
                     <button className="rounded-xl w-[150px] h-[50px] border-2 border-primary text-primary shadow-lg bg-white" onClick={() => router.push('/')}>Back</button>

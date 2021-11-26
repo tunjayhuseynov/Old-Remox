@@ -77,12 +77,20 @@ const Transactions = () => {
                         } else {
                             const tx = transaction;
                             hash = tx[0].blockNumber
-                            amount = parseFloat(Web3.utils.fromWei(tx.reduce((a,c)=> a + parseFloat(c.value) ,0).toString(), 'ether')).toFixed(2)
-                            //coin = Coins[Object.entries(TransactionFeeTokenName).find(w => w[0] === tx.tokenSymbol)![1]];
-                            //coinName = coin.name;
+                            amount = parseFloat(Web3.utils.fromWei(tx.reduce((a, c) => a + parseFloat(c.value), 0).toString(), 'ether')).toFixed(2)
+                            coinName = tx.reduce((a, item, index, arr) => {
+                                const coin = Coins[Object.entries(TransactionFeeTokenName).find(w => w[0] === item.tokenSymbol)![1]].name
+                                if (!a.includes(coin)) {
+                                    a += `${coin}, `;
+                                }
+
+                                return a
+                            }, '')
+                            if (coinName.includes(','))
+                                coinName = coinName.slice(0, -2);
                             direction = TransactionDirection.Out
                             date = dateFormat(new Date(parseInt(tx[0].timeStamp) * 1e3), "mm/dd/yyyy hh:MM:ss")
-                            amountUSD = tx.reduce((a,c)=>{
+                            amountUSD = tx.reduce((a, c) => {
                                 const coin = Coins[Object.entries(TransactionFeeTokenName).find(w => w[0] === c.tokenSymbol)![1]]
                                 a += (currencies[coin.name]?.price ?? 0) * parseFloat(parseFloat(Web3.utils.fromWei(c.value, 'ether')).toFixed(4))
                                 return a;
