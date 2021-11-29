@@ -50,9 +50,19 @@ export class TeamService {
         }
     }
 
+    async isTeamNamExist(accountId: string, teamName: string) {
+        try {
+            const team = await this.teamRepo.findOne({ accountId, title: teamName })
+            let result = team ? true : false;
+            return { result }
+        } catch (e) {
+            throw new HttpException(e.message, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
     async getTeamsWithMembers(accountId: string, take: number = 10, skip: number = 0) {
         try {
-            
+
             const [teams, total] = await this.teamRepo.createQueryBuilder('teams')
                 .leftJoinAndSelect('teams.teamMembers', 'teamMembers',)
                 .loadRelationCountAndMap('teams.teamMemberCount', 'teams.teamMembers')
@@ -74,6 +84,9 @@ export class TeamService {
         try {
             const currentTeam = await this.teamRepo.findOne({ id: teamId, accountId });
             if (!currentTeam) throw new HttpException("There is no team with this property", HttpStatus.BAD_REQUEST);
+            
+            const result =  await this.isTeamNamExist(accountId,dto.title)
+            if(result) throw new HttpException("You already use this team name", HttpStatus.BAD_REQUEST);
 
             currentTeam["title"] = escaper(dto.title)
             return await this.teamRepo.save(currentTeam)

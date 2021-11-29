@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect, useContext, useCallback, SyntheticEvent } from "react";
+import { useState, useRef, useEffect, useContext, useCallback, SyntheticEvent } from "react";
 import Dropdown from "../../components/dropdown";
 import { generate } from 'shortid'
 import { useHistory } from 'react-router-dom'
@@ -10,13 +10,16 @@ import { Member, MultipleTransactionData } from "../../types/sdk";
 import { useGetBalanceQuery, useLazyGetTeamsWithMembersQuery, useSendCeloMutation, useSendStableTokenMutation, useSendMultipleTransactionsMutation, useSendAltTokenMutation } from "../../redux/api";
 import { selectStorage } from "../../redux/reducers/storage";
 import TeamInput from "../../components/pay/teaminput";
-import { AltCoins, AltcoinsList, Coins, CoinsName, CoinsURL, StableTokens } from "../../types/coins";
+import { AltCoins, AltcoinsList, Coins, CoinsName, CoinsURL, StableTokens, TransactionFeeTokenName } from "../../types/coins";
 import { useAppSelector } from "../../redux/hooks";
+import lodash from "lodash";
+import { IBalanceItem, SelectBalances } from "../../redux/reducers/currencies";
 
 
 const MassPay = () => {
 
     const storage = useAppSelector(selectStorage)
+    const balance = useAppSelector(SelectBalances)
     const router = useHistory();
 
     const { data } = useGetBalanceQuery()
@@ -24,6 +27,11 @@ const MassPay = () => {
     const [sendStableToken] = useSendStableTokenMutation()
     const [sendMultiple] = useSendMultipleTransactionsMutation()
     const [sendAltcoin] = useSendAltTokenMutation()
+
+    const [currentBalances, setCurrentBalances] = useState<IBalanceItem[]>();
+    const [selectedBalances, setSelectedBalances] = useState<JSX.Element[]>();
+    const [selectedBalanceResult, setSelectedBalanceResult] = useState<JSX.Element[]>();
+
 
 
     const [getTeams, { data: teams, error: teamsError, isLoading: teamLoading }] = useLazyGetTeamsWithMembersQuery()
@@ -36,6 +44,7 @@ const MassPay = () => {
 
     const [selectedWallet, setSelectedWallet] = useState<DropDownItem>();
     const [selectedTeam, setSelectedTeam] = useState<DropDownItem>();
+    const [selectedPeople, setPeople] = useState();
 
     const resMember = useRef<Array<Member & { selected: boolean }>>([])
     const [members, setMembers] = useState<Member[]>();
@@ -71,8 +80,8 @@ const MassPay = () => {
 
     useEffect(() => {
         if (teams && teams.teams.length && selectedTeam && selectedTeam.address) {
-            setMembers(teams.teams.find(w => w.id === selectedTeam.address)!.teamMembers)
             resMember.current = teams.teams.find(w => w.id === selectedTeam.address)!.teamMembers.map(w => ({ ...w, selected: false }))
+            setMembers(teams.teams.find(w => w.id === selectedTeam.address)!.teamMembers)
         }
     }, [selectedTeam, teams])
 
@@ -142,6 +151,45 @@ const MassPay = () => {
         setIsPaying(false);
     }
 
+    useEffect(() => {
+        if (selectedId && selectedId.length && balance) {
+            const result = lodash.groupBy(resMember.current.filter(w => selectedId.includes(w.id)), "currency");
+            const currenBalanceArr: IBalanceItem[] = []
+            Object.entries(result).forEach(([key, value]) => {
+                Object.entries(balance).forEach(([key2, value2]) => {
+                    if (key.toLowerCase() === key2.toLowerCase() && value2 !== undefined) {
+                        currenBalanceArr.push(value2)
+                    }
+                })
+            })
+
+            const bal = Object.entries(result).map(([key,value]) => {
+                if(!balance[Coins[key as TransactionFeeTokenName].name]?.reduxValue) return <></>
+                const amount = value.reduce((a,c)=>a+=parseFloat(c.amount),0)
+                return <div className="flex flex-col space-y-3">
+                    <div>{amount} {Coins[key as TransactionFeeTokenName].name}</div>
+                    <div className="text-black opacity-50">{(amount * balance[Coins[key as TransactionFeeTokenName].name]!.reduxValue).toFixed(2)} USD</div>
+                </div>
+            })
+
+            const selectedAmount = Object.entries(result).map(([key,value]) => ({coin: key, value: value.reduce((a,c)=>a+=parseFloat(c.amount),0)}))
+
+            const balanceRes = currenBalanceArr?.map(w => {
+                if(!balance[w.coins.name]?.reduxValue) return <></>
+                return <div className="flex flex-col space-y-3">
+                    <div>{(w.amount - (selectedAmount.find(s=>s.coin === w.coins.name || s.coin === w.coins.feeName)?.value??0)).toFixed(2)} {w.coins.name}</div>
+                    <div className="text-black opacity-50">{((w.amount - (selectedAmount.find(s=>s.coin === w.coins.name || s.coin === w.coins.feeName)?.value??0)) * balance[w.coins.name]!.reduxValue).toFixed(2)} USD</div>
+                </div>
+            })
+
+            setCurrentBalances(currenBalanceArr)
+            setSelectedBalances(bal)
+            setSelectedBalanceResult(balanceRes)
+        
+
+        }
+    }, [selectedId, balance])
+
     return <div>
         <form onSubmit={Submit}>
             <div className="flex flex-col items-center justify-center min-h-screen">
@@ -179,13 +227,40 @@ const MassPay = () => {
                                     {teams && resMember && selectedTeam && selectedTeam.address && members && members.length > 0 ? resMember.current.map((w, i) => <TeamInput generalWallet={selectedWallet!} setGeneralWallet={setSelectedWallet} selectedId={selectedId} setSelectedId={setSelectedId} key={generate()} index={i} {...w} members={resMember} />) : 'No Member Yet'}
                                 </div>
                             </div>
-                            <div className="grid grid-cols-4">
-                                <div className="font-semibold text-sm">Current Balance</div>
-                                <div className="font-semibold text-sm">Current Amount To Send</div>
-                                <div className="font-semibold text-sm">Selected People</div>
-                                <div className="font-semibold text-sm">Balance After Transaction</div>
+                            <div className="grid grid-cols-4 gap-y-3 px-5">
+                                <div className="font-semibold text-sm opacity-60">Current Balance</div>
+                                <div className="font-semibold text-sm opacity-60">Current Amount To Send</div>
+                                <div className="font-semibold text-sm opacity-60">Selected People</div>
+                                <div className="font-semibold text-sm opacity-60">Balance After Transaction</div>
                                 {selectedId.length === 0 && <div className="col-span-4 text-center pt-5">No Selected Member Yet</div>}
-                                {selectedId}
+                                {selectedId.length > 0 && currentBalances && selectedBalances && selectedBalances.length > 0 && currentBalances.length > 0 &&
+                                    <>
+                                        <div className={'flex flex-col space-y-5'}>
+                                            {
+                                                currentBalances.map((w) => {
+                                                    return <div className="flex flex-col space-y-3">
+                                                        <div>
+                                                            {w.amount.toFixed(2)} {w.coins.name}
+                                                        </div>
+                                                        <div className="text-black opacity-50">
+                                                            {(w.amount * w.reduxValue).toFixed(2)} USD
+                                                        </div>
+                                                    </div>
+                                                })
+                                            }
+                                        </div>
+                                        <div className="flex flex-col space-y-5">
+                                            {
+                                                selectedBalances
+                                            }
+                                        </div>
+                                        <div className="text-black opacity-50 text-sm">
+                                            {selectedId.length} people
+                                        </div>
+                                        <div className={'flex flex-col space-y-5'}>
+                                            {selectedBalanceResult}
+                                        </div>
+                                    </>}
                             </div>
                             <div className="flex flex-col">
                                 <span className="text-left">Description (Optional)</span>

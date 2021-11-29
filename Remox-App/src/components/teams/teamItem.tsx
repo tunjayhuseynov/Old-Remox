@@ -36,7 +36,7 @@ const TeamItem = (props: Member & { teamName: string }) => {
         </div>
         <div className="pl-[2px] flex items-center justify-start gap-2">
             <div>
-                <img src={Coins[props.currency].coinUrl} alt="" />
+                <img src={Coins[props.currency].coinUrl} width="20" height="20" alt="" />
             </div>
             <div>{props.amount}</div>
             <div>

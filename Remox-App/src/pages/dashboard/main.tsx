@@ -6,7 +6,7 @@ import TransactionHistory from '../../components/dashboard/main/transactionHisto
 import { useAppDispatch, useAppSelector } from '../../redux/hooks';
 import storage, { selectStorage } from '../../redux/reducers/storage';
 import { useGetBalanceQuery, useGetTransactionsQuery } from '../../redux/api';
-import { SelectCelo, SelectCeur, SelectCurrencies, SelectCusd, updateAllCurrencies } from '../../redux/reducers/currencies';
+import { SelectBalances, SelectCelo, SelectCeur, SelectCurrencies, SelectCusd, updateAllCurrencies, updateUserBalance } from '../../redux/reducers/currencies';
 import { AltCoins, Coins, TransactionFeeTokenName } from '../../types/coins';
 import { generate } from 'shortid';
 import date from 'date-and-time';
@@ -24,7 +24,7 @@ interface Balance {
 const Main = () => {
     const dispatch = useAppDispatch()
     const storage = useAppSelector(selectStorage)
-    const { data, error, isLoading } = useGetBalanceQuery()
+
 
     const { data: transactions, error: transactionError, } = useGetTransactionsQuery(storage!.accountAddress)
 
@@ -37,17 +37,19 @@ const Main = () => {
     const mobi = (useAppSelector(SelectCurrencies)).MOBI
     const poof = (useAppSelector(SelectCurrencies)).POOF
 
+    const balanceRedux = useAppSelector(SelectBalances)
+    const celoBalance = (useAppSelector(SelectBalances)).CELO
+    const cusdBalance = (useAppSelector(SelectBalances)).cUSD
+    const ceurBalance = (useAppSelector(SelectBalances)).cEUR
+    const ubeBalance = (useAppSelector(SelectBalances)).UBE
+    const mooBalance = (useAppSelector(SelectBalances)).MOO
+    const mobiBalance = (useAppSelector(SelectBalances)).MOBI
+    const poofBalance = (useAppSelector(SelectBalances)).POOF
+
     const [percent, setPercent] = useState<number>()
     const [coin, setCoin] = useState<number>()
     const [balance, setBalance] = useState<string>()
 
-    const [celoBalance, setCeloBalance] = useState<Balance>()
-    const [cusdBalance, setCusdBalance] = useState<Balance>()
-    const [ceurBalance, setCeurBalance] = useState<Balance>()
-    const [ubeBalance, setUbeBalance] = useState<Balance>()
-    const [mooBalance, setMooBalance] = useState<Balance>()
-    const [mobiBalance, setMobiBalance] = useState<Balance>()
-    const [poofBalance, setPoofBalance] = useState<Balance>()
 
     const [lastIn, setIn] = useState<number>()
     const [lastOut, setOut] = useState<number>();
@@ -55,7 +57,7 @@ const Main = () => {
     const [allInOne, setAllInOne] = useState<Balance[]>()
 
     const all = useMemo(() => {
-        if (celoBalance !== undefined && cusdBalance !== undefined && ceurBalance !== undefined && ubeBalance !== undefined && mooBalance !== undefined && mobiBalance !== undefined && poofBalance !== undefined && coin !== undefined) {
+        if (celoBalance !== undefined && cusdBalance !== undefined && ceurBalance !== undefined && ubeBalance !== undefined && mooBalance !== undefined && mobiBalance !== undefined && poofBalance !== undefined) {
             return {
                 celo: celoBalance,
                 cUSD: cusdBalance,
@@ -67,6 +69,10 @@ const Main = () => {
             }
         }
     }, [celoBalance, cusdBalance, ceurBalance, ubeBalance, mooBalance, mobiBalance, poofBalance])
+
+    useEffect(() => {
+        console.log(balanceRedux)
+    }, [balanceRedux])
 
     const chart = useMemo(() => {
         if (celoBalance !== undefined && cusdBalance !== undefined && ceurBalance !== undefined && ubeBalance !== undefined && mooBalance !== undefined && mobiBalance !== undefined && poofBalance !== undefined && coin !== undefined) {
@@ -85,40 +91,28 @@ const Main = () => {
 
 
     useEffect(() => {
-        if (celo && cusd && ceur && ube && moo && mobi && poof && storage && storage.token && data) {
-            const pCelo = parseFloat(data.celoBalance);
-            const pCusd = parseFloat(data.cUSDBalance);
-            const pCeur = parseFloat(data.cEURBalance);
-            const pUbe = parseFloat(data.UBE);
-            const pMoo = parseFloat(data.MOO);
-            const pMobi = parseFloat(data.MOBI);
-            const pPoof = parseFloat(data.POOF);
+        if (celoBalance && cusdBalance && ceurBalance && ubeBalance && mooBalance && mobiBalance && poofBalance) {
 
-
-            const total = pCelo + pCusd + pCeur + pUbe + pMoo + pMobi + pPoof;
+            const total = celoBalance.amount + cusdBalance.amount + ceurBalance.amount + ubeBalance.amount + mooBalance.amount + poofBalance.amount + mobiBalance.amount;
             const currencObj = Object.values(currencies)
-            const result: number = (celo.price! * parseFloat(data.celoBalance)) + (cusd.price! * parseFloat(data.cUSDBalance))
 
             const per = currencObj.reduce((a, c) => {
                 a += c.percent_24
                 return a;
             }, 0)
 
+            const result: number =
+                (celoBalance.amount * celoBalance.reduxValue) + (cusdBalance.amount * cusdBalance.reduxValue) +
+                (ceurBalance.amount * ceurBalance.reduxValue) + (ubeBalance.amount * ubeBalance.reduxValue) +
+                (mooBalance.amount * mooBalance.reduxValue) + (mobiBalance.amount * mobiBalance.reduxValue) +
+                (poofBalance.amount * poofBalance.reduxValue)
+
             setCoin(total)
             setBalance(result.toFixed(2))
             setPercent(per / currencObj.length)
 
-
-            setCeloBalance({ amount: pCelo, per_24: currencies.CELO?.percent_24, percent: (pCelo * 100) / total, coins: Coins.celo, reduxValue: celo.price })
-            setCusdBalance({ amount: pCusd, per_24: currencies.cUSD?.percent_24, percent: (pCusd * 100) / total, coins: Coins.cUSD, reduxValue: cusd.price })
-            setCeurBalance({ amount: pCeur, per_24: currencies.cEUR?.percent_24, percent: (pCeur * 100) / total, coins: Coins.cEUR, reduxValue: ceur.price })
-            setUbeBalance({ amount: pUbe, per_24: currencies.UBE?.percent_24, percent: (pUbe * 100) / total, coins: Coins.UBE, reduxValue: ube.price })
-            setMooBalance({ amount: pMoo, per_24: currencies.MOO?.percent_24, percent: (pMoo * 100) / total, coins: Coins.MOO, reduxValue: moo.price })
-            setMobiBalance({ amount: pMobi, per_24: currencies.MOBI?.percent_24, percent: (pMobi * 100) / total, coins: Coins.MOBI, reduxValue: mobi.price })
-            setPoofBalance({ amount: pPoof, per_24: currencies.POOF?.percent_24, percent: (pPoof * 100) / total, coins: Coins.POOF, reduxValue: poof.price })
         }
-        if (error) console.error(error)
-    }, [celo, cusd, ceur, ube, moo, mobi, poof, storage, data, error])
+    }, [celoBalance, cusdBalance, ceurBalance, ubeBalance, mooBalance, mobiBalance, poofBalance])
 
 
     useEffect(() => {
@@ -150,7 +144,7 @@ const Main = () => {
     return <main className="grid grid-cols-1 xl:grid-cols-2 w-full gap-5">
         <div className="grid grid-cols-2 gap-8">
             <div className="col-span-2 flex flex-col">
-                <div className="flex justify-between pl-4">
+                <div className="flex justify-between pl-4 h-[30px]">
                     <div className="text-base text-greylish">Total Balance</div>
                     <div className="text-base text-greylish opacity-70">24h</div>
                 </div>
@@ -208,7 +202,7 @@ const Main = () => {
             }
         </div>
 
-        <div id="transaction" className="pb-14">
+        <div id="transaction" className="pb-14 pt-[30px]">
             {transactions ? <TransactionHistory transactions={transactions.result.slice(0, 4)} /> : <div className="flex justify-center"> <ClipLoader /></div>}
         </div>
     </main>

@@ -60,7 +60,7 @@ const TeamInput = (props: Member & { index: number, selectedId: string[], genera
         </div>
         <div className="flex border border-greylish rounded-md border-opacity-60">
             {!selectedWallet ? <ClipLoader /> : <Dropdown className="border-transparent text-sm" onSelect={setSelectedWallet} nameActivation={true} selected={selectedWallet} list={Object.values(Coins).map(w => ({ name: w.name, type: w.value, coinUrl: w.coinUrl, value: w.value }))} />}
-            <input className="text-black py-1 outline-none mr-2 rounded-md w-full font-bold" placeholder="Amount" defaultValue={props.amount} type="number" name={`amount__${props.index}`} min="0" required step={'any'} onChange={e => updateValue({ val: e.target.value })} />
+            <input className="text-black py-1 outline-none mr-2 rounded-md w-full font-bold" placeholder="Amount" defaultValue={props.amount} type="number" name={`amount__${props.index}`} min="0" required step={'any'} onBlur={d => props.setSelectedId([...props.selectedId])} onChange={e => updateValue({ val: e.target.value })} />
         </div>
         <div></div>
     </>

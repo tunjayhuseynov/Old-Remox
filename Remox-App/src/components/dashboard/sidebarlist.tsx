@@ -9,7 +9,7 @@ const Sidebarlist = () => {
             <Li><PayrollSVG />Payroll</Li>
             <Link to="/dashboard/transactions"><Li><TransactionsSVG />Transactions</Li></Link>
             <Li><SwapSVG />Swap</Li>
-            <Li><AssetsSVG />Assets</Li>
+            <Link to="/dashboard/assets"><Li><AssetsSVG />Assets</Li></Link>
             <Link to="/dashboard/teams"><Li><TeamsSVG />Teams</Li></Link>
             <Li><SettingSVG /> Settings</Li>
         </ul>

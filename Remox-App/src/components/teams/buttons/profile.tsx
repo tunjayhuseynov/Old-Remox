@@ -40,7 +40,7 @@ const Profile = (props: Member & { teamName: string, onDeleteModal: Dispatch<boo
                                 {props.amount}
                             </div>
                             <div>
-                                <img src={Coins[props.currency].coinUrl} alt=""/>
+                                <img width="20" height="20" src={Coins[props.currency].coinUrl} alt=""/>
                             </div>
                         </div>
                     </div>
