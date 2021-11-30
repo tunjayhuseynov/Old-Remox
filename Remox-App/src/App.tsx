@@ -78,7 +78,7 @@ const AuthRouter = ({ data, unlockChecking }: { data: any, unlockChecking: Funct
   }, [data, router])
 
   return <>
-    <Initalization />
+    {data && <Initalization />}
     <Route path={'/masspayout'} exact render={() => unlockChecking(<MassPay />)} />
     <Route path={'/pay'} exact render={() => unlockChecking(<Pay />)} />
     <Route path={'/dashboard'} render={({ match: { path } }) => {
