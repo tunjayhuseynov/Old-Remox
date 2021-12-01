@@ -13,7 +13,6 @@ const Initalization = () => {
     // store.dispatch(updateAllCurrencies([]))
     // store.dispatch(updateUserBalance([]))
 
-
     store.dispatch(
         transactionAPI.endpoints.getCurrencies.initiate()
     ).then((res) => {

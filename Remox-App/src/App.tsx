@@ -82,15 +82,18 @@ const CustomRouter = ({ unlock, data }: { unlock: boolean, data: IStorage | null
 }
 
 
-const AuthRouter = ({ data, unlockChecking }: { data: any, unlockChecking: Function }) => {
+const AuthRouter = ({ data, unlockChecking }: { data: IStorage | null, unlockChecking: Function }) => {
   const router = useHistory();
   const currencies = useAppSelector(SelectCurrencies)
   const balances = useAppSelector(SelectBalances)
 
   useEffect(() => {
-    if (!data) router.push('/')
+    if (!data) {
+      router.push('/')
+      return
+    }
 
-    if (currencies.CELO === undefined || balances.CELO === undefined) {
+    if ((data && data.accountAddress) && currencies.CELO === undefined || balances.CELO === undefined) {
       Initalization()
     }
 
