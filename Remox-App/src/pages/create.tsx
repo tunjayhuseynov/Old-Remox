@@ -11,7 +11,7 @@ const Create = () => {
         if (data) {
             setOrder(order + 1);
         }
-    }, [data, order])
+    }, [data])
     return <div className="h-screen w-full">
         <Header />
         {order === 0 ? <Set setData={setData} /> : <KeyPhrase data={data!} />}
