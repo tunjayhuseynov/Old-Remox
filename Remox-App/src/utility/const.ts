@@ -1,1 +1,1 @@
-export const BaseUrl = "/api"
+export const BaseUrl = "https://app.remox.io/api"

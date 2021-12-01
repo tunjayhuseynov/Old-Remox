@@ -8,6 +8,7 @@ import { PassDataFromSetToPhrase } from '../../types/create'
 import { useDispatch } from 'react-redux';
 import { setStorage } from '../../redux/reducers/storage';
 import { useAccountCreateMutation } from '../../redux/api/account';
+import { setUnlock } from '../../redux/reducers/unlock';
 
 // SET Component
 const Set = ({ setData }: { setData: Dispatch<PassDataFromSetToPhrase> }) => {
@@ -54,7 +55,7 @@ const Set = ({ setData }: { setData: Dispatch<PassDataFromSetToPhrase> }) => {
                 accountAddress: data.accountAddress,
                 mnemonic: data.mnemonic,
             }
-
+            
             setData(pass)
         } catch (error) {
             console.error(error)

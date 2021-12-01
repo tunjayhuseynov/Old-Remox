@@ -54,7 +54,8 @@ const CustomRouter = ({ unlock, data }: { unlock: boolean, data: IStorage | null
   }, [unlock, router, data, location])
 
   const unlockChecking = (element: JSX.Element | Array<JSX.Element>) => {
-
+    
+    if (!location.pathname.includes("/dashboard") && !data?.accountAddress) return element
     if (unlock) {
       if (currencies.CELO === undefined || balances.CELO === undefined) {
         return <div className={'h-full flex items-center justify-center'}>
@@ -63,7 +64,6 @@ const CustomRouter = ({ unlock, data }: { unlock: boolean, data: IStorage | null
       }
       return element
     }
-    if (!location.pathname.includes("/dashboard") && !data?.accountAddress) return element
 
     return <Redirect
       to={{
