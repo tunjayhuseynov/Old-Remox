@@ -2,10 +2,11 @@ import { useDispatch } from "react-redux";
 import { CoinFullInfo, CoinGeckoClient, CoinMarketChartResponse } from 'coingecko-api-v3';
 import { SelectCurrencies, updateAllCurrencies, updateUserBalance } from "../redux/reducers/currencies";
 import { useEffect } from "react";
-import { transactionAPI, useGetBalanceQuery, useGetCurrenciesQuery } from "../redux/api";
+import { BlockScoutApi, transactionAPI, useGetBalanceQuery, useGetCurrenciesQuery } from "../redux/api";
 import { useAppSelector } from "../redux/hooks";
 import { Coins } from "../types/coins";
 import store from '../redux/store'
+import { setTransactions } from "../redux/reducers/transactions";
 
 const Initalization = () => {
 
@@ -13,9 +14,12 @@ const Initalization = () => {
     // store.dispatch(updateAllCurrencies([]))
     // store.dispatch(updateUserBalance([]))
 
-    store.dispatch(
+    const currencyResult = store.dispatch(
         transactionAPI.endpoints.getCurrencies.initiate()
-    ).then((res) => {
+    )
+
+    currencyResult.then((res) => {
+
         store.dispatch(updateAllCurrencies(
             res.data?.data.map(d => ({
                 price: d.price,
@@ -24,7 +28,7 @@ const Initalization = () => {
         ))
 
         const currencies = store.getState().currencies.coins
-        console.log(currencies)
+
         const celo = currencies.CELO
         const cusd = currencies.cUSD
         const ceur = currencies.cEUR
@@ -33,11 +37,22 @@ const Initalization = () => {
         const mobi = currencies.MOBI
         const poof = currencies.POOF
 
-        store.dispatch(
+        const balanceResult = store.dispatch(
             transactionAPI.endpoints.getBalance.initiate()
-        ).then((balanceResponse) => {
+        )
+
+        const transactionsResult = store.dispatch(
+            BlockScoutApi.endpoints.getTransactions.initiate(store.getState().storage.user!.accountAddress)
+        )
+
+        transactionsResult.then((res) => {
+            store.dispatch(setTransactions(res.data))
+            transactionsResult.unsubscribe()
+        })
+
+        balanceResult.then((balanceResponse) => {
             const balance = balanceResponse.data;
-            if(balance && celo && cusd && ceur && ube && moo && mobi && poof && store.getState().currencies.coins.CELO) {
+            if (balance && celo && cusd && ceur && ube && moo && mobi && poof && store.getState().currencies.coins.CELO) {
                 const pCelo = parseFloat(balance.celoBalance);
                 const pCusd = parseFloat(balance.cUSDBalance);
                 const pCeur = parseFloat(balance.cEURBalance);
@@ -58,6 +73,8 @@ const Initalization = () => {
                 ]))
             }
 
+            currencyResult.unsubscribe();
+            balanceResult.unsubscribe();
         })
     })
 

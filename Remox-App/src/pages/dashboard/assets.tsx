@@ -28,16 +28,16 @@ const Assets = () => {
                                 $ {(item.amount * item.reduxValue).toFixed(2)}
                             </div>
                             <div>
-                                {item.amount.toFixed(2)}
+                                {(item.amount||0).toFixed(2)}
                             </div>
                             <div>
-                                $ {item.reduxValue.toFixed(2)}
+                                $ {(item.reduxValue||0).toFixed(2)}
                             </div>
                             <div>
-                               % {item.per_24.toFixed(2)}
+                               % {(item.per_24||0).toFixed(2)}
                             </div>
                             <div>
-                               % {item.percent.toFixed(2)}
+                               % {(item.percent||0).toFixed(2)}
                             </div>
                         </div>
                     })}

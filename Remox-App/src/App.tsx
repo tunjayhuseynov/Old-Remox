@@ -25,6 +25,7 @@ import MassPay from './pages/dashboard/masspay'
 import Initalization from './utility/init'
 import { SelectBalances, SelectCurrencies } from './redux/reducers/currencies';
 import { ClipLoader } from 'react-spinners';
+import { SelectTransactions } from './redux/reducers/transactions';
 
 function App(): JSX.Element {
   const storage = useAppSelector(selectStorage)
@@ -47,6 +48,7 @@ const CustomRouter = ({ unlock, data }: { unlock: boolean, data: IStorage | null
   const router = useHistory();
   const location = useLocation();
   const currencies = useAppSelector(SelectCurrencies)
+  const transactions = useAppSelector(SelectTransactions)
   const balances = useAppSelector(SelectBalances)
 
   useEffect(() => {
@@ -57,7 +59,7 @@ const CustomRouter = ({ unlock, data }: { unlock: boolean, data: IStorage | null
 
     if (!location.pathname.includes("/dashboard") && !data?.accountAddress) return element
     if (unlock) {
-      if (currencies.CELO === undefined || balances.CELO === undefined) {
+      if (currencies.CELO === undefined && balances.CELO === undefined && transactions === undefined) {
         return <div className={'h-full flex items-center justify-center'}>
           <ClipLoader />
         </div>

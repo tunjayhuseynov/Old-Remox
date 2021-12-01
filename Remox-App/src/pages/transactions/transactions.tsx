@@ -52,7 +52,12 @@ const Transactions = () => {
                             'Sent From:': w.from,
                             'Amount:': parseFloat(Web3.utils.fromWei(w.value, 'ether')).toFixed(4) + ` ${Coins[Object.entries(TransactionFeeTokenName).find(s => s[0] === w.tokenSymbol)![1]].name}`,
                             'To:': w.to,
-                            'Date': dateFormat(new Date(parseInt(w.timeStamp) * 1e3), "mediumDate")
+                            'Date': dateFormat(new Date(parseInt(w.timeStamp) * 1e3), "mediumDate"),
+                            "Gas": parseFloat(w.gasUsed) * parseFloat(w.gasPrice),
+                            "Block Number": w.blockNumber,
+                            "Transaction Hash": w.hash,
+                            "Block Hash": w.blockHash,
+                            "Input": w.input
                         }))}>
                             <div className={'hidden xl:block'}>Export</div>
                             <img src="/icons/downloadicon.svg" alt="" />

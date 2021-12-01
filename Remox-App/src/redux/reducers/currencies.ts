@@ -1,5 +1,6 @@
 import { createSlice } from '@reduxjs/toolkit';
 import { AltCoins } from '../../types/coins';
+import Initalization from '../../utility/init';
 import { RootState } from '../store';
 
 export interface ICurrencyInternal {
@@ -16,7 +17,7 @@ export interface IBalanceItem {
 	reduxValue: number;
 }
 
-interface IBalanceMembers{
+interface IBalanceMembers {
 	CELO: IBalanceItem | undefined;
 	cUSD: IBalanceItem | undefined;
 	cEUR: IBalanceItem | undefined;
@@ -92,16 +93,63 @@ export const CurrencyAPI = createSlice({
 		},
 		updateUserBalance: (state: ICurrency, action) => {
 			const [ celo, cusd, ceur, ube, moo, mobi, poof ]: IBalanceItem[] = action.payload;
+			if (state.balances.CELO === undefined) {
+				setInterval(() => {
+					Initalization();
+				}, 20000);
+			}
 			state.balances = {
-				CELO: { amount: celo.amount, per_24: celo.per_24, percent: celo.percent, coins: celo.coins, reduxValue: celo.reduxValue },
-				cUSD: { amount: cusd.amount, per_24: cusd.per_24, percent: cusd.percent, coins: cusd.coins, reduxValue: cusd.reduxValue },
-				cEUR: { amount: ceur.amount, per_24: ceur.per_24, percent: ceur.percent, coins: ceur.coins, reduxValue: ceur.reduxValue },
-				UBE: { amount: ube.amount, per_24: ube.per_24, percent: ube.percent, coins: ube.coins, reduxValue: ube.reduxValue },
-				MOO: { amount: moo.amount, per_24: moo.per_24, percent: moo.percent, coins: moo.coins, reduxValue: moo.reduxValue },
-				MOBI: { amount: mobi.amount, per_24: mobi.per_24, percent: mobi.percent, coins: mobi.coins, reduxValue: mobi.reduxValue },
-				POOF: { amount: poof.amount, per_24: poof.per_24, percent: poof.percent, coins: poof.coins, reduxValue: poof.reduxValue }
+				CELO: {
+					amount: celo.amount,
+					per_24: celo.per_24,
+					percent: celo.percent,
+					coins: celo.coins,
+					reduxValue: celo.reduxValue
+				},
+				cUSD: {
+					amount: cusd.amount,
+					per_24: cusd.per_24,
+					percent: cusd.percent,
+					coins: cusd.coins,
+					reduxValue: cusd.reduxValue
+				},
+				cEUR: {
+					amount: ceur.amount,
+					per_24: ceur.per_24,
+					percent: ceur.percent,
+					coins: ceur.coins,
+					reduxValue: ceur.reduxValue
+				},
+				UBE: {
+					amount: ube.amount,
+					per_24: ube.per_24,
+					percent: ube.percent,
+					coins: ube.coins,
+					reduxValue: ube.reduxValue
+				},
+				MOO: {
+					amount: moo.amount,
+					per_24: moo.per_24,
+					percent: moo.percent,
+					coins: moo.coins,
+					reduxValue: moo.reduxValue
+				},
+				MOBI: {
+					amount: mobi.amount,
+					per_24: mobi.per_24,
+					percent: mobi.percent,
+					coins: mobi.coins,
+					reduxValue: mobi.reduxValue
+				},
+				POOF: {
+					amount: poof.amount,
+					per_24: poof.per_24,
+					percent: poof.percent,
+					coins: poof.coins,
+					reduxValue: poof.reduxValue
+				}
 			};
-		},
+		}
 	}
 });
 

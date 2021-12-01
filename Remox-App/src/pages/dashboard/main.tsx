@@ -11,6 +11,7 @@ import { AltCoins, Coins, TransactionFeeTokenName } from '../../types/coins';
 import { generate } from 'shortid';
 import date from 'date-and-time';
 import Web3 from 'web3'
+import { SelectTransactions } from '../../redux/reducers/transactions';
 
 
 interface Balance {
@@ -24,9 +25,9 @@ interface Balance {
 const Main = () => {
     const dispatch = useAppDispatch()
     const storage = useAppSelector(selectStorage)
+    const transactions = useAppSelector(SelectTransactions)
 
-
-    const { data: transactions, error: transactionError, } = useGetTransactionsQuery(storage!.accountAddress)
+    // const { data: transactions, error: transactionError, } = useGetTransactionsQuery(storage!.accountAddress)
 
     const currencies = useAppSelector(SelectCurrencies)
     const celo = (useAppSelector(SelectCurrencies)).CELO
@@ -126,7 +127,6 @@ const Main = () => {
 
     useEffect(() => {
         if (transactions) {
-            console.log(transactions)
             let myin = 0;
             let myout = 0;
             transactions.result.forEach(t => {
@@ -140,7 +140,6 @@ const Main = () => {
                     }
                 }
             })
-            console.log(myin, myout)
             setIn(myin)
             setOut(myout)
         }

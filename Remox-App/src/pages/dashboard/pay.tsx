@@ -62,11 +62,14 @@ const Pay = () => {
     useEffect(() => {
         if (csvImport.length > 0) {
             for (let index = 0; index < csvImport.length; index++) {
+                console.log(csvImport[index])
                 const [name, address, amount, coin] = csvImport[index]
                 nameRef.current.push(name);
                 addressRef.current.push(address);
                 amountRef.current.push(amount);
-                setWallets([...wallets, Coins[coin as TransactionFeeTokenName]])
+                const wallet = [...wallets];
+                wallet[index] = { ...Coins[coin as TransactionFeeTokenName], type: Coins[coin as TransactionFeeTokenName].value };
+                setWallets(wallet)
 
             }
             setIndex((index === 1 ? 0 : index) + csvImport.length)
@@ -91,41 +94,41 @@ const Pay = () => {
 
     const Submit = async (e: SyntheticEvent<HTMLFormElement>) => {
         e.preventDefault()
-
-        const result: Array<MultipleTransactionData> = []
-
-        const [nameList, addressList, amountList] = [nameRef.current, addressRef.current, amountRef.current]
-
-        if (selectedWallet && selectedWallet.type && nameList.length === addressList.length && nameList.length === amountList.length) {
-            for (let index = 0; index < nameList.length; index++) {
-                if (addressList[index] && amountList[index] && nameList[index] && wallets[index].type) {
-                    result.push({
-                        toAddress: addressList[index],
-                        amount: amountList[index],
-                        tokenType: wallets[index].type!,
-                    })
-                }
-            }
-        }
-
-       
         setIsPaying(true)
 
         try {
+            const result: Array<MultipleTransactionData> = []
+
+            const [nameList, addressList, amountList] = [nameRef.current, addressRef.current, amountRef.current]
+
+            if (selectedWallet && selectedWallet.type && nameList.length === addressList.length && nameList.length === amountList.length) {
+                for (let index = 0; index < nameList.length; index++) {
+                    if (addressList[index] && amountList[index] && nameList[index] && wallets[index].type) {
+                        result.push({
+                            toAddress: addressList[index],
+                            amount: amountList[index],
+                            tokenType: wallets[index].type!,
+                        })
+                    }
+                }
+            }
+
+
+            console.log(result)
             if (result.length === 1 && selectedWallet && selectedWallet.name) {
-                if (selectedWallet!.name === CoinsNameVisual.CELO) {
+                if (result[0]!.tokenType === Coins.celo.value) {
                     await sendCelo({
                         toAddress: result[0].toAddress,
                         amount: result[0].amount,
                         phrase: storage!.encryptedPhrase
                     }).unwrap()
 
-                } else if (selectedWallet!.name === CoinsNameVisual.cUSD || selectedWallet!.name === CoinsNameVisual.cEUR) {
+                } else if (result[0]!.tokenType === CoinsNameVisual.cUSD || result[0]!.tokenType === CoinsNameVisual.cEUR) {
                     await sendStableToken({
                         toAddress: result[0].toAddress,
                         amount: result[0].amount,
                         phrase: storage!.encryptedPhrase,
-                        stableTokenType: StableTokens[(result[0].tokenType as StableTokens)]
+                        stableTokenType: result[0].tokenType === CoinsNameVisual.cUSD ? 'cUSD' as StableTokens : 'cEUR' as StableTokens
                     }).unwrap()
                 } else {
                     await sendAltcoin({
@@ -154,7 +157,7 @@ const Pay = () => {
 
         } catch (error: any) {
             console.error(error)
-            dispatch(changeError({activate: true, text: error.data.message}));
+            dispatch(changeError({ activate: true, text: error.data.message }));
         }
 
         setIsPaying(false);
@@ -216,7 +219,7 @@ const Pay = () => {
             </div>
         </form>
         {isSuccess && <Success onClose={setSuccess} />}
-        {isError && <Error onClose={(val)=>dispatch(changeError({activate: val, text: ''}))} />}
+        {isError && <Error onClose={(val) => dispatch(changeError({ activate: val, text: '' }))} />}
     </div>
 }
 

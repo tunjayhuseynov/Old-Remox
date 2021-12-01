@@ -4,6 +4,7 @@ import Storage from './reducers/storage'
 import Unlock from './reducers/unlock'
 import Currency from './reducers/currencies'
 import Toggle from './reducers/toggles'
+import Transaction from './reducers/transactions'
 import { accountAPI, customerAPI, teamAPI, transactionAPI, teamMemberAPI, BlockScoutApi } from './api'
 
 const store = configureStore({
@@ -13,6 +14,7 @@ const store = configureStore({
         unlock: Unlock,
         currencies: Currency,
         toggle: Toggle,
+        transactions: Transaction,
         [accountAPI.reducerPath]: accountAPI.reducer,
         [customerAPI.reducerPath]: customerAPI.reducer,
         [teamAPI.reducerPath]: teamAPI.reducer,
