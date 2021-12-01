@@ -37,9 +37,9 @@ const Navbar = () => {
     </div>
 }
 
-export const Visitcard = ({ name, address }: { name: string, address: string }) => <div className="px-5 py-1 flex flex-col bg-gray-50 rounded-xl">
+export const Visitcard = ({ name, address }: { name: string, address: string }) => <div className="px-5 py-1 flex flex-col bg-gray-50 rounded-xl cursor-pointer" onClick={()=>navigator.clipboard.writeText(address.trim())}>
     <h3 className="text-xl">{name}</h3>
-    <p className="text-xs">{address.split('').reduce((a, c, i, arr) => {
+    <p className="text-xs" >{address.split('').reduce((a, c, i, arr) => {
         return i < 10 || (arr.length - i) < 4 ? a + c : a.split('.').length - 1 < 6 ? a + '.' : a
     }, '')}</p>
 </div>

@@ -21,7 +21,7 @@ const TeamContainer = (props : TeamInfoWithMembers) => {
             await deleteTeam(props.id).unwrap()
             setDeleteModal(false)
         } catch (error) {
-            throw error
+            console.log(error)
         }
     }
 

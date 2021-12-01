@@ -1,16 +1,16 @@
-import { Link } from 'react-router-dom'
+import { Link, NavLink } from 'react-router-dom'
 
 const Li = ({ children }: { children?: Array<any> }) => <li className="mb-6 text-left font-light text-lg flex gap-3">{children}</li>
 const Sidebarlist = () => {
 
     return <>
         <ul>
-            <Link to="/dashboard"><Li><DashboardSVG />Dashboard</Li></Link>
-            <Li><PayrollSVG />Payroll</Li>
-            <Link to="/dashboard/transactions"><Li><TransactionsSVG />Transactions</Li></Link>
+            <NavLink to="/dashboard" exact={true} activeClassName='text-primary'><Li><DashboardSVG />Dashboard</Li></NavLink>
+            <Link to="/masspayout"><Li><PayrollSVG />Payroll</Li></Link>
+            <NavLink to="/dashboard/transactions" activeClassName='text-primary'><Li><TransactionsSVG />Transactions</Li></NavLink>
             <Li><SwapSVG />Swap</Li>
-            <Link to="/dashboard/assets"><Li><AssetsSVG />Assets</Li></Link>
-            <Link to="/dashboard/teams"><Li><TeamsSVG />Teams</Li></Link>
+            <NavLink to="/dashboard/assets" activeClassName='text-primary'><Li><AssetsSVG />Assets</Li></NavLink>
+            <NavLink to="/dashboard/teams" activeClassName='text-primary'><Li><TeamsSVG />Teams</Li></NavLink>
             <Li><SettingSVG /> Settings</Li>
         </ul>
     </>

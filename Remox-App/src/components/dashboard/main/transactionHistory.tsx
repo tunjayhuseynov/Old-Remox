@@ -31,7 +31,7 @@ const TransactionHistory = ({ transactions }: { transactions: Transactions[] }) 
                 const surplus = direction === TransactionDirection.In ? '+' : '-'
                 const type = direction === TransactionDirection.In ? TransactionType.IncomingPayment : TransactionType.QuickTransfer
 
-                return <TransactionItem key={generate()} hash={tx.hash} amountCoin={`${amount} ${coinName}`} type={type} direction={direction} date={date} amountUSD={`${surplus}${amountUSD.toFixed(3)}$`} status={TransactionStatus.Complated} />
+                return <TransactionItem key={generate()} hash={tx.hash} amountCoin={`${amount} ${coinName}`} type={type} direction={direction} date={date} amountUSD={`${surplus}${amountUSD.toFixed(3)}$`} status={TransactionStatus.Completed} />
             })}
         </div>
     </div>

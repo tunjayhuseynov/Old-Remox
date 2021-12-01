@@ -73,11 +73,16 @@ const Details = () => {
                     }, 0)}`)}
                     {TransactionDetailInput("Created Date & Time", `${dateFormat(new Date(Number(list[params.id][0].timeStamp) * 1e3), 'dd/mm/yyyy hh:MM:ss')}`)}
                     {TransactionDetailInput("Status", "Completed")}
-                    <Dropdown displayName="Wallet Address" className="h-[75px] bg-greylish bg-opacity-10" nameActivation={true} selected={{ name: list[params.id][0].from !== storage!.accountAddress ? list[params.id][0].from : list[params.id][0].to, coinUrl: CoinsURL.None }}
+                    {TransactionDetailInput("Wallet Address",
+                        list[params.id][0].from.split('').reduce((a, c, i, arr) => {
+                            return i < 10 || (arr.length - i) < 4 ? a + c : a.split('.').length - 1 < 6 ? a + '.' : a
+                        }, '')
+                    )}
+                    {/* <Dropdown displayName="Wallet Address" className="h-[75px] bg-greylish bg-opacity-10" nameActivation={true} selected={{ name: list[params.id][0].from !== storage!.accountAddress ? list[params.id][0].from : list[params.id][0].to, coinUrl: CoinsURL.None }}
                         onSelect={() => { }}
                         list={[
                             ...list[params.id].map(w => ({ name: w.hash, coinUrl: CoinsURL.None })),
-                        ]} />
+                        ]} /> */}
                 </div> : <ClipLoader />}
             </div>
         </div>

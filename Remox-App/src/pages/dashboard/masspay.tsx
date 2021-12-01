@@ -11,18 +11,22 @@ import { useGetBalanceQuery, useLazyGetTeamsWithMembersQuery, useSendCeloMutatio
 import { selectStorage } from "../../redux/reducers/storage";
 import TeamInput from "../../components/pay/teaminput";
 import { AltCoins, AltcoinsList, Coins, CoinsName, CoinsURL, StableTokens, TransactionFeeTokenName } from "../../types/coins";
-import { useAppSelector } from "../../redux/hooks";
+import { useAppDispatch, useAppSelector } from "../../redux/hooks";
 import lodash from "lodash";
 import { IBalanceItem, SelectBalances } from "../../redux/reducers/currencies";
+import { changeError, selectError } from "../../redux/reducers/notificationSlice";
+import Initalization from "../../utility/init";
 
 
 const MassPay = () => {
 
     const storage = useAppSelector(selectStorage)
+    const isError = useAppSelector(selectError)
     const balance = useAppSelector(SelectBalances)
     const router = useHistory();
+    const dispatch = useAppDispatch()
 
-    const { data } = useGetBalanceQuery()
+    const { data, refetch } = useGetBalanceQuery()
     const [sendCelo] = useSendCeloMutation()
     const [sendStableToken] = useSendStableTokenMutation()
     const [sendMultiple] = useSendMultipleTransactionsMutation()
@@ -39,7 +43,6 @@ const MassPay = () => {
 
     const [isPaying, setIsPaying] = useState(false)
     const [isSuccess, setSuccess] = useState(false)
-    const [isError, setError] = useState(false)
 
 
     const [selectedWallet, setSelectedWallet] = useState<DropDownItem>();
@@ -142,10 +145,12 @@ const MassPay = () => {
                 }).unwrap()
             }
             setSuccess(true);
+            refetch()
+            Initalization();
 
-        } catch (error) {
+        } catch (error : any) {
             console.error(error)
-            setError(true)
+            dispatch(changeError({activate: true, text: error.data.message}));
         }
 
         setIsPaying(false);
@@ -280,7 +285,7 @@ const MassPay = () => {
             </div>
         </form>
         {isSuccess && <Success onClose={setSuccess} />}
-        {isError && <Error onClose={setError} />}
+        {isError && <Error onClose={(val) => dispatch(changeError({activate: false, text: ''}))} />}
     </div>
 
 }

@@ -40,7 +40,7 @@ const TransactionItem = ({ type, direction, date, amountUSD, status, amountCoin,
             </div>
         </div>
         <div className={`md:flex items-center hidden ${detect? 'justify-start':'justify-end'}`}>
-            {TransactionStatus.Complated === status ? <span className="text-green-400">Complated</span> : null}
+            {TransactionStatus.Completed === status ? <span className="text-green-400">Completed</span> : null}
         </div>
         {detect &&
             <div className="flex flex-col justify-center cursor-pointer text-blue-400 items-end pr-5 md:pr-0 lg:pr-5">

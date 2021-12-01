@@ -98,7 +98,7 @@ const Transactions = () => {
                             surplus = '-'
                             type = TransactionType.MassPayout
                         }
-                        return <TransactionItem key={generate()} hash={hash} amountCoin={`${amount} ${coinName}`} type={type} direction={direction} date={date} amountUSD={`${surplus}${amountUSD.toFixed(3)}$`} status={TransactionStatus.Complated} />
+                        return <TransactionItem key={generate()} hash={hash} amountCoin={`${amount} ${coinName}`} type={type} direction={direction} date={date} amountUSD={`${surplus}${amountUSD.toFixed(3)}$`} status={TransactionStatus.Completed} />
 
                     }) : <div className="text-center"><ClipLoader /></div>}
                 </div>

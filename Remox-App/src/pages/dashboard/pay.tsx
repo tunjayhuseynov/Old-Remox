@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect, useContext, useCallback, SyntheticEvent } from "react";
+import { useState, useRef, useEffect, useContext, useCallback, SyntheticEvent } from "react";
 import Dropdown from "../../components/dropdown";
 import { generate } from 'shortid'
 import { useHistory } from 'react-router-dom'
@@ -12,15 +12,20 @@ import { useGetBalanceQuery, useSendCeloMutation, useSendStableTokenMutation, us
 import { useSelector } from "react-redux";
 import { selectStorage } from "../../redux/reducers/storage";
 import Input from "../../components/pay/payinput";
-import { AltCoins, AltcoinsList, Coins, CoinsNameVisual, StableTokens } from "../../types/coins";
+import { AltCoins, AltcoinsList, Coins, CoinsNameVisual, StableTokens, TransactionFeeTokenName } from "../../types/coins";
+import { useAppDispatch } from "../../redux/hooks";
+import { changeError, selectError } from "../../redux/reducers/notificationSlice";
+import Initalization from "../../utility/init";
 
 
 const Pay = () => {
 
     const storage = useSelector(selectStorage)
+    const isError = useSelector(selectError)
+    const dispatch = useAppDispatch()
     const router = useHistory();
 
-    const { data } = useGetBalanceQuery()
+    const { data, refetch } = useGetBalanceQuery()
     const [sendCelo] = useSendCeloMutation()
     const [sendStableToken] = useSendStableTokenMutation()
     const [sendMultiple] = useSendMultipleTransactionsMutation()
@@ -30,11 +35,11 @@ const Pay = () => {
     const [index, setIndex] = useState(1)
     const [isPaying, setIsPaying] = useState(false)
     const [isSuccess, setSuccess] = useState(false)
-    const [isError, setError] = useState(false)
 
 
     const nameRef = useRef<Array<string>>([])
     const addressRef = useRef<Array<string>>([])
+    const [wallets, setWallets] = useState<DropDownItem[]>([])
     const amountRef = useRef<Array<string>>([])
 
     const [csvImport, setCsvImport] = useState<string[][]>([]);
@@ -45,12 +50,24 @@ const Pay = () => {
     const [list, setList] = useState<Array<DropDownItem>>([]);
 
     useEffect(() => {
+        if (selectedWallet && selectedWallet.coinUrl && selectedWallet.type) {
+            const val: DropDownItem[] = [];
+            for (let index = 0; index < wallets.length; index++) {
+                val.push({ name: selectedWallet.name.split(' ')[1], coinUrl: selectedWallet.coinUrl, type: selectedWallet.type })
+            }
+            setWallets(val);
+        }
+    }, [selectedWallet])
+
+    useEffect(() => {
         if (csvImport.length > 0) {
             for (let index = 0; index < csvImport.length; index++) {
-                const [name, address, amount] = csvImport[index]
+                const [name, address, amount, coin] = csvImport[index]
                 nameRef.current.push(name);
                 addressRef.current.push(address);
                 amountRef.current.push(amount);
+                setWallets([...wallets, Coins[coin as TransactionFeeTokenName]])
+
             }
             setIndex((index === 1 ? 0 : index) + csvImport.length)
             fileInput.current!.files = new DataTransfer().files;
@@ -66,6 +83,7 @@ const Pay = () => {
                 amount: data[coin.responseName],
                 coinUrl: coin.coinUrl,
             }))
+            setWallets([{ name: coins[0].name.split(' ')[1], coinUrl: coins[0].coinUrl, type: coins[0].type }])
             setSelectedWallet(coins[0])
             setList(coins)
         }
@@ -80,13 +98,17 @@ const Pay = () => {
 
         if (selectedWallet && selectedWallet.type && nameList.length === addressList.length && nameList.length === amountList.length) {
             for (let index = 0; index < nameList.length; index++) {
-                result.push({
-                    toAddress: addressList[index],
-                    amount: amountList[index],
-                    tokenType: selectedWallet.type
-                })
+                if (addressList[index] && amountList[index] && nameList[index] && wallets[index].type) {
+                    result.push({
+                        toAddress: addressList[index],
+                        amount: amountList[index],
+                        tokenType: wallets[index].type!,
+                    })
+                }
             }
         }
+
+       
         setIsPaying(true)
 
         try {
@@ -127,10 +149,12 @@ const Pay = () => {
                 }).unwrap()
             }
             setSuccess(true);
+            refetch()
+            Initalization()
 
-        } catch (error) {
+        } catch (error: any) {
             console.error(error)
-            setError(true)
+            dispatch(changeError({activate: true, text: error.data.message}));
         }
 
         setIsPaying(false);
@@ -148,7 +172,7 @@ const Pay = () => {
                             <div className="flex flex-col">
                                 <span className="text-left">Paying From</span>
                                 <div className="grid grid-cols-4">
-                                    {!(data && selectedWallet) ? <ClipLoader /> : <Dropdown onSelect={setSelectedWallet} nameActivation={true} selected={selectedWallet} list={list} disableAddressDisplay={true}/>}
+                                    {!(data && selectedWallet) ? <ClipLoader /> : <Dropdown onSelect={setSelectedWallet} nameActivation={true} selected={selectedWallet} list={list} disableAddressDisplay={true} />}
                                 </div>
                             </div>
                             <div className="flex flex-col">
@@ -161,13 +185,15 @@ const Pay = () => {
                                     </button>
                                     <input ref={fileInput} type="file" className="hidden" onChange={(e) => e.target.files!.length > 0 ? CSV.Import(e.target.files![0]).then(e => setCsvImport(e)).catch(e => console.error(e)) : null} />
                                 </div>
-                                <div className="grid grid-cols-[25%,45%,25%,5%] gap-5">
-                                    {Array(index).fill(" ").map((e, i) => <Input key={generate()} index={i} name={nameRef.current} address={addressRef.current} amount={amountRef.current} />)}
+                                <div className="grid grid-cols-[25%,40%,30%,5%] gap-5">
+                                    {wallets.length > 0 && Array(index).fill(" ").map((e, i) => <Input key={generate()} setIndex={setIndex} overallIndex={index} index={i} name={nameRef.current} address={addressRef.current} amount={amountRef.current} selectedWallet={wallets} setWallet={setWallets} />)}
                                 </div>
                             </div>
                             <div className="flex flex-col">
                                 <div className="grid grid-cols-4">
-                                    <button type="button" className="px-6 py-3 min-w-[200px] border-2 border-primary text-primary rounded-xl" onClick={() => setIndex(index + 1)}>
+                                    <button type="button" className="px-6 py-3 min-w-[200px] border-2 border-primary text-primary rounded-xl" onClick={() => {
+                                        setIndex(index + 1)
+                                    }}>
                                         + Add More
                                     </button>
                                 </div>
@@ -190,7 +216,7 @@ const Pay = () => {
             </div>
         </form>
         {isSuccess && <Success onClose={setSuccess} />}
-        {isError && <Error onClose={setError} />}
+        {isError && <Error onClose={(val)=>dispatch(changeError({activate: val, text: ''}))} />}
     </div>
 }
 

@@ -4,13 +4,16 @@ import { DropDownItem } from "../../../types/dropdown";
 import { TeamInfo } from "../../../types/sdk/Team/GetTeams";
 import Dropdown from "../../dropdown";
 import { ClipLoader } from "react-spinners";
-import { useAppDispatch } from "../../../redux/hooks"
-import { changeSuccess, changeError } from '../../../redux/reducers/notificationSlice'
+import { useAppDispatch, useAppSelector } from "../../../redux/hooks"
+import { changeSuccess, changeError, selectError } from '../../../redux/reducers/notificationSlice'
 import { useLazyGetTeamsQuery } from "../../../redux/api/team";
 import { useAddMemberMutation } from "../../../redux/api/teamMember";
+import Error from "../../error";
 
 
 const AddMember = ({ onDisable }: { onDisable: React.Dispatch<boolean> }) => {
+
+    const isError = useAppSelector(selectError)
 
     const [triggerTeams, { data, error, isLoading }] = useLazyGetTeamsQuery()
     const [addMember, { isLoading: addMemberLoading, error: memberError }] = useAddMemberMutation();
@@ -73,8 +76,9 @@ const AddMember = ({ onDisable }: { onDisable: React.Dispatch<boolean> }) => {
 
                     dispatch(changeSuccess(true))
                     onDisable(false)
-                } catch (error) {
+                } catch (error: any) {
                     console.error(error)
+                    dispatch(changeError({activate: true, text: error.data.message}))
                 }
             }
         }
@@ -119,9 +123,7 @@ const AddMember = ({ onDisable }: { onDisable: React.Dispatch<boolean> }) => {
                         </div>
                     </div>
                 </div>
-                {(error || memberError) && <div className="flex flex-col space-y-4 justify-center">
-                    <div className="text-red-500">Something went wrong</div>
-                </div>}
+                {isError && <Error onClose={(val)=>dispatch(changeError({activate: val, text: ''}))} />}
                 <div className="flex justify-center">
                     <button className="px-8 py-3 bg-primary rounded-xl text-white">
                         {addMemberLoading ? <ClipLoader /> : "Add Person"}

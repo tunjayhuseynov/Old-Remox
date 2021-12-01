@@ -762,6 +762,10 @@ video {
   height: 75px;
 }
 
+.h-\[30px\] {
+  height: 30px;
+}
+
 .h-\[200px\] {
   height: 200px;
 }
@@ -788,14 +792,6 @@ video {
 
 .h-\[27px\] {
   height: 27px;
-}
-
-.h-\[\] {
-  height: ;
-}
-
-.h-\[30px\] {
-  height: 30px;
 }
 
 .max-h-full {
@@ -956,8 +952,16 @@ video {
   grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 
+.grid-cols-\[20\%\2c 80\%\] {
+  grid-template-columns: 20% 80%;
+}
+
 .grid-cols-\[30\%\2c 30\%\2c 1fr\] {
   grid-template-columns: 30% 30% 1fr;
+}
+
+.grid-cols-\[25\%\2c 15\%\2c 15\%\2c 20\%\2c 12\.5\%\2c 12\.5\%\] {
+  grid-template-columns: 25% 15% 15% 20% 12.5% 12.5%;
 }
 
 .grid-cols-11 {
@@ -980,60 +984,24 @@ video {
   grid-template-columns: 80%;
 }
 
-.grid-cols-\[\%\2c 45\%\2c 5\%\] {
-  grid-template-columns: % 45% 5%;
+.grid-cols-\[40\%\2c 80\%\] {
+  grid-template-columns: 40% 80%;
 }
 
-.grid-cols-\[15\%\2c 45\%\2c 5\%\] {
-  grid-template-columns: 15% 45% 5%;
+.grid-cols-\[40\%\2c 60\%\] {
+  grid-template-columns: 40% 60%;
 }
 
-.grid-cols-\[45\%\2c 25\%\2c 15\%\2c 15\%\] {
-  grid-template-columns: 45% 25% 15% 15%;
+.grid-cols-\[25\%\2c 40\%\2c 25\%\2c 5\%\] {
+  grid-template-columns: 25% 40% 25% 5%;
 }
 
-.grid-cols-\[15\%\2c 25\%\2c 15\%\2c 15\%\] {
-  grid-template-columns: 15% 25% 15% 15%;
+.grid-cols-\[25\%\2c 40\%\2c 30\%\2c 5\%\] {
+  grid-template-columns: 25% 40% 30% 5%;
 }
 
-.grid-cols-\[25\%\2c 25\%\2c 15\%\2c 15\%\] {
-  grid-template-columns: 25% 25% 15% 15%;
-}
-
-.grid-cols-\[25\%\2c 15\%\2c 15\%\2c 15\%\] {
-  grid-template-columns: 25% 15% 15% 15%;
-}
-
-.grid-cols-\[25\%\2c 15\%\2c 15\%\2c 25\%\] {
-  grid-template-columns: 25% 15% 15% 25%;
-}
-
-.grid-cols-\[25\%\2c 15\%\2c 15\%\2c 25\%\2c 10\%\2c \] {
-  grid-template-columns: 25% 15% 15% 25% 10% ;
-}
-
-.grid-cols-\[25\%\2c 15\%\2c 15\%\2c 25\%\2c 10\%\2c 10\%\] {
-  grid-template-columns: 25% 15% 15% 25% 10% 10%;
-}
-
-.grid-cols-\[25\%\2c 15\%\2c 15\%\2c 25\%\2c 12\.5\%\2c 10\%\] {
-  grid-template-columns: 25% 15% 15% 25% 12.5% 10%;
-}
-
-.grid-cols-\[25\%\2c 15\%\2c 15\%\2c 25\%\2c 12\.5\%\2c 12\.5\%\] {
-  grid-template-columns: 25% 15% 15% 25% 12.5% 12.5%;
-}
-
-.grid-cols-\[25\%\2c 15\%\2c 15\%\2c 20\%\2c 12\.5\%\2c 12\.5\%\] {
-  grid-template-columns: 25% 15% 15% 20% 12.5% 12.5%;
-}
-
-.grid-cols-\[25\%\2c 15\%\2c 15\%\2c 2\%\2c 10\%\2c 10\%\] {
-  grid-template-columns: 25% 15% 15% 2% 10% 10%;
-}
-
-.grid-cols-\[25\%\2c 15\%\2c 15\%\2c 2\%\2c 1\%\2c 10\%\] {
-  grid-template-columns: 25% 15% 15% 2% 1% 10%;
+.grid-cols-\[50\%\2c 50\%\] {
+  grid-template-columns: 50% 50%;
 }
 
 .grid-rows-\[25\%\2c 25\%\2c 50\%\] {
@@ -1124,16 +1092,16 @@ video {
   column-gap: 2.5rem;
 }
 
+.gap-y-3 {
+  row-gap: 0.75rem;
+}
+
 .gap-y-10 {
   row-gap: 2.5rem;
 }
 
 .gap-x-5 {
   column-gap: 1.25rem;
-}
-
-.gap-y-3 {
-  row-gap: 0.75rem;
 }
 
 .space-x-2 > :not([hidden]) ~ :not([hidden]) {
@@ -1295,13 +1263,13 @@ video {
   border-color: rgba(255, 115, 72, var(--tw-border-opacity));
 }
 
+.border-transparent {
+  border-color: transparent;
+}
+
 .border-greylish {
   --tw-border-opacity: 1;
   border-color: rgba(112, 112, 112, var(--tw-border-opacity));
-}
-
-.border-transparent {
-  border-color: transparent;
 }
 
 .border-red-500 {
@@ -1523,6 +1491,14 @@ video {
   padding-left: 0.75rem;
 }
 
+.pt-4 {
+  padding-top: 1rem;
+}
+
+.pb-6 {
+  padding-bottom: 1.5rem;
+}
+
 .pt-6 {
   padding-top: 1.5rem;
 }
@@ -1535,6 +1511,10 @@ video {
   padding-bottom: 3.5rem;
 }
 
+.pt-\[30px\] {
+  padding-top: 30px;
+}
+
 .pl-12 {
   padding-left: 3rem;
 }
@@ -1545,14 +1525,6 @@ video {
 
 .pt-5 {
   padding-top: 1.25rem;
-}
-
-.pt-4 {
-  padding-top: 1rem;
-}
-
-.pb-6 {
-  padding-bottom: 1.5rem;
 }
 
 .pl-1 {
@@ -1573,18 +1545,6 @@ video {
 
 .pt-10 {
   padding-top: 2.5rem;
-}
-
-.pt-2 {
-  padding-top: 0.5rem;
-}
-
-.pb-4 {
-  padding-bottom: 1rem;
-}
-
-.pt-\[30px\] {
-  padding-top: 30px;
 }
 
 .text-left {
@@ -1730,16 +1690,12 @@ video {
   opacity: 0.7;
 }
 
-.opacity-40 {
-  opacity: 0.4;
+.opacity-50 {
+  opacity: 0.5;
 }
 
 .opacity-60 {
   opacity: 0.6;
-}
-
-.opacity-50 {
-  opacity: 0.5;
 }
 
 .shadow-xl {

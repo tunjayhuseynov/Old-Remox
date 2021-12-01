@@ -23,6 +23,8 @@ import { useAppSelector } from './redux/hooks';
 import Details from './pages/transactions/details';
 import MassPay from './pages/dashboard/masspay'
 import Initalization from './utility/init'
+import { SelectBalances, SelectCurrencies } from './redux/reducers/currencies';
+import { ClipLoader } from 'react-spinners';
 
 function App(): JSX.Element {
   const storage = useAppSelector(selectStorage)
@@ -44,13 +46,23 @@ function App(): JSX.Element {
 const CustomRouter = ({ unlock, data }: { unlock: boolean, data: IStorage | null }) => {
   const router = useHistory();
   const location = useLocation();
+  const currencies = useAppSelector(SelectCurrencies)
+  const balances = useAppSelector(SelectBalances)
 
   useEffect(() => {
     if (router && data && unlock && location && location.pathname === '/') router.push('/dashboard')
   }, [unlock, router, data, location])
 
   const unlockChecking = (element: JSX.Element | Array<JSX.Element>) => {
-    if (unlock) return element
+
+    if (unlock) {
+      if (currencies.CELO === undefined || balances.CELO === undefined) {
+        return <div className={'h-full flex items-center justify-center'}>
+          <ClipLoader/>
+        </div>
+      }
+      return element
+    }
     if (!location.pathname.includes("/dashboard") && !data?.accountAddress) return element
 
     return <Redirect
@@ -72,13 +84,20 @@ const CustomRouter = ({ unlock, data }: { unlock: boolean, data: IStorage | null
 
 const AuthRouter = ({ data, unlockChecking }: { data: any, unlockChecking: Function }) => {
   const router = useHistory();
+  const currencies = useAppSelector(SelectCurrencies)
+  const balances = useAppSelector(SelectBalances)
 
   useEffect(() => {
     if (!data) router.push('/')
+
+    if (currencies.CELO === undefined || balances.CELO === undefined) {
+      Initalization()
+    }
+
   }, [data, router])
 
   return <>
-    {data && <Initalization />}
+
     <Route path={'/masspayout'} exact render={() => unlockChecking(<MassPay />)} />
     <Route path={'/pay'} exact render={() => unlockChecking(<Pay />)} />
     <Route path={'/dashboard'} render={({ match: { path } }) => {

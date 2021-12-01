@@ -5,6 +5,7 @@ import { RootState } from '../store';
 
 export const transactionAPI = createApi({
     reducerPath: 'transactionAPI',
+    keepUnusedDataFor: 5,
     baseQuery: fetchBaseQuery({
         baseUrl: BaseUrl,
         prepareHeaders: (headers, { getState }) => {

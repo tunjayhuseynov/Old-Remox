@@ -31,9 +31,9 @@ const EditTeam = (props: TeamInfoWithMembers & { onCurrentModal: Dispatch<boolea
                     await updateTeam({ id: props.id, body: { title: input } }).unwrap()
                     dispatch(changeSuccess(true))
                     props.onCurrentModal(false)
-                } catch (error) {
+                } catch (error: any) {
                     console.error(error)
-                    dispatch(changeError(true))
+                    dispatch(changeError({activate: true, text: error.data.message}))
                 }
             }}>
                 {isLoading ? <ClipLoader /> : 'Save'}

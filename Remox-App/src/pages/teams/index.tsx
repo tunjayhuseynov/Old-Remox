@@ -103,7 +103,7 @@ const Teams = () => {
                 <AddMember onDisable={setAddMemberModal} />
             </Modal>}
         {isSuccess && <Success onClose={(val: boolean) => dispatch(changeSuccess(val))} text="Successfully" />}
-        {isError && <Error onClose={(val: boolean) => dispatch(changeError(val))} />}
+        {isError && <Error onClose={(val: boolean) => dispatch(changeError({activate: val}))} />}
     </div>
 }
 

@@ -9,16 +9,18 @@ const Import = () => {
     const [accountExist, { error: reqError, isLoading }] = useAccountExistMutation()
     const [input, setInput] = useState<string>()
     const [index, setIndex] = useState(0)
+    const [isError, setError] = useState('')
 
     const Submitted = async () => {
         if (input) {
             try {
+                setError('')
                 const data = await accountExist({ phrase: input.trim() }).unwrap()
                 if (!data!.result) setIndex(1)
                 else setIndex(2)
             } catch (error: any) {
-                console.error(Object.values(error))
-                
+                console.error(error)
+                setError(error.data.message)
             }
         }
     }
@@ -35,7 +37,7 @@ const Import = () => {
                 <div>
                     <textarea onChange={(e) => setInput(e.target.value)} className="border-2 p-3 outline-none" placeholder="fish boot hand foot" cols={55} rows={7}></textarea>
                 </div>
-                {reqError && <div className="text-redish">Something went wrong</div>}
+                {isError && <div className="text-red-500">{isError}</div>}
                 <button onClick={Submitted} className="bg-primary text-white px-5 py-2 rounded-xl w-[200px]">{isLoading ? <ClipLoader /> : "Import Account"}</button>
             </div>
         </section>

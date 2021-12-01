@@ -84,6 +84,8 @@ const Main = () => {
             const mobiDeg = Math.floor((mobiBalance.amount * 100) / coin * 3.6) + mooDeg;
             const poofDeg = Math.floor((poofBalance.amount * 100) / coin * 3.6) + mobiDeg;
 
+            if(celo === 0 && cusd === 0 && moo === 0 && mobi === 0 && poof === 0 && ube === 0 && ceur === 0) return `conic-gradient(#FF774E 0deg 360deg)`
+
             return `conic-gradient(#fbce5c 0deg ${celoDeg}deg, #46cd85 ${celoDeg}deg ${cusdDeg}deg, #040404 ${cusdDeg}deg ${ceurDeg}deg, #6D619A ${ceurDeg}deg ${ubeDeg}deg, #3288ec ${ubeDeg}deg ${mooDeg}deg, #b0d2fc ${mooDeg}deg ${mobiDeg}deg, #7D72FC ${mobiDeg}deg ${poofDeg}deg)`
         }
     }, [celoBalance, cusdBalance, ceurBalance, ubeBalance, mooBalance, mobiBalance, poofBalance, coin, celo, cusd, ceur, ube, moo, mobi, poof])
@@ -123,6 +125,7 @@ const Main = () => {
 
     useEffect(() => {
         if (transactions) {
+            console.log(transactions)
             let myin = 0;
             let myout = 0;
             transactions.result.forEach(t => {
@@ -136,6 +139,7 @@ const Main = () => {
                     }
                 }
             })
+            console.log(myin, myout)
             setIn(myin)
             setOut(myout)
         }
@@ -153,9 +157,9 @@ const Main = () => {
                         {balance || (balance !== undefined && parseFloat(balance) === 0) ? `$${balance}` : <ClipLoader />}
                     </div>
                     <div className="flex items-center text-3xl text-greylish opacity-70" style={
-                        percent && percent > 0 ? { color: 'green' } : { color: 'red' }
+                        balance !== undefined && parseFloat(balance) !== 0 ? percent && percent > 0 ? { color: 'green' } : { color: 'red' } : {color: 'black'}
                     }>
-                        {percent ? `${percent.toFixed(2)}%` : <ClipLoader />}
+                        {balance !== undefined && parseFloat(balance) !== 0 ? percent ? `${percent.toFixed(2)}%` : <ClipLoader /> : '0%'}
                     </div>
                 </div>
             </div>
@@ -166,7 +170,7 @@ const Main = () => {
                 </div>
                 <div className="flex justify-between shadow-custom rounded-xl px-8 py-4">
                     <div className="text-2xl opacity-80">
-                        {balance || (balance !== undefined && parseFloat(balance) === 0) ? `+ $${lastIn?.toFixed(2)}` : <ClipLoader />}
+                        {lastIn !== undefined && balance || (balance !== undefined && parseFloat(balance) === 0) ? `+ $${lastIn?.toFixed(2)}` : <ClipLoader />}
                     </div>
                 </div>
             </div>
@@ -177,7 +181,7 @@ const Main = () => {
                 </div>
                 <div className="flex justify-between shadow-custom rounded-xl px-8 py-4">
                     <div className="ttext-greylish opacity-80 text-2xl">
-                        {balance || (balance !== undefined && parseFloat(balance) === 0) ? `- $${lastOut?.toFixed(2)}` : <ClipLoader />}
+                        {lastOut !== undefined && balance || (balance !== undefined && parseFloat(balance) === 0) ? `- $${lastOut?.toFixed(2)}` : <ClipLoader />}
                     </div>
                 </div>
             </div>

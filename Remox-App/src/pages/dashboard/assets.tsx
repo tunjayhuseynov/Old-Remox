@@ -21,8 +21,8 @@ const Assets = () => {
                     {Object.values(selectBalance).map((item: IBalanceItem, index) => {
                         return <div key={generate()} className="grid grid-cols-[25%,15%,15%,20%,12.5%,12.5%] border-b border-black py-5" >
                             <div className="flex space-x-3 items-center">
-                                <div><img src={item.coins.coinUrl} width={30} height={30} alt="" /></div>
-                                <div>{item.coins.name} </div>
+                                <div><img src={item?.coins?.coinUrl} width={30} height={30} alt="" /></div>
+                                <div>{item?.coins?.name} </div>
                             </div>
                             <div>
                                 $ {(item.amount * item.reduxValue).toFixed(2)}
