@@ -84,7 +84,7 @@ const Main = () => {
             const mobiDeg = Math.floor((mobiBalance.amount * 100) / coin * 3.6) + mooDeg;
             const poofDeg = Math.floor((poofBalance.amount * 100) / coin * 3.6) + mobiDeg;
 
-            if (celo === 0 && cusd === 0 && moo === 0 && mobi === 0 && poof === 0 && ube === 0 && ceur === 0) return `conic-gradient(#FF774E 0deg 360deg)`
+            if (!celoDeg && !cusdDeg && !ceurDeg && !ubeDeg && !mooDeg && !mobiDeg && !poofDeg) return `conic-gradient(#FF774E 0deg 360deg)`
 
             return `conic-gradient(#fbce5c 0deg ${celoDeg}deg, #46cd85 ${celoDeg}deg ${cusdDeg}deg, #040404 ${cusdDeg}deg ${ceurDeg}deg, #6D619A ${ceurDeg}deg ${ubeDeg}deg, #3288ec ${ubeDeg}deg ${mooDeg}deg, #b0d2fc ${mooDeg}deg ${mobiDeg}deg, #7D72FC ${mobiDeg}deg ${poofDeg}deg)`
         }
@@ -201,7 +201,7 @@ const Main = () => {
                 allInOne !== undefined ?
                     <div className="flex flex-col gap-5 overflow-hidden">
                         {allInOne.map((item, index) => {
-                            return <CoinItem key={generate()} title={item.coins.name} coin={item.amount.toFixed(2)} usd={((item.reduxValue ?? 0) * item.amount).toFixed(2)} percent={(item.percent).toFixed(1)||'0'} rate={item.per_24} img={item.coins.coinUrl} />
+                            return <CoinItem key={generate()} title={item.coins.name} coin={item.amount.toFixed(2)} usd={((item.reduxValue ?? 0) * item.amount).toFixed(2)} percent={(item.percent||0).toFixed(1)} rate={item.per_24} img={item.coins.coinUrl} />
                         })}
                     </div> : <ClipLoader />
             }
