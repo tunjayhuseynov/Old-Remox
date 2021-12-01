@@ -12,7 +12,7 @@ export function currencySaver() {
                 getCurrency("celo-euro"),
                 getCurrency("ubeswap"),
                 getCurrency("moola-market"),
-                getCurrency("mobius"),
+                getCurrency("mobius-money"),
                 getCurrency("poofcash"),
             ]).then(w => {
                 w.map(d => {

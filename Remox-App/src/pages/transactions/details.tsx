@@ -13,9 +13,9 @@ import { selectStorage } from "../../redux/reducers/storage";
 import { Coins, CoinsURL, TransactionFeeTokenName } from "../../types/coins";
 import { TransactionDirection, TransactionStatus, TransactionType } from "../../types/dashboard/transaction";
 import { DropDownItem } from "../../types/dropdown";
-import transactions from "./transactions";
 import lodash from "lodash";
 import { Transactions } from "../../types/sdk";
+import _ from "lodash";
 
 const Details = () => {
     const storage = useAppSelector(selectStorage);
@@ -25,7 +25,7 @@ const Details = () => {
     const [totalAmount, setTotalAmount] = useState<number>();
 
     const [take, setTake] = useState(4)
-    const [list, setList] = useState<lodash.Dictionary<[Transactions, ...Transactions[]]>>()
+    const [list, setList] = useState<{ [name: string]: Transactions[] }>()
     const [trigger, { data: transactions, error: transactionError, isLoading }] = useLazyGetTransactionsQuery()
 
     useEffect(() => {
@@ -34,9 +34,17 @@ const Details = () => {
 
     useEffect(() => {
         if (transactions?.result) {
-            const res = lodash.groupBy(transactions.result, lodash.iteratee('blockNumber'))
-            setList(res)
-            console.log(params)
+            try {
+                const res = lodash.groupBy(transactions.result, lodash.iteratee('blockNumber'))
+                let newObject: { [name: string]: Transactions[] } = {}
+                Object.entries(res).map(([key, value]) => {
+                    const data = _(value).orderBy((o) => BigInt(o.value), ['desc']).uniqBy('hash').value()
+                    newObject[key] = data
+                })
+                setList(newObject)
+            } catch (error) {
+                console.error(error)
+            }
         }
 
     }, [transactions?.result])
@@ -73,16 +81,17 @@ const Details = () => {
                     }, 0)}`)}
                     {TransactionDetailInput("Created Date & Time", `${dateFormat(new Date(Number(list[params.id][0].timeStamp) * 1e3), 'dd/mm/yyyy hh:MM:ss')}`)}
                     {TransactionDetailInput("Status", "Completed")}
-                    {TransactionDetailInput("Wallet Address",
+                    {list[params.id][0].from !== storage!.accountAddress ? TransactionDetailInput("Wallet Address",
                         list[params.id][0].from.split('').reduce((a, c, i, arr) => {
                             return i < 10 || (arr.length - i) < 4 ? a + c : a.split('.').length - 1 < 6 ? a + '.' : a
                         }, '')
-                    )}
-                    {/* <Dropdown displayName="Wallet Address" className="h-[75px] bg-greylish bg-opacity-10" nameActivation={true} selected={{ name: list[params.id][0].from !== storage!.accountAddress ? list[params.id][0].from : list[params.id][0].to, coinUrl: CoinsURL.None }}
-                        onSelect={() => { }}
-                        list={[
-                            ...list[params.id].map(w => ({ name: w.hash, coinUrl: CoinsURL.None })),
-                        ]} /> */}
+                    )
+                        :
+                        <Dropdown displayName="Wallet Address" className="h-[75px] bg-greylish bg-opacity-10" nameActivation={true} selected={{ name: list[params.id][0].from !== storage!.accountAddress ? list[params.id][0].from : list[params.id][0].to, coinUrl: CoinsURL.None }}
+                            onSelect={() => { }}
+                            list={[
+                                ...list[params.id].map(w => ({ name: w.hash, coinUrl: CoinsURL.None })),
+                            ]} />}
                 </div> : <ClipLoader />}
             </div>
         </div>

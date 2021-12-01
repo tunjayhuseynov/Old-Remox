@@ -13,6 +13,7 @@ import { TransactionDirection, TransactionStatus, TransactionType } from "../../
 import { CSVLink } from "react-csv";
 import lodash from "lodash";
 import { Transactions as transactionType } from "../../types/sdk";
+import _ from "lodash";
 
 
 const Transactions = () => {
@@ -21,7 +22,7 @@ const Transactions = () => {
 
     const [take, setTake] = useState(4)
     const [trigger, { data: transactions, error: transactionError, isLoading }] = useLazyGetTransactionsQuery()
-    const [list, setList] = useState<lodash.Dictionary<[transactionType, ...transactionType[]]>>()
+    const [list, setList] = useState<{[name: string]: transactionType[]}>()
 
     useEffect(() => {
         trigger(storage!.accountAddress)
@@ -34,8 +35,12 @@ const Transactions = () => {
     useEffect(() => {
         if (transactions?.result) {
             const res = lodash.groupBy(transactions.result, lodash.iteratee('blockNumber'))
-            console.log(res)
-            setList(res)
+            let newObject : {[name: string]: transactionType[]} = {}
+            Object.entries(res).map(([key, value])=>{
+                const data = _(value).orderBy((o)=>BigInt(o.value), ['desc']).uniqBy('hash').value()
+                newObject[key] = data
+            })
+            setList(newObject)
         }
 
     }, [transactions?.result])
@@ -66,8 +71,9 @@ const Transactions = () => {
 
                 </div>
                 <div>
-                    {!isLoading && list ? Object.values(list).reverse().slice(0, take).map((transaction) => {
+                    {!isLoading && list ? Object.values(list).reverse().slice(0, take).map((tr) => {
                         let amount, coin, coinName, direction, date, amountUSD, surplus, type, hash;
+                        const transaction = tr.filter(w=>w.to.toLowerCase() === storage!.accountAddress.toLowerCase() || w.from.toLowerCase() === storage!.accountAddress.toLowerCase())
                         if (transaction.length === 1) {
                             const tx = transaction[0];
                             hash = tx.blockNumber

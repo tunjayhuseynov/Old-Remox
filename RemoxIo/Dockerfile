@@ -1,3 +1,3 @@
 FROM node:12
-
-COPY . /usr/share/io
+WORKDIR /etc/nginx/conf.d
+COPY . .

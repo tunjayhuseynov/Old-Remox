@@ -206,7 +206,7 @@ const Main = () => {
             }
         </div>
         <div id="transaction" className="pb-14 pt-[30px]">
-            {transactions ? <TransactionHistory transactions={transactions.result.slice(0, 4)} /> : <div className="flex justify-center"> <ClipLoader /></div>}
+            {transactions ? <TransactionHistory transactions={transactions.result} /> : <div className="flex justify-center"> <ClipLoader /></div>}
         </div>
     </main>
 }
