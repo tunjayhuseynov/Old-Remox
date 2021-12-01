@@ -84,10 +84,11 @@ const Main = () => {
             const mobiDeg = Math.floor((mobiBalance.amount * 100) / coin * 3.6) + mooDeg;
             const poofDeg = Math.floor((poofBalance.amount * 100) / coin * 3.6) + mobiDeg;
 
-            if(celo === 0 && cusd === 0 && moo === 0 && mobi === 0 && poof === 0 && ube === 0 && ceur === 0) return `conic-gradient(#FF774E 0deg 360deg)`
+            if (celo === 0 && cusd === 0 && moo === 0 && mobi === 0 && poof === 0 && ube === 0 && ceur === 0) return `conic-gradient(#FF774E 0deg 360deg)`
 
             return `conic-gradient(#fbce5c 0deg ${celoDeg}deg, #46cd85 ${celoDeg}deg ${cusdDeg}deg, #040404 ${cusdDeg}deg ${ceurDeg}deg, #6D619A ${ceurDeg}deg ${ubeDeg}deg, #3288ec ${ubeDeg}deg ${mooDeg}deg, #b0d2fc ${mooDeg}deg ${mobiDeg}deg, #7D72FC ${mobiDeg}deg ${poofDeg}deg)`
         }
+        return `conic-gradient(#FF774E 0deg 360deg)`
     }, [celoBalance, cusdBalance, ceurBalance, ubeBalance, mooBalance, mobiBalance, poofBalance, coin, celo, cusd, ceur, ube, moo, mobi, poof])
 
 
@@ -157,7 +158,7 @@ const Main = () => {
                         {balance || (balance !== undefined && parseFloat(balance) === 0) ? `$${balance}` : <ClipLoader />}
                     </div>
                     <div className="flex items-center text-3xl text-greylish opacity-70" style={
-                        balance !== undefined && parseFloat(balance) !== 0 ? percent && percent > 0 ? { color: 'green' } : { color: 'red' } : {color: 'black'}
+                        balance !== undefined && parseFloat(balance) !== 0 ? percent && percent > 0 ? { color: 'green' } : { color: 'red' } : { color: 'black' }
                     }>
                         {balance !== undefined && parseFloat(balance) !== 0 ? percent ? `${percent.toFixed(2)}%` : <ClipLoader /> : '0%'}
                     </div>
@@ -170,7 +171,7 @@ const Main = () => {
                 </div>
                 <div className="flex justify-between shadow-custom rounded-xl px-8 py-4">
                     <div className="text-2xl opacity-80">
-                        {lastIn !== undefined && balance || (balance !== undefined && parseFloat(balance) === 0) ? `+ $${lastIn?.toFixed(2)}` : <ClipLoader />}
+                        {lastIn !== undefined && balance !== undefined ? `+ $${lastIn?.toFixed(2)}` : <ClipLoader />}
                     </div>
                 </div>
             </div>
@@ -181,7 +182,7 @@ const Main = () => {
                 </div>
                 <div className="flex justify-between shadow-custom rounded-xl px-8 py-4">
                     <div className="ttext-greylish opacity-80 text-2xl">
-                        {lastOut !== undefined && balance || (balance !== undefined && parseFloat(balance) === 0) ? `- $${lastOut?.toFixed(2)}` : <ClipLoader />}
+                        {lastOut !== undefined && balance !== undefined ? `- $${lastOut?.toFixed(2)}` : <ClipLoader />}
                     </div>
                 </div>
             </div>
@@ -200,12 +201,11 @@ const Main = () => {
                 allInOne !== undefined ?
                     <div className="flex flex-col gap-5 overflow-hidden">
                         {allInOne.map((item, index) => {
-                            return <CoinItem key={generate()} title={item.coins.name} coin={item.amount.toFixed(2)} usd={((item.reduxValue ?? 0) * item.amount).toFixed(2)} percent={(item.percent).toFixed(1)} rate={item.per_24} img={item.coins.coinUrl} />
+                            return <CoinItem key={generate()} title={item.coins.name} coin={item.amount.toFixed(2)} usd={((item.reduxValue ?? 0) * item.amount).toFixed(2)} percent={(item.percent).toFixed(1)||'0'} rate={item.per_24} img={item.coins.coinUrl} />
                         })}
                     </div> : <ClipLoader />
             }
         </div>
-
         <div id="transaction" className="pb-14 pt-[30px]">
             {transactions ? <TransactionHistory transactions={transactions.result.slice(0, 4)} /> : <div className="flex justify-center"> <ClipLoader /></div>}
         </div>
