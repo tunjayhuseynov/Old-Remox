@@ -48,7 +48,7 @@ const Set = ({ setData }: { setData: Dispatch<PassDataFromSetToPhrase> }) => {
                 companyName: inputData.companyName,
             };
 
-            dispatch(setStorage(JSON.stringify(obj)))
+            // dispatch(setStorage(JSON.stringify(obj)))
 
             const pass: PassDataFromSetToPhrase = {
                 accountAddress: data.accountAddress,
