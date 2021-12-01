@@ -1,7 +1,7 @@
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react'
 import { BaseUrl } from '../../utility/const'
 import { GetBalanceResponse, SendCelo, SendCeloResponse, SendStableToken, SendStableTokenResponse, SendMultipleTransaction, SendAltcoin, SendAltcoinResponse, GetCurrencies } from '../../types/sdk'
-import store, { RootState } from '../store';
+import { RootState } from '../store';
 
 export const transactionAPI = createApi({
     reducerPath: 'transactionAPI',
@@ -10,6 +10,7 @@ export const transactionAPI = createApi({
         baseUrl: BaseUrl,
         prepareHeaders: (headers, { getState }) => {
             const token = (getState() as RootState).storage?.user?.token;
+            console.log(token)
             if (token) {
                 headers.set('Authorization', `Bearer ${token}`);
             }
@@ -20,7 +21,6 @@ export const transactionAPI = createApi({
         getBalance: builder.query<GetBalanceResponse, void>({
             query: () => ({
                 url: '/transaction/balance',
-                headers: {'Authorization': `Bearer ${(store as RootState).storage?.user?.token}`}
             })
         }),
         getCurrencies: builder.query<GetCurrencies, void>({

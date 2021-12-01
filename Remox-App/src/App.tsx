@@ -93,7 +93,7 @@ const AuthRouter = ({ data, unlockChecking }: { data: IStorage | null, unlockChe
       return
     }
 
-    if ((data && data.accountAddress) && (currencies.CELO === undefined || balances.CELO === undefined)) {
+    if ((data && data.accountAddress && data.token) && (currencies.CELO === undefined || balances.CELO === undefined)) {
       Initalization()
     }
 

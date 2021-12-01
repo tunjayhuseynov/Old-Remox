@@ -54,6 +54,7 @@ const Set = ({ setData }: { setData: Dispatch<PassDataFromSetToPhrase> }) => {
             const pass: PassDataFromSetToPhrase = {
                 accountAddress: data.accountAddress,
                 mnemonic: data.mnemonic,
+                localSave: obj,
             }
             
             setData(pass)
