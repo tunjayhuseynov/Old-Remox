@@ -9,8 +9,8 @@ async function bootstrap() {
   // const app = await NestFactory.create<NestExpressApplication>(AppModule);
   // app.set("data","new data") you can get this data in req.app.get('data)
   const app = await NestFactory.create(AppModule);
-  app.setGlobalPrefix('api');
   currencySaver()
+  app.setGlobalPrefix("api")
   app.enableCors();
   app.useGlobalPipes(
     new ValidationPipe({

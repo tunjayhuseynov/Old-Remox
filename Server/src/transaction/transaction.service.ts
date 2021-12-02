@@ -10,9 +10,11 @@ import { decrypt } from "../utils/crypto"
 import { OrbitService } from 'src/orbit/orbit.service';
 import { Provider } from '../blockchain/provider';
 import { abi, AltToken, tokenAdress } from '../contractTokenAbi'
-import {newLogExplorer, newBlockExplorer} from '@celo/explorer'
+import { AltTokenType } from "./transaction.entity"
+import { newLogExplorer, newBlockExplorer } from '@celo/explorer'
 import fs from 'fs';
 import path from 'path';
+import { IGetBalance } from './interface';
 
 @Injectable()
 export class TransactionService {
@@ -32,7 +34,7 @@ export class TransactionService {
         this.provider = providers.provider
     }
 
-    async accountInfo(accountAddress: string) {
+    async accountInfo(accountAddress: string): Promise<IGetBalance> {
         try {
             // const jsonAbi = abi;
             // const derivationPath = "m/44'/52752'/0'/0" + '/0'
@@ -44,7 +46,7 @@ export class TransactionService {
             //     console.log(item)
             // })
             let balances = {};
-            
+
             let obj = {}
             for (const item of tokenAdress) {
                 obj = {}
@@ -77,26 +79,26 @@ export class TransactionService {
 
     }
 
-    async getCoinCurrency(){
+    async getCoinCurrency() {
         try {
             const data = JSON.parse(fs.readFileSync(path.join(__dirname, "..", "..", "currency.txt"), 'utf8'))
-            return {data}
+            return { data }
         } catch (e) {
             throw new HttpException(e.message, HttpStatus.FORBIDDEN);
         }
     }
 
-    async getTransaction(hash:string){
+    async getTransaction(hash: string) {
         try {
             const explorer = await newLogExplorer(this.kit)
             const block = await newBlockExplorer(this.kit)
             const tx = await explorer.fetchTxReceipt(hash)
-            console.log({tx, logs: tx.logs, topics: tx.logs[0].topics})
-            let a =  explorer.getKnownLogs(tx)
+            console.log({ tx, logs: tx.logs, topics: tx.logs[0].topics })
+            let a = explorer.getKnownLogs(tx)
             console.log(a)
-            const logs =  explorer.tryParseLog(tx.logs[0])
-            console.log({logs})
-            
+            const logs = explorer.tryParseLog(tx.logs[0])
+            console.log({ logs })
+
             const blockInfo = await block.fetchBlock(9973207)
             // console.log({blockInfo: blockInfo.transactions})
 
@@ -190,7 +192,7 @@ export class TransactionService {
             let stabletoken = await this.kit.contracts.getErc20(token)
             let satbleTokentx = await stabletoken.transfer(toAddress, amountWei).send({ from: walletMnemonic.address })
             let stReceipt = await satbleTokentx.waitReceipt()
-            return { from: walletMnemonic.address, to: toAddress, value: amount ,transactionHash:stReceipt.transactionHash}
+            return { from: walletMnemonic.address, to: toAddress, value: amount, transactionHash: stReceipt.transactionHash }
 
         } catch (e) {
             throw new HttpException(e.message, HttpStatus.FORBIDDEN);
@@ -205,8 +207,9 @@ export class TransactionService {
             const derivationPath = "m/44'/52752'/0'/0" + '/0';
             const walletMnemonic = Wallet.fromMnemonic(accPhrase, derivationPath);
 
-
-            let multiTx;
+            let multiTx, index;
+            const amountList: { token: string, amount: number }[] = [];
+            const errors = [];
             this.kit.connection.addAccount(walletMnemonic.privateKey)
             let goldtoken = await this.kit.contracts.getGoldToken()
             const bacth = new this.web3.BatchRequest()
@@ -214,26 +217,42 @@ export class TransactionService {
             dto.multipleAddresses.map(async (item) => {
                 let { amount, toAddress, tokenType } = item;
                 let token = TokenType[tokenType]
-                let amountWei = this.kit.web3.utils.toWei(amount, 'ether');
-                if (token == undefined) {
-                    throw new HttpException("This wallet type isnt exist", HttpStatus.FORBIDDEN)
-                }
+                    let amountWei = this.kit.web3.utils.toWei(amount, 'ether');
+                    if (token == undefined) {
+                        throw new HttpException("This wallet type isnt exist", HttpStatus.FORBIDDEN)
+                    }
 
-                if (token == TokenType.celo) {
-                    multiTx = await goldtoken.transfer(toAddress, amountWei).send({ from: walletMnemonic.address })
-                    bacth.add(multiTx.waitReceipt())
-                }
-                else if (token == TokenType.cUSD || token == TokenType.cEUR) {
-                    let stabletoken = await this.kit.contracts.getStableToken(token)
-                    multiTx = await stabletoken.transfer(toAddress, amountWei).send({ from: walletMnemonic.address, feeCurrency: stabletoken.address })
-                    bacth.add(multiTx.waitReceipt())
-                } else {
-                    let altToken = AltToken[token]
-                    let stabletoken = await this.kit.contracts.getErc20(altToken)
-                    multiTx = await stabletoken.transfer(toAddress, amountWei).send({ from: walletMnemonic.address })
-                    bacth.add(multiTx.waitReceipt())
-                }
+                    if (token == TokenType.celo) {
+                        multiTx = await goldtoken.transfer(toAddress, amountWei).send({ from: walletMnemonic.address })
+                        bacth.add(multiTx.waitReceipt())
+                    }
+                    else if (token == TokenType.cUSD || token == TokenType.cEUR) {
+                        let stabletoken = await this.kit.contracts.getStableToken(token)
+                        multiTx = await stabletoken.transfer(toAddress, amountWei).send({ from: walletMnemonic.address, feeCurrency: stabletoken.address })
+                        bacth.add(multiTx.waitReceipt())
+                    } else {
+                        let altToken = AltToken[token]
+                        let stabletoken = await this.kit.contracts.getErc20(altToken)
+                        multiTx = await stabletoken.transfer(toAddress, amountWei).send({ from: walletMnemonic.address })
+                        bacth.add(multiTx.waitReceipt())
+                    }
+                    
+                index = amountList.findIndex(item => item.token == token);
+                index == -1 ? amountList.push({ token, amount: parseFloat(amount) }) : amountList[index].amount += parseFloat(amount)
             })
+
+            const { celoBalance, cEURBalance, cUSDBalance, MOBI, MOO, POOF, UBE } = await this.accountInfo(walletMnemonic.address)
+            amountList.map(item => {
+                if (item.token == TokenType.celo && item.amount >= parseFloat(celoBalance)) errors.push("Celo amount exceeds balance")
+                if (item.token == TokenType.cUSD && item.amount >= parseFloat(cUSDBalance)) errors.push("cUSD amount exceeds balance")
+                if (item.token == TokenType.cEUR && item.amount >= parseFloat(cEURBalance)) errors.push("cEUR amount exceeds balance")
+                if (item.token == TokenType.UBE && item.amount >= parseFloat(UBE)) errors.push("UBE amount exceeds balance")
+                if (item.token == TokenType.POOF && item.amount >= parseFloat(POOF)) errors.push("POOF amount exceeds balance")
+                if (item.token == TokenType.MOBI && item.amount >= parseFloat(MOBI)) errors.push("MOBI amount exceeds balance")
+                if (item.token == TokenType.MOO && item.amount >= parseFloat(MOO)) errors.push("MOO amount exceeds balance")
+            })
+            if (errors.length != 0) throw new HttpException(errors.join(), HttpStatus.FORBIDDEN)
+
             bacth.execute()
             return "success"
         } catch (e) {

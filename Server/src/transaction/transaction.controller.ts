@@ -2,7 +2,7 @@ import { Controller, Post, Get, Body, Res, HttpStatus, UseGuards, Req, Param } f
 import { TransactionService } from './transaction.service';
 import { ApiBody, ApiTags, ApiOkResponse, ApiForbiddenResponse, ApiBearerAuth } from '@nestjs/swagger';
 import { ParamDto, SendAltCoinDto, SendCoinDto, SendMultipleTransactionVsPhraseDto, SendStableCoinDto } from './dto'
-import { IGetAccountInfo } from './interface';
+import { IGetBalance } from './interface';
 import { Response } from 'express'
 import { AuthGuard } from '@nestjs/passport';
 
@@ -12,7 +12,7 @@ export class TransactionController {
     constructor(private transactionService: TransactionService) { }
 
     @UseGuards(AuthGuard('jwt'))
-    @ApiOkResponse({ type: IGetAccountInfo })
+    @ApiOkResponse({ type: IGetBalance })
     @ApiBearerAuth('JWT-auth')
     @Get('balance')
     async balance(@Res() res: Response, @Req() req: any): Promise<Response> {

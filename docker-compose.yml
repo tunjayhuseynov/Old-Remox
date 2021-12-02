@@ -1,9 +1,5 @@
 version: "3.8"
 services:
-    main:
-        build: 
-            context: ./RemoxIo
-            dockerfile: Dockerfile
     client:
         stdin_open: true
         environment:

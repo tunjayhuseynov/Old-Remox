@@ -17,7 +17,7 @@ export class OrbitService {
         const ipfsOptions = {
             // start: true,
             preload: { enabled: false },
-            repo:path.join(__dirname, "..", "..", "var") ,
+            repo: path.join(__dirname, "..", "..", "var"),
             EXPERIMENTAL: {
                 pubsub: true
             }
@@ -34,7 +34,7 @@ export class OrbitService {
 
         const ipfs = await IPFS.create(ipfsOptions)
 
-        this.orbitDb = await OrbitDB.createInstance(ipfs,{ directory: path.join(__dirname, "..", "..", "orbitdb1")} )
+        this.orbitDb = await OrbitDB.createInstance(ipfs, { directory: path.join(__dirname, "..", "..", "orbitdb1") })
         const optionsToWrite = {
             // create: true,
             // overwrite: true,
@@ -53,9 +53,22 @@ export class OrbitService {
         Object.keys(dto).forEach(key => dto[key] === undefined && delete dto[key])
         try {
             await this.db.load()
-            await this.db.put(id, { ...dto },{pin:true})
+            await this.db.put(id, { ...dto }, { pin: true })
             await this.orbitDb.stop()
             return { ...dto }
+        } catch (error) {
+            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    async findAll(address: string) {
+        try {
+            await this.db.load()
+            const datas = this.db.all;
+            for(const[dat,ae] of Object.entries(datas)){
+                console.log({dat,ae})
+            }
+            // console.log(datas)
         } catch (error) {
             throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
         }

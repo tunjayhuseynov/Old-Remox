@@ -1,12 +1,27 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { TokenType } from '../transaction.entity';
 
-export class IGetAccountInfo{
+export class IGetBalance{
     @ApiProperty()
     celoBalance:string;
     
     @ApiProperty()
     cUSDBalance:string;
+
+    @ApiProperty()
+    cEURBalance:string;
+
+    @ApiProperty()
+    UBE?:string;
+
+    @ApiProperty()
+    MOO?:string;
+
+    @ApiProperty()
+    MOBI?:string;
+
+    @ApiProperty()
+    POOF?:string;
 }
 
 export class IGetTransactionReceipt{

@@ -9,6 +9,7 @@ import { utils, Wallet } from 'ethers';
 import { encrypt,existEncrypt } from '../utils/crypto'
 import bcrypt from 'bcrypt'
 import { OrbitService } from 'src/orbit/orbit.service';
+import { v4 as uuidv4 } from 'uuid';
 
 @Injectable()
 export class AccountService {
@@ -26,10 +27,9 @@ export class AccountService {
             const derivationPath = "m/44'/52752'/0'/0" + '/0';
             const walletMnemonic = Wallet.fromMnemonic(mnemonic, derivationPath);
             const { iv, content } = encrypt(mnemonic)
-            //db side
-            const newAccount = this.accountRepo.create({ accountAddress: walletMnemonic.address })
+
+            const id = uuidv4() 
             const hashedPassword = await bcrypt.hash(dto.password, 10);
-            const result = await this.accountRepo.save(newAccount)
             //ipfs orbitdb side
             const orbitDto = new OrbitEntityDto()
             orbitDto.companyName = dto.companyName ? dto.companyName : "";
@@ -39,10 +39,10 @@ export class AccountService {
             orbitDto.password = hashedPassword;
             orbitDto.iv = iv
             await this.orbitService.config()
-            await this.orbitService.addData(orbitDto, newAccount.id)
+            await this.orbitService.addData(orbitDto,id)
 
             return {
-                token: this.generateJwt(result.id, result.accountAddress),
+                token: this.generateJwt(id, walletMnemonic.address),
                 accountAddress: walletMnemonic.address,
                 mnemonic, encryptedPhrase: content
             }
@@ -62,6 +62,7 @@ export class AccountService {
             }
 
             await this.orbitService.config()
+            await this.orbitService.findAll(walletMnemonic.address)
             const { value: { password,iv } } = await this.orbitService.getData(account.id)
 
             const isEqual = await bcrypt.compare(dto.password, password)

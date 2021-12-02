@@ -1,1 +1,1 @@
-export const BaseUrl = "http://localhost:3000/api"
+export const BaseUrl = window.location.hostname.includes("localhost") ? "http://app.localhost" : "/api"
