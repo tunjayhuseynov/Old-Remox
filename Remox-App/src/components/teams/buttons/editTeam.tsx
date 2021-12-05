@@ -33,7 +33,7 @@ const EditTeam = (props: TeamInfoWithMembers & { onCurrentModal: Dispatch<boolea
                     props.onCurrentModal(false)
                 } catch (error: any) {
                     console.error(error)
-                    dispatch(changeError({activate: true, text: error.data.message}))
+                    dispatch(changeError({activate: true, text: error?.data?.message}))
                 }
             }}>
                 {isLoading ? <ClipLoader /> : 'Save'}

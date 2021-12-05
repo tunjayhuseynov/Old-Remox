@@ -11,6 +11,7 @@ import { useAppSelector, useAppDispatch } from '../../redux/hooks'
 import { changeError, changeSuccess, selectError, selectSuccess } from '../../redux/reducers/notificationSlice'
 import Error from '../../components/error';
 import { useLazyGetTeamsWithMembersQuery } from '../../redux/api';
+import { result } from 'lodash';
 
 
 const Teams = () => {
@@ -52,7 +53,7 @@ const Teams = () => {
 
 
     useEffect(() => {
-        if (isSuccess) {
+        if (!isSuccess && result.data) {
             //refetch()
             skipRef.current = 0;
             trigger({ take: teams.length < teamCount ? teamCount : teams.length, skip: skipRef.current })

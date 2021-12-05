@@ -122,7 +122,7 @@ const AddMember = ({ onDisable }: { onDisable: React.Dispatch<boolean> }) => {
                         </div>
                     </div>
                 </div>
-                {isError && <Error onClose={(val)=>dispatch(changeError({activate: val, text: ''}))} />}
+                {/* {isError && <Error onClose={(val)=>dispatch(changeError({activate: val, text: ''}))} />} */}
                 <div className="flex justify-center">
                     <button className="px-8 py-3 bg-primary rounded-xl text-white">
                         {addMemberLoading ? <ClipLoader /> : "Add Person"}

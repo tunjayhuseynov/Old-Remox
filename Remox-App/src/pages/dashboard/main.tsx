@@ -4,7 +4,7 @@ import CoinItem from '../../components/dashboard/main/coinitem';
 import TransactionHistory from '../../components/dashboard/main/transactionHistory'
 import { useAppSelector } from '../../redux/hooks';
 import { selectStorage } from '../../redux/reducers/storage';
-import { SelectBalances, SelectCurrencies } from '../../redux/reducers/currencies';
+import { IBalanceItem, ICoinMembers, ICurrencyInternal, SelectBalances, SelectCurrencies } from '../../redux/reducers/currencies';
 import { AltCoins, Coins, TransactionFeeTokenName } from '../../types/coins';
 import { generate } from 'shortid';
 import Web3 from 'web3'
@@ -91,9 +91,14 @@ const Main = () => {
 
             const total = celoBalance.amount + cusdBalance.amount + ceurBalance.amount + ubeBalance.amount + mooBalance.amount + poofBalance.amount + mobiBalance.amount;
             const currencObj = Object.values(currencies)
+            const currencObj2: IBalanceItem[] = Object.values(balanceRedux)
 
-            const per = currencObj.reduce((a, c) => {
-                a += c.percent_24
+            let indexable = 0;
+            const per = currencObj.reduce((a, c: ICurrencyInternal, index) => {
+                if (currencObj2[index].amount > 0) {
+                    a += c.percent_24
+                    indexable++
+                }
                 return a;
             }, 0)
 
@@ -105,7 +110,7 @@ const Main = () => {
 
             setCoin(total)
             setBalance(result.toFixed(2))
-            setPercent(per / currencObj.length)
+            setPercent(per / indexable)
 
         }
     }, [celoBalance, cusdBalance, ceurBalance, ubeBalance, mooBalance, mobiBalance, poofBalance])
@@ -113,7 +118,7 @@ const Main = () => {
 
     useEffect(() => {
         if (all) {
-            setAllInOne(Object.values(all).sort((a, b) => b.percent.toLocaleString().localeCompare(a.percent.toLocaleString())).slice(0, 4))
+            setAllInOne(Object.values(all).sort((a, b) => (b.amount * b.reduxValue).toLocaleString().localeCompare((a.amount * a.reduxValue).toLocaleString())).slice(0, 4))
         }
     }, [all])
 
@@ -192,7 +197,7 @@ const Main = () => {
                 allInOne !== undefined ?
                     <div className="flex flex-col gap-5 overflow-hidden col-span-2 sm:col-span-1">
                         {allInOne.map((item, index) => {
-                            return <CoinItem key={generate()} title={item.coins.name} coin={item.amount.toFixed(2)} usd={((item.reduxValue ?? 0) * item.amount).toFixed(2)} percent={(item.percent||0).toFixed(1)} rate={item.per_24} img={item.coins.coinUrl} />
+                            return <CoinItem key={generate()} title={item.coins.name} coin={item.amount.toFixed(2)} usd={((item.reduxValue ?? 0) * item.amount).toFixed(2)} percent={(item.percent || 0).toFixed(1)} rate={item.per_24} img={item.coins.coinUrl} />
                         })}
                     </div> : <ClipLoader />
             }

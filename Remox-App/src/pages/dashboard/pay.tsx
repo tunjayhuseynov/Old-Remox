@@ -154,7 +154,7 @@ const Pay = () => {
 
         } catch (error: any) {
             console.error(error)
-            dispatch(changeError({ activate: true, text: error.data.message.slice(0, 80) }));
+            dispatch(changeError({ activate: true, text: error?.data?.message.slice(0, 80) }));
         }
 
         setIsPaying(false);

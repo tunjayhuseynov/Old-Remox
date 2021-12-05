@@ -50,7 +50,7 @@ const CreatePassword = ({ phrase }: { phrase: string }) => {
                     <div className="text-center text-greylish tracking-wide font-light text-lg">This password encrypts your accounts on this device.</div>
                 </div>
                 <div className="grid sm:grid-cols-2 gap-x-24 gap-y-8">
-                    <Input title="Password" name="password" type="password" validation={setValid} className="w-[100%] sm:w-[200px]"/>
+                    <Input title="Password" name="password" type="password" validation={setValid} className="w-[100%] sm:w-[200px]" limit={6} required={true}/>
                 </div>
                 <div className="flex sm:flex-row flex-col-reverse justify-center items-center gap-10 pt-8">
                     <button className="rounded-xl w-[150px] h-[50px] border-2 border-primary text-primary shadow-lg bg-white" onClick={() => router.push('/')}>Back</button>

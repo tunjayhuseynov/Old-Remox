@@ -32,7 +32,7 @@ interface ICurrency {
 	balances: IBalanceMembers;
 }
 
-interface ICoinMembers {
+export interface ICoinMembers {
 	CELO: ICurrencyInternal | undefined;
 	cUSD: ICurrencyInternal | undefined;
 	cEUR: ICurrencyInternal | undefined;
