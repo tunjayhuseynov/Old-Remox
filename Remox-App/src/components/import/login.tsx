@@ -1,12 +1,10 @@
-import { useRef, useContext, useState, useEffect } from 'react'
-import { useHistory } from 'react-router-dom'
+import { useState } from 'react'
 import { ClipLoader } from 'react-spinners';
 import Header from '../../layouts/home/header';
 import { useSignInMutation } from '../../redux/api/account';
-import { IStorage, selectStorage, setStorage } from '../../redux/reducers/storage';
-import { useDispatch, useSelector } from 'react-redux';
+import { IStorage, setStorage } from '../../redux/reducers/storage';
+import { useDispatch } from 'react-redux';
 import { setUnlock } from '../../redux/reducers/unlock';
-import { useAppSelector } from '../../redux/hooks';
 
 
 const Login = ({ phrase }: { phrase: string }) => {
@@ -15,10 +13,8 @@ const Login = ({ phrase }: { phrase: string }) => {
     const dispatch = useDispatch()
 
     const [input, setInput] = useState<string>()
-    const router = useHistory()
     const [incorrrect, setIncorrect] = useState(false)
 
-    const storage : IStorage | null = useSelector(selectStorage)
 
     const Submitted = async () => {
         if (input && phrase) {
@@ -44,19 +40,12 @@ const Login = ({ phrase }: { phrase: string }) => {
         }
     }
 
-    useEffect(() => {
-        if (storage) {
-            router.push('/dashboard')
-        }
-    }, [storage])
-
-
     return <>
         <Header />
         <section className="flex flex-col justify-center items-center h-screen gap-8">
-            <h2 className="text-3xl text-primary">Open Your Wallet</h2>
+            <h2 className="text-3xl text-primary text-center">Open Your Wallet</h2>
             <div className="flex flex-col gap-4 items-center">
-                <div>Enter your password to open your wallet</div>
+                <div className="text-center">Enter your password to open your wallet</div>
                 <div className="flex justify-center"><input onKeyDown={(event) => {
                     if (event.key === 'Enter') {
                         Submitted()

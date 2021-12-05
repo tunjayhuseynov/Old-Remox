@@ -1,5 +1,4 @@
 import { Link } from "react-router-dom";
-import { useEffect, useState } from "react"
 import { useSelector } from "react-redux";
 import { selectStorage } from "../redux/reducers/storage";
 
@@ -11,9 +10,9 @@ const Home = () => {
     return <>
         <section className="flex justify-center items-center w-full h-screen">
             <div className="w-[800px] h-[600px] bg-[#eeeeee] bg-opacity-40 flex flex-col justify-center items-center gap-14">
-                <div className="w-[400px] flex flex-col items-center justify-center gap-10">
+                <div className="w-[200px] sm:w-[400px] flex flex-col items-center justify-center gap-10">
                     <img src="/logo.png" alt="" className="w-full"/>
-                    <span className="font-light text-greylish">All-in-One Tool For Crypto Treasury Management</span>
+                    <span className="font-light text-greylish text-center">All-in-One Tool For Crypto Treasury Management</span>
                 </div>
                 <div className="flex flex-col gap-5">
                     <Link to={storage ? { pathname: '/dashboard' } : { pathname: '/import' }} className="text-center">

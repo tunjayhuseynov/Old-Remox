@@ -33,11 +33,15 @@ export const storageSlice = createSlice({
             localStorage.setItem("user", action.payload)
             const data: IStorage = JSON.parse(action.payload)
             state.user = data
+        },
+        removeStorage: (state) => {
+            localStorage.removeItem("user")
+            state.user = null;
         }
     }
 })
 
-export const { setStorage } = storageSlice.actions
+export const { setStorage, removeStorage } = storageSlice.actions
 
 export const selectStorage = (state: RootState) => state.storage.user
 

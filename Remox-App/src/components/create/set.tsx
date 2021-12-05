@@ -1,27 +1,24 @@
-import React, { useMemo, useRef, useContext, FormEvent, Dispatch } from 'react';
+import { useMemo, Dispatch } from 'react';
 import Input from '../input'
 import { useHistory } from 'react-router-dom'
 import { generate } from 'shortid'
 import { AccountCreate } from '../../types/sdk';
 import { SyntheticEvent } from 'react';
 import { PassDataFromSetToPhrase } from '../../types/create'
-import { useDispatch } from 'react-redux';
-import { setStorage } from '../../redux/reducers/storage';
 import { useAccountCreateMutation } from '../../redux/api/account';
-import { setUnlock } from '../../redux/reducers/unlock';
+import { ClipLoader } from 'react-spinners';
 
 // SET Component
 const Set = ({ setData }: { setData: Dispatch<PassDataFromSetToPhrase> }) => {
 
-    const [createAccount, { isLoading}] = useAccountCreateMutation()
+    const [createAccount, { isLoading }] = useAccountCreateMutation()
 
-    const dispatch = useDispatch()
 
     const router = useHistory()
 
     const list = useMemo<Array<{ title: string, type?: string, name: string }>>(() => [
         { title: "First Name", name: "userName" }, { title: "Last Name", name: "surname" },
-        { title: "Organization Name", name: "companyName" }, { title: "Password", name: "password", type: "password" },
+        { title: "Organization Name", name: "companyName" }, { title: "Password", name: "password", type: "password", limit: 6 },
     ], [])
 
     const create = async (e: SyntheticEvent<HTMLFormElement>) => {
@@ -56,28 +53,28 @@ const Set = ({ setData }: { setData: Dispatch<PassDataFromSetToPhrase> }) => {
                 mnemonic: data.mnemonic,
                 localSave: obj,
             }
-            
+
             setData(pass)
         } catch (error) {
             console.error(error)
         }
     }
 
-    return <form onSubmit={create} className="h-full">
+    return <>{!isLoading ? <form onSubmit={create} className="py-[100px] sm:py-0 sm:h-full">
         <section className="flex flex-col items-center  h-full justify-center gap-10">
             <div className="flex flex-col gap-4">
-                <div className="text-3xl text-primary">Set Account Details</div>
-                <div className="text-greylish tracking-wide font-light text-lg">This password encrypts your accounts on this device.</div>
+                <div className="text-xl sm:text-3xl text-primary text-center">Set Account Details</div>
+                <div className="text-greylish tracking-wide font-light text-lg text-center">This password encrypts your accounts on this device.</div>
             </div>
-            <div className="grid grid-cols-3 gap-x-24 gap-y-8">
+            <div className="grid sm:grid-cols-3 gap-x-24 gap-y-8 px-3">
                 {list.map(w => <Input key={generate()} {...w} />)}
             </div>
-            <div className="flex justify-center items-center gap-10 pt-8">
+            <div className="flex sm:flex-row flex-col-reverse justify-center items-center gap-10 pt-8">
                 <button className="rounded-xl w-[150px] h-[50px] border-2 border-primary text-primary shadow-lg bg-white" onClick={() => router.push('/')}>Back</button>
                 <button type="submit" className="rounded-xl w-[150px] h-[50px] text-white shadow-lg bg-primary">Set Account</button>
             </div>
         </section>
-    </form>
+    </form> : <div className=" h-screen flex items-center justify-center"><ClipLoader /></div>}</>
 }
 
 

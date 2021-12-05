@@ -17,7 +17,7 @@ const Dashboard = ({ children }: { children?: JSX.Element | JSX.Element[] }) => 
         <AnimatePresence>
             {toggle.mobileMenu &&
                 <MobileMenu>
-                    <div className="flex flex-col space-y-10">
+                    <div className="flex flex-col space-y-10 px-10">
                         <div className="actions flex flex-col items-center justify-evenly space-y-5">
                             {storage ? <Visitcard name="Remox" address={storage.accountAddress} /> : <ClipLoader />}
                             <NavbarDropdown />
@@ -30,7 +30,7 @@ const Dashboard = ({ children }: { children?: JSX.Element | JSX.Element[] }) => 
         </AnimatePresence>
         <div className="flex flex-col pt-6 gap-16">
             <Navbar></Navbar>
-            <div className="grid grid-cols-11 gap-12">
+            <div className="grid grid-cols-2 md:grid-cols-11 md:gap-12">
                 <div className="hidden md:block md:col-span-2"><Sidebar /></div>
                 <div className="col-span-11 md:col-span-8 pl-2 md:pl-7 pr-2">
                     {children}

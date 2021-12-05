@@ -1,11 +1,10 @@
 import PhraseBar from '../components/phraseBar';
 import Header from '../layouts/home/header'
-import { useRef, useState, useEffect, Dispatch } from 'react'
+import { useRef, useState, useEffect } from 'react'
 import { useLocation, useHistory } from 'react-router-dom'
 import { ClipLoader } from 'react-spinners';
-import { useDispatch, useSelector } from 'react-redux';
 import { selectStorage, setStorage } from '../redux/reducers/storage';
-import { useSignInMutation, useUnlockMutation } from '../redux/api';
+import { useUnlockMutation } from '../redux/api';
 import { selectUnlock, setUnlock } from '../redux/reducers/unlock';
 import { useAppDispatch, useAppSelector } from '../redux/hooks';
 
@@ -13,7 +12,7 @@ const Unlock = () => {
     const unlockState = useAppSelector(selectUnlock)
     const storage = useAppSelector(selectStorage)
 
-    const [unlockApp, { data, error, isLoading }] = useUnlockMutation()
+    const [unlockApp, { isLoading }] = useUnlockMutation()
 
     const dispatch = useAppDispatch();
     const inputRef = useRef<HTMLInputElement>(null)
@@ -26,13 +25,13 @@ const Unlock = () => {
     }, [unlockState, location, router, storage])
 
     const Submit = async () => {
-        if (inputRef.current) {
+        if (inputRef.current && storage?.accountAddress) {
             setIncorrect(false);
 
             try {
                 const data = await unlockApp({
                     password: inputRef.current.value.trim(),
-                    address: storage!.accountAddress
+                    address: storage.accountAddress
                 }).unwrap()
 
                 dispatch(setStorage(JSON.stringify({ ...storage, token: data!.token })))

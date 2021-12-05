@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, useContext, useCallback, SyntheticEvent } from "react";
+import { useState, useRef, useEffect, SyntheticEvent } from "react";
 import Dropdown from "../../components/dropdown";
 import { generate } from 'shortid'
 import { useHistory } from 'react-router-dom'
@@ -62,7 +62,6 @@ const Pay = () => {
     useEffect(() => {
         if (csvImport.length > 0) {
             for (let index = 0; index < csvImport.length; index++) {
-                console.log(csvImport[index])
                 const [name, address, amount, coin] = csvImport[index]
                 nameRef.current.push(name);
                 addressRef.current.push(address);
@@ -113,8 +112,6 @@ const Pay = () => {
                 }
             }
 
-
-            console.log(result)
             if (result.length === 1 && selectedWallet && selectedWallet.name) {
                 if (result[0]!.tokenType === Coins.celo.value) {
                     await sendCelo({
@@ -163,23 +160,23 @@ const Pay = () => {
         setIsPaying(false);
     }
 
-    return <div className="px-32">
+    return <div className="sm:px-32">
         <form onSubmit={Submit}>
-            <div className="flex flex-col items-center justify-center min-h-screen">
-                <div className="min-w-[85vw] min-h-[75vh] h-auto ">
+            <div className="sm:flex flex-col items-center justify-center min-h-screen">
+                <div className="sm:min-w-[85vw] min-h-[75vh] h-auto ">
                     <div className="text-left w-full">
                         <div>Pay Someone</div>
                     </div>
-                    <div className="shadow-xl border flex flex-col gap-10 py-10">
-                        <div className="flex flex-col pl-12 pr-[25%] gap-10">
+                    <div className="shadow-xl border sm:flex flex-col gap-3 gap-y-10 sm:gap-10 py-10">
+                        <div className="sm:flex flex-col pl-3 sm:pl-12 sm:pr-[25%] gap-3 gap-y-10  sm:gap-10">
                             <div className="flex flex-col">
                                 <span className="text-left">Paying From</span>
-                                <div className="grid grid-cols-4">
+                                <div className="grid grid-cols-2 sm:grid-cols-4">
                                     {!(data && selectedWallet) ? <ClipLoader /> : <Dropdown onSelect={setSelectedWallet} nameActivation={true} selected={selectedWallet} list={list} disableAddressDisplay={true} />}
                                 </div>
                             </div>
                             <div className="flex flex-col">
-                                <div className="flex justify-between py-4 items-center">
+                                <div className="flex space-x-5 sm:space-x-0 sm:justify-between py-4 items-center">
                                     <span className="text-left">Paying To</span>
                                     <button type="button" onClick={() => {
                                         fileInput.current?.click()
@@ -188,13 +185,13 @@ const Pay = () => {
                                     </button>
                                     <input ref={fileInput} type="file" className="hidden" onChange={(e) => e.target.files!.length > 0 ? CSV.Import(e.target.files![0]).then(e => setCsvImport(e)).catch(e => console.error(e)) : null} />
                                 </div>
-                                <div className="grid grid-cols-[25%,40%,30%,5%] gap-5">
+                                <div className="grid grid-cols-4 sm:grid-cols-[25%,40%,30%,5%] gap-5">
                                     {wallets.length > 0 && Array(index).fill(" ").map((e, i) => <Input key={generate()} setIndex={setIndex} overallIndex={index} index={i} name={nameRef.current} address={addressRef.current} amount={amountRef.current} selectedWallet={wallets} setWallet={setWallets} />)}
                                 </div>
                             </div>
-                            <div className="flex flex-col">
-                                <div className="grid grid-cols-4">
-                                    <button type="button" className="px-6 py-3 min-w-[200px] border-2 border-primary text-primary rounded-xl" onClick={() => {
+                            <div className="flex flex-col py-5 sm:py-0">
+                                <div className="grid grid-cols-2 sm:grid-cols-4">
+                                    <button type="button" className="px-3 py-1 sm:px-6 sm:py-3 min-w-[200px] border-2 border-primary text-primary rounded-xl" onClick={() => {
                                         setIndex(index + 1)
                                     }}>
                                         + Add More
@@ -208,8 +205,8 @@ const Pay = () => {
                                 </div>
                             </div>
                         </div>
-                        <div className="flex justify-center">
-                            <div className="grid grid-cols-2 w-[400px] justify-center gap-5">
+                        <div className="flex justify-center pt-5 sm:pt-0">
+                            <div className="flex flex-col-reverse sm:grid grid-cols-2 w-[200px] sm:w-[400px] justify-center gap-5">
                                 <button type="button" className="border-2 border-primary px-3 py-2 text-primary rounded-lg" onClick={() => router.goBack()}>Close</button>
                                 <button type="submit" className="bg-primary px-3 py-2 text-white flex items-center justify-center rounded-lg">{isPaying ? <ClipLoader /> : 'Pay'}</button>
                             </div>

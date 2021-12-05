@@ -21,12 +21,11 @@ const TeamContainer = (props : TeamInfoWithMembers) => {
             await deleteTeam(props.id).unwrap()
             setDeleteModal(false)
         } catch (error) {
-            console.log(error)
+            console.error(error)
         }
     }
-
     return <>
-        <div className="col-span-4 flex space-x-3 py-4 pt-14 pb-1 px-5 items-center">
+        <div className="col-span-4 flex space-x-3 py-4 pt-4 sm:pt-14 pb-1 px-5 items-center">
             <div className="font-semibold text-[1.5rem] overflow-hidden whitespace-nowrap ">
                 <div>{props.title}</div>
             </div>
@@ -38,7 +37,7 @@ const TeamContainer = (props : TeamInfoWithMembers) => {
             </div>
         </div>
         {props.teamMembers.slice(0, num).map(w =>
-            <div key={generate()} className="grid grid-cols-[30%,30%,1fr] lg:grid-cols-[20%,20%,20%,1fr] py-6 border-b border-black pb-5 px-5 text-sm">
+            <div key={generate()} className="grid grid-cols-2 sm:grid-cols-[30%,30%,1fr] lg:grid-cols-[20%,20%,20%,1fr] py-6 border-b border-black pb-5 px-5 text-sm">
                 <TeamItem teamName={props.title} {...w}/>
             </div>
         )}

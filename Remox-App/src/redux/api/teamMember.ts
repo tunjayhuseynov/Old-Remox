@@ -1,6 +1,6 @@
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react'
 import { BaseUrl } from '../../utility/const'
-import { AddMember, AddMemberResponse, GetMemberResponse, GetTeams, GetTeamsResponse, Member, UpdateMember, UpdateMemberResponse, UpdateTeam, UpdateTeamResponse } from '../../types/sdk'
+import { AddMember, AddMemberResponse, GetTeams, GetTeamsResponse, Member, UpdateMember, UpdateMemberResponse } from '../../types/sdk'
 import { RootState } from '../store';
 
 export const teamMemberAPI = createApi({

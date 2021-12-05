@@ -1,4 +1,4 @@
-import { Dispatch, useEffect, useState } from "react";
+import { Dispatch, useEffect } from "react";
 import { BsFillTrashFill } from "react-icons/bs";
 import { ClipLoader } from "react-spinners";
 import { Coins } from "../../types/coins";
@@ -15,9 +15,9 @@ const Input = ({ index, name, address, selectedWallet, setWallet, setIndex, over
     }, [])
 
     return <>
-        <input className="border text-black px-3 py-1 rounded-md" placeholder="Name" defaultValue={name[index]} type="text" name={`name__${index}`} onChange={(e) => name[index] = e.target.value} required />
-        <input className="border text-black px-3 py-1 rounded-md" placeholder="Address" defaultValue={address[index]} type="text" name={`address__${index}`} onChange={(e) => address[index] = e.target.value} required />
-        <div className="border text-black py-1 rounded-md grid grid-cols-[50%,50%]">
+        <input className="col-span-2 sm:col-span-1 border text-black px-3 py-1 rounded-md" placeholder="Name" defaultValue={name[index]} type="text" name={`name__${index}`} onChange={(e) => name[index] = e.target.value} required />
+        <input className="col-span-2 sm:col-span-1 border text-black px-3 py-1 rounded-md" placeholder="Address" defaultValue={address[index]} type="text" name={`address__${index}`} onChange={(e) => address[index] = e.target.value} required />
+        <div className="col-span-3 sm:col-span-1 border text-black py-1 rounded-md grid grid-cols-[50%,50%]">
             {!selectedWallet ? <ClipLoader /> : <Dropdown className="border-transparent text-sm" onSelect={val => {
                 const wallet = [...selectedWallet];
                 wallet[index] = val;

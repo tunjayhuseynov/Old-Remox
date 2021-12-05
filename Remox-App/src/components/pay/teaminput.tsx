@@ -1,4 +1,4 @@
-import { Dispatch, forwardRef, MutableRefObject, useEffect, useState } from "react";
+import { Dispatch, MutableRefObject, useEffect, useState } from "react";
 import { ClipLoader } from "react-spinners";
 import { Coins } from "../../types/coins";
 import { DropDownItem } from "../../types/dropdown";
@@ -56,13 +56,13 @@ const TeamInput = (props: Member & { index: number, selectedId: string[], genera
             <h2 className={`text-black px-3 py-1 name__${props.index} text-sm`}>{props.name}</h2>
         </div>
         <div className="flex items-center">
-            <h2 className={`text-black py-1 rounded-md address__${props.index} text-sm`}>{props.address}</h2>
+            <h2 className={`text-black py-1 rounded-md address__${props.index} text-sm truncate`}>{props.address}</h2>
         </div>
-        <div className="flex border border-greylish rounded-md border-opacity-60">
+        <div className="col-span-2 sm:col-span-1 flex border border-greylish rounded-md border-opacity-60">
             {!selectedWallet ? <ClipLoader /> : <Dropdown className="border-transparent text-sm" onSelect={setSelectedWallet} nameActivation={true} selected={selectedWallet} list={Object.values(Coins).map(w => ({ name: w.name, type: w.value, coinUrl: w.coinUrl, value: w.value }))} />}
             <input className="text-black py-1 outline-none mr-2 rounded-md w-full font-bold" placeholder="Amount" defaultValue={props.amount} type="number" name={`amount__${props.index}`} min="0" required step={'any'} onBlur={d => props.setSelectedId([...props.selectedId])} onChange={e => updateValue({ val: e.target.value })} />
         </div>
-        <div></div>
+        <div className="hidden sm:block"></div>
     </>
 }
 export default TeamInput;

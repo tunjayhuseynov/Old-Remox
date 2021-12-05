@@ -1,1 +1,2 @@
-export const BaseUrl = window.location.hostname.includes("localhost") ? "http://app.localhost" : "/api"
+const hostname = window.location.hostname;
+export const BaseUrl = hostname.includes("localhost") ? "http://app.localhost/api" : "/api"

@@ -1,5 +1,5 @@
 import { IoIosArrowDown } from 'react-icons/io'
-import { Dispatch, forwardRef, MutableRefObject, useEffect, useRef, useState } from 'react'
+import { Dispatch, forwardRef, useEffect, useRef, useState } from 'react'
 import { generate } from 'shortid'
 import { DropDownItem } from '../types/dropdown'
 import { MouseEventHandler } from 'react'
@@ -46,7 +46,7 @@ const Dropdown = ({ selected, list, nameActivation = false, onSelect, className,
             </div>
             {isOpen && <div className="absolute left-0 bottom-0 translate-y-full z-10 w-full overflow-hidden">
                 <ul id="ala" className="flex flex-col overflow-y-auto " style={list.length > 5 ?
-                    { height: `${liHeight * 5}px` }
+                    { height: window.outerWidth > 768?`${liHeight * 5}px`:`${liHeight * 3}px` }
                     :
                     { height: 'auto' }
                 }>
@@ -61,7 +61,7 @@ const Dropdown = ({ selected, list, nameActivation = false, onSelect, className,
 
                     })?.map((w, i) => {
                         const obj: { ref?: any } = {}
-                        if (i == 0) {
+                        if (i === 0) {
                             obj.ref = liRef
                         }
                         return <Li {...obj} key={generate()} className={childClass} onClick={() => { onSelect!(w); setOpen(false) }}>

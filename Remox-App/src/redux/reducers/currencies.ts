@@ -68,6 +68,7 @@ export const CurrencyAPI = createSlice({
 	initialState: State,
 	reducers: {
 		updateAllCurrencies: (state: ICurrency, action) => {
+			if(!action.payload) return
 			const [ celo, cusd, ceur, ube, moo, mobi, poof ]: ICurrencyInternal[] = action.payload;
 			state.coins = {
 				CELO: { percent_24: celo.percent_24, price: celo.price },
@@ -80,6 +81,7 @@ export const CurrencyAPI = createSlice({
 			};
 		},
 		updateBalance: (state: ICurrency, action) => {
+			if(!action.payload) return
 			const [ celo, cusd, ceur, ube, moo, mobi, poof ]: ICurrencyInternal[] = action.payload;
 			state.coins = {
 				CELO: { ...state.coins.CELO, current_balance: celo.current_balance },
@@ -92,6 +94,7 @@ export const CurrencyAPI = createSlice({
 			};
 		},
 		updateUserBalance: (state: ICurrency, action) => {
+			if(!action.payload) return
 			const [ celo, cusd, ceur, ube, moo, mobi, poof ]: IBalanceItem[] = action.payload;
 			if (state.balances.CELO === undefined) {
 				setInterval(() => {

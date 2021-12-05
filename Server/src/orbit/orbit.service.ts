@@ -17,7 +17,7 @@ export class OrbitService {
         const ipfsOptions = {
             // start: true,
             preload: { enabled: false },
-            repo: path.join(__dirname, "..", "..", "var"),
+            repo: path.join(__dirname, "..", "..", "ipfs", "var"),
             EXPERIMENTAL: {
                 pubsub: true
             }
@@ -34,7 +34,7 @@ export class OrbitService {
 
         const ipfs = await IPFS.create(ipfsOptions)
 
-        this.orbitDb = await OrbitDB.createInstance(ipfs, { directory: path.join(__dirname, "..", "..", "orbitdb1") })
+        this.orbitDb = await OrbitDB.createInstance(ipfs, { directory: path.join(__dirname, "..", "..", "ipfs", "orbitdb1") })
         const optionsToWrite = {
             // create: true,
             // overwrite: true,

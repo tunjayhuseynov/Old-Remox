@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, useContext, useCallback, SyntheticEvent } from "react";
+import { useState, useRef, useEffect, SyntheticEvent } from "react";
 import Dropdown from "../../components/dropdown";
 import { generate } from 'shortid'
 import { useHistory } from 'react-router-dom'
@@ -10,7 +10,7 @@ import { Member, MultipleTransactionData } from "../../types/sdk";
 import { useGetBalanceQuery, useLazyGetTeamsWithMembersQuery, useSendCeloMutation, useSendStableTokenMutation, useSendMultipleTransactionsMutation, useSendAltTokenMutation } from "../../redux/api";
 import { selectStorage } from "../../redux/reducers/storage";
 import TeamInput from "../../components/pay/teaminput";
-import { AltCoins, AltcoinsList, Coins, CoinsName, CoinsURL, StableTokens, TransactionFeeTokenName } from "../../types/coins";
+import { AltCoins, AltcoinsList, Coins, CoinsName, StableTokens, TransactionFeeTokenName } from "../../types/coins";
 import { useAppDispatch, useAppSelector } from "../../redux/hooks";
 import lodash from "lodash";
 import { IBalanceItem, SelectBalances } from "../../redux/reducers/currencies";
@@ -38,7 +38,7 @@ const MassPay = () => {
 
 
 
-    const [getTeams, { data: teams, error: teamsError, isLoading: teamLoading }] = useLazyGetTeamsWithMembersQuery()
+    const [getTeams, { data: teams, isLoading: teamLoading }] = useLazyGetTeamsWithMembersQuery()
 
 
     const [isPaying, setIsPaying] = useState(false)
@@ -47,7 +47,6 @@ const MassPay = () => {
 
     const [selectedWallet, setSelectedWallet] = useState<DropDownItem>();
     const [selectedTeam, setSelectedTeam] = useState<DropDownItem>();
-    const [selectedPeople, setPeople] = useState();
 
     const resMember = useRef<Array<Member & { selected: boolean }>>([])
     const [members, setMembers] = useState<Member[]>();
@@ -150,7 +149,7 @@ const MassPay = () => {
 
         } catch (error : any) {
             console.error(error)
-            dispatch(changeError({activate: true, text: error.data.message.slice(0,80)}));
+            dispatch(changeError({activate: true, text: error?.data?.message.slice(0,80)}));
         }
 
         setIsPaying(false);
@@ -198,15 +197,15 @@ const MassPay = () => {
     return <div>
         <form onSubmit={Submit}>
             <div className="flex flex-col items-center justify-center min-h-screen">
-                <div className="w-[85vw] min-h-[75vh]">
+                <div className="w-[95%] sm:w-[85vw] min-h-[75vh]">
                     <div className="w-full">
                         <div>Mass Payout</div>
                     </div>
                     <div className=" h-auto shadow-xl border flex flex-col gap-10 py-10">
-                        {!teamLoading && teams && teams.teams.length === 0 ? <div className="flex justify-center">No Team Yet. Please, first, create a team</div> : <><div className="flex flex-col pl-12 pr-[25%] gap-10">
+                        {!teamLoading && teams && teams.teams.length === 0 ? <div className="flex justify-center">No Team Yet. Please, first, create a team</div> : <><div className="flex flex-col px-4 sm:pl-12 sm:pr-[25%] gap-10">
                             <div className="flex flex-col space-y-3">
                                 <span className="text-left font-semibold">Paying From</span>
-                                <div className="grid grid-cols-4 gap-x-10">
+                                <div className="grid grid-cols-2 sm:grid-cols-4 gap-x-3 sm:gap-x-10">
                                     {!(teams && selectedTeam) ? <ClipLoader /> : <Dropdown className="h-full" disableAddressDisplay={true} onSelect={setSelectedTeam} nameActivation={true} selected={selectedTeam} list={teams.teams.map(w => ({ name: w.title, address: w.id }))} />}
                                     {!(data && selectedWallet) ? <ClipLoader /> : <Dropdown onSelect={setSelectedWallet} nameActivation={true} selected={selectedWallet} list={list} disableAddressDisplay={true} />}
                                 </div>
@@ -224,20 +223,20 @@ const MassPay = () => {
                                         </button>
                                     </div>
                                 </div>
-                                <div className="grid grid-cols-[25%,45%,25%,5%] gap-5">
-                                    <div className="font-semibold">Name</div>
-                                    <div className="font-semibold">Address</div>
-                                    <div className="font-semibold">Disbursement</div>
-                                    <div></div>
+                                <div className="grid grid-cols-2 sm:grid-cols-[25%,45%,25%,5%] gap-5">
+                                    <div className="hidden sm:block font-semibold">Name</div>
+                                    <div className="hidden sm:block font-semibold">Address</div>
+                                    <div className="hidden sm:block font-semibold">Disbursement</div>
+                                    <div className="hidden sm:block"></div>
                                     {teams && resMember && selectedTeam && selectedTeam.address && members && members.length > 0 ? resMember.current.map((w, i) => <TeamInput generalWallet={selectedWallet!} setGeneralWallet={setSelectedWallet} selectedId={selectedId} setSelectedId={setSelectedId} key={generate()} index={i} {...w} members={resMember} />) : 'No Member Yet'}
                                 </div>
                             </div>
-                            <div className="grid grid-cols-4 gap-y-3 px-5">
-                                <div className="font-semibold text-sm opacity-60">Current Balance</div>
-                                <div className="font-semibold text-sm opacity-60">Current Amount To Send</div>
-                                <div className="font-semibold text-sm opacity-60">Selected People</div>
-                                <div className="font-semibold text-sm opacity-60">Balance After Transaction</div>
-                                {selectedId.length === 0 && <div className="col-span-4 text-center pt-5">No Selected Member Yet</div>}
+                            <div className="grid grid-cols-2 sm:grid-cols-4 gap-y-3 px-1 sm:px-5">
+                                <div className="sm:text-xs font-semibold text-sm opacity-60">Current Balance</div>
+                                <div className="sm:text-xs font-semibold text-sm opacity-60">Current Amount To Send</div>
+                                <div className="sm:text-xs hidden sm:block font-semibold text-sm opacity-60">Selected People</div>
+                                <div className="sm:text-xs hidden sm:block font-semibold text-sm opacity-60">Balance After Transaction</div>
+                                {selectedId.length === 0 && <div className="col-span-2 sm:col-span-4 text-center pt-5">No Selected Member Yet</div>}
                                 {selectedId.length > 0 && currentBalances && selectedBalances && selectedBalances.length > 0 && currentBalances.length > 0 &&
                                     <>
                                         <div className={'flex flex-col space-y-5'}>
@@ -259,6 +258,8 @@ const MassPay = () => {
                                                 selectedBalances
                                             }
                                         </div>
+                                        <div className="sm:hidden font-semibold text-sm opacity-60">Selected People</div>
+                                        <div className="sm:hidden font-semibold text-sm opacity-60">Balance After Transaction</div>
                                         <div className="text-black opacity-50 text-sm">
                                             {selectedId.length} people
                                         </div>
@@ -275,7 +276,7 @@ const MassPay = () => {
                             </div>
                         </div>
                             <div className="flex justify-center">
-                                <div className="grid grid-cols-2 w-[400px] justify-center gap-5">
+                                <div className="flex flex-col-reverse sm:grid sm:grid-cols-2 w-[400px] justify-center gap-5">
                                     <button type="button" className="border-2 border-primary px-3 py-2 text-primary rounded-lg" onClick={() => router.goBack()}>Close</button>
                                     <button type="submit" className="bg-primary px-3 py-2 text-white flex items-center justify-center rounded-lg">{isPaying ? <ClipLoader /> : 'Pay'}</button>
                                 </div>

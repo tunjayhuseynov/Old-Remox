@@ -31,10 +31,10 @@ const TeamItem = (props: Member & { teamName: string }) => {
                 </div>
             </div>
         </div>
-        <div className="pl-[2px] hidden lg:flex items-center">
+        <div className="pl-[2px] hidden sm:flex items-center">
             {props.teamName}
         </div>
-        <div className="pl-[2px] flex items-center justify-start gap-2">
+        <div className=" pl-[2px] flex items-center justify-start gap-2">
             <div>
                 <img src={Coins[props.currency].coinUrl} width="20" height="20" alt="" />
             </div>
@@ -43,7 +43,7 @@ const TeamItem = (props: Member & { teamName: string }) => {
                 {Coins[props.currency].name}
             </div>
         </div>
-        <div className="pl-[2px] self-center truncate">
+        <div className="col-span-2 sm:col-span-1 pt-3 sm:pt-0 pl-[2px] self-center truncate">
             {props.address}
         </div>
         {modalVisible && <Modal onDisable={setModalVisible}>

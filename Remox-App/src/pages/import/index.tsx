@@ -1,5 +1,4 @@
-import { error } from "console";
-import { useRef, useState } from "react";
+import { useState } from "react";
 import { ClipLoader } from "react-spinners";
 import CreatePassword from "../../components/import/createPassword";
 import Login from "../../components/import/login";
@@ -20,14 +19,14 @@ const Import = () => {
                 else setIndex(2)
             } catch (error: any) {
                 console.error(error)
-                setError(error.data.message)
+                setError(error?.data?.message)
             }
         }
     }
 
     return <>
         {index === 0 ? <section className="h-screen flex flex-col items-center justify-center gap-8">
-            <div className="text-3xl text-primary">Import Your Recovery Phrase</div>
+            <div className="text-2xl sm:text-3xl text-primary text-center">Import Your Recovery Phrase</div>
             <div className="text-greylish">
                 Enter your recovery (seed) phrase.
                 <br />
@@ -35,7 +34,7 @@ const Import = () => {
             </div>
             <div className="flex flex-col gap-5 justify-center items-center">
                 <div>
-                    <textarea onChange={(e) => setInput(e.target.value)} className="border-2 p-3 outline-none" placeholder="fish boot hand foot" cols={55} rows={7}></textarea>
+                    <textarea onChange={(e) => setInput(e.target.value)} className="border-2 p-3 outline-none w-[300px] sm:w-[470px]" placeholder="fish boot hand foot"  rows={7}></textarea>
                 </div>
                 {isError && <div className="text-red-500">{isError}</div>}
                 <button onClick={Submitted} className="bg-primary text-white px-5 py-2 rounded-xl w-[200px]">{isLoading ? <ClipLoader /> : "Import Account"}</button>

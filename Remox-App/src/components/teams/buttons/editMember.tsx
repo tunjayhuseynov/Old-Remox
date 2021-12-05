@@ -1,9 +1,9 @@
 import { Dispatch, SyntheticEvent, useEffect, useState } from "react";
 import { useDispatch } from "react-redux";
 import { ClipLoader } from "react-spinners";
-import { useAddMemberMutation, useLazyGetMemberQuery, useLazyGetTeamsQuery, useUpdateMemberMutation } from "../../../redux/api";
+import { useLazyGetMemberQuery, useLazyGetTeamsQuery, useUpdateMemberMutation } from "../../../redux/api";
 import { changeSuccess } from "../../../redux/reducers/notificationSlice";
-import { Coins, CoinsName, CoinsURL } from "../../../types/coins";
+import { Coins, CoinsURL } from "../../../types/coins";
 import { DropDownItem } from "../../../types/dropdown";
 import { Member } from "../../../types/sdk";
 import Dropdown from "../../dropdown";
@@ -12,7 +12,7 @@ import Dropdown from "../../dropdown";
 const EditMember = (props: Member & { onCurrentModal: Dispatch<boolean> }) => {
     const dispatch = useDispatch()
 
-    const [triggerTeam, { data, error, isLoading }] = useLazyGetTeamsQuery()
+    const [triggerTeam, { data, isLoading }] = useLazyGetTeamsQuery()
 
     const [getMembers, { data: member, isLoading: memberLoading, isFetching }] = useLazyGetMemberQuery()
 

@@ -1,6 +1,6 @@
 .env
 /var
-/orbitdb1
+/ipfs
 # compiled output
 /dist
 /node_modules

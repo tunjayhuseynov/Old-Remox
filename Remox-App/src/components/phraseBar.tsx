@@ -20,7 +20,7 @@ const PhraseBar = ({ address, mnemonic = false, scanIcon = true }: { address: st
     }, [see])
 
     return <div>
-        <div className="bg-greylish bg-opacity-10 py-5 pl-2 pr-12 rounded-lg break-words relative" style={!mnemonic ? { inlineSize: "300px" } : { inlineSize: "420px" }}>
+        <div className="bg-greylish bg-opacity-10 py-5 pl-2 pr-12 rounded-lg break-words relative" style={!mnemonic ? { inlineSize: `${window.outerWidth>640?"300px":"240px"}` } : { inlineSize: `${window.outerWidth>640?"420px":"240px"}` }}>
             <div className="font-light">{mnemonic ? data : data.toUpperCase()}</div>
             <div className="absolute -right-5 top-1/2 -translate-y-1/2 flex flex-col gap-3">
                 {mnemonic ?

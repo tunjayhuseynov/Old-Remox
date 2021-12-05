@@ -1,5 +1,5 @@
 import { Dispatch } from "react";
-import { Coins, CoinsNameVisual } from "../../../types/coins";
+import { Coins } from "../../../types/coins";
 import { Member } from "../../../types/sdk";
 import Avatar from '../../avatar'
 

@@ -1,7 +1,6 @@
-import React, { SyntheticEvent, useEffect, useRef, useState } from "react";
-import { AltCoins, Coins, CoinsName, CoinsURL, TransactionFeeTokenName } from "../../../types/coins";
+import React, { SyntheticEvent, useEffect, useState } from "react";
+import { AltCoins, Coins, CoinsName, CoinsURL } from "../../../types/coins";
 import { DropDownItem } from "../../../types/dropdown";
-import { TeamInfo } from "../../../types/sdk/Team/GetTeams";
 import Dropdown from "../../dropdown";
 import { ClipLoader } from "react-spinners";
 import { useAppDispatch, useAppSelector } from "../../../redux/hooks"
@@ -15,8 +14,8 @@ const AddMember = ({ onDisable }: { onDisable: React.Dispatch<boolean> }) => {
 
     const isError = useAppSelector(selectError)
 
-    const [triggerTeams, { data, error, isLoading }] = useLazyGetTeamsQuery()
-    const [addMember, { isLoading: addMemberLoading, error: memberError }] = useAddMemberMutation();
+    const [triggerTeams, { data, isLoading }] = useLazyGetTeamsQuery()
+    const [addMember, { isLoading: addMemberLoading }] = useAddMemberMutation();
 
     const [selected, setSelected] = useState<DropDownItem>({ name: "No Team", coinUrl: CoinsURL.None })
     const [selectedWallet, setSelectedWallet] = useState<DropDownItem>(Coins[CoinsName.CELO]);
@@ -78,7 +77,7 @@ const AddMember = ({ onDisable }: { onDisable: React.Dispatch<boolean> }) => {
                     onDisable(false)
                 } catch (error: any) {
                     console.error(error)
-                    dispatch(changeError({activate: true, text: error.data.message}))
+                    dispatch(changeError({activate: true, text: error?.data?.message}))
                 }
             }
         }
@@ -114,7 +113,7 @@ const AddMember = ({ onDisable }: { onDisable: React.Dispatch<boolean> }) => {
                 </div>
                 <div className="flex flex-col space-y-4">
                     <div className="font-bold">Currency and Amount</div>
-                    <div className="grid grid-cols-2 w-[85%] gap-x-10">
+                    <div className="grid grid-cols-2 w-full sm:w-[85%] gap-x-10">
                         <div>
                             <input type="number" name="amount" className="h-[42px] border-2 outline-none pl-4 rounded-md pr-4 w-full" placeholder="Amount" step="any" required />
                         </div>

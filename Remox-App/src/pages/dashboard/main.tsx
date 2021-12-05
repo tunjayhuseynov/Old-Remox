@@ -1,15 +1,12 @@
-import { useState, useEffect, useContext, useMemo } from 'react';
-import { CoinGeckoClient, CoinMarketChartResponse } from 'coingecko-api-v3';
+import { useState, useEffect, useMemo } from 'react';
 import { ClipLoader } from 'react-spinners';
 import CoinItem from '../../components/dashboard/main/coinitem';
 import TransactionHistory from '../../components/dashboard/main/transactionHistory'
-import { useAppDispatch, useAppSelector } from '../../redux/hooks';
-import storage, { selectStorage } from '../../redux/reducers/storage';
-import { useGetBalanceQuery, useGetTransactionsQuery } from '../../redux/api';
-import { SelectBalances, SelectCelo, SelectCeur, SelectCurrencies, SelectCusd, updateAllCurrencies, updateUserBalance } from '../../redux/reducers/currencies';
+import { useAppSelector } from '../../redux/hooks';
+import { selectStorage } from '../../redux/reducers/storage';
+import { SelectBalances, SelectCurrencies } from '../../redux/reducers/currencies';
 import { AltCoins, Coins, TransactionFeeTokenName } from '../../types/coins';
 import { generate } from 'shortid';
-import date from 'date-and-time';
 import Web3 from 'web3'
 import { SelectTransactions } from '../../redux/reducers/transactions';
 
@@ -23,7 +20,6 @@ interface Balance {
 }
 
 const Main = () => {
-    const dispatch = useAppDispatch()
     const storage = useAppSelector(selectStorage)
     const transactions = useAppSelector(SelectTransactions)
 
@@ -71,10 +67,6 @@ const Main = () => {
         }
     }, [celoBalance, cusdBalance, ceurBalance, ubeBalance, mooBalance, mobiBalance, poofBalance])
 
-    useEffect(() => {
-        console.log(balanceRedux)
-    }, [balanceRedux])
-
     const chart = useMemo(() => {
         if (celoBalance !== undefined && cusdBalance !== undefined && ceurBalance !== undefined && ubeBalance !== undefined && mooBalance !== undefined && mobiBalance !== undefined && poofBalance !== undefined && coin !== undefined) {
             const celoDeg = Math.floor((celoBalance.amount * 100) / coin * 3.6)
@@ -87,7 +79,7 @@ const Main = () => {
 
             if (!celoDeg && !cusdDeg && !ceurDeg && !ubeDeg && !mooDeg && !mobiDeg && !poofDeg) return `conic-gradient(#FF774E 0deg 360deg)`
 
-            return `conic-gradient(#fbce5c 0deg ${celoDeg}deg, #46cd85 ${celoDeg}deg ${cusdDeg}deg, #040404 ${cusdDeg}deg ${ceurDeg}deg, #6D619A ${ceurDeg}deg ${ubeDeg}deg, #3288ec ${ubeDeg}deg ${mooDeg}deg, #b0d2fc ${mooDeg}deg ${mobiDeg}deg, #7D72FC ${mobiDeg}deg ${poofDeg}deg)`
+            return `conic-gradient(#fbce5c 0deg ${celoDeg}deg, #46cd85 ${celoDeg}deg ${cusdDeg}deg, #040404 ${cusdDeg}deg ${ceurDeg}deg, #6D619A ${ceurDeg}deg ${ubeDeg}deg, #3288ec ${ubeDeg}deg ${mooDeg}deg, #e984a0 ${mooDeg}deg ${mobiDeg}deg, #7D72FC ${mobiDeg}deg ${poofDeg}deg)`
         }
         return `conic-gradient(#FF774E 0deg 360deg)`
     }, [celoBalance, cusdBalance, ceurBalance, ubeBalance, mooBalance, mobiBalance, poofBalance, coin, celo, cusd, ceur, ube, moo, mobi, poof])
@@ -165,28 +157,28 @@ const Main = () => {
             </div>
 
             <div>
-                <div className="flex justify-between pl-4">
-                    <div className="text-base text-greylish">Money in last month</div>
+                <div className="flex justify-between sm:pl-4">
+                    <div className="text-greylish text-sm sm:text-base">Money in last month</div>
                 </div>
                 <div className="flex justify-between shadow-custom rounded-xl px-8 py-4">
-                    <div className="text-2xl opacity-80">
+                    <div className="text-xl sm:text-2xl opacity-80">
                         {lastIn !== undefined && balance !== undefined ? `+ $${lastIn?.toFixed(2)}` : <ClipLoader />}
                     </div>
                 </div>
             </div>
 
             <div>
-                <div className="flex justify-between pl-4">
-                    <div className="text-base text-greylish">Money out last month</div>
+                <div className="flex justify-between sm:pl-4">
+                    <div className="text-greylish text-sm sm:text-base">Money out last month</div>
                 </div>
                 <div className="flex justify-between shadow-custom rounded-xl px-8 py-4">
-                    <div className="ttext-greylish opacity-80 text-2xl">
+                    <div className="text-greylish opacity-80 text-xl sm:text-2xl">
                         {lastOut !== undefined && balance !== undefined ? `- $${lastOut?.toFixed(2)}` : <ClipLoader />}
                     </div>
                 </div>
             </div>
 
-            <div className="flex flex-col">
+            <div className="sm:flex flex-col hidden">
                 <div>Asset</div>
                 <div>
                     {celoBalance !== undefined && cusdBalance !== undefined && coin !== undefined ? <div className="w-[200px] h-[200px] rounded-full relative" style={{
@@ -198,7 +190,7 @@ const Main = () => {
             </div>
             {
                 allInOne !== undefined ?
-                    <div className="flex flex-col gap-5 overflow-hidden">
+                    <div className="flex flex-col gap-5 overflow-hidden col-span-2 sm:col-span-1">
                         {allInOne.map((item, index) => {
                             return <CoinItem key={generate()} title={item.coins.name} coin={item.amount.toFixed(2)} usd={((item.reduxValue ?? 0) * item.amount).toFixed(2)} percent={(item.percent||0).toFixed(1)} rate={item.per_24} img={item.coins.coinUrl} />
                         })}

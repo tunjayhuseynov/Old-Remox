@@ -1,6 +1,5 @@
 import Dashboard from './pages/dashboard/index';
 import {
-  BrowserRouter as Router,
   Route,
   Switch,
   useHistory,
@@ -23,9 +22,6 @@ import { useAppSelector } from './redux/hooks';
 import Details from './pages/transactions/details';
 import MassPay from './pages/dashboard/masspay'
 import Initalization from './utility/init'
-import { SelectBalances, SelectCurrencies } from './redux/reducers/currencies';
-import { ClipLoader } from 'react-spinners';
-import { SelectTransactions } from './redux/reducers/transactions';
 
 function App(): JSX.Element {
   const storage = useAppSelector(selectStorage)
@@ -47,23 +43,23 @@ function App(): JSX.Element {
 const CustomRouter = ({ unlock, data }: { unlock: boolean, data: IStorage | null }) => {
   const router = useHistory();
   const location = useLocation();
-  const currencies = useAppSelector(SelectCurrencies)
-  const transactions = useAppSelector(SelectTransactions)
-  const balances = useAppSelector(SelectBalances)
+  // const currencies = useAppSelector(SelectCurrencies)
+  // const transactions = useAppSelector(SelectTransactions)
+  // const balances = useAppSelector(SelectBalances)
 
   useEffect(() => {
-    if (router && data && unlock && location && location.pathname === '/') router.push('/dashboard')
+    if (router && data && unlock && location && (location.pathname === '/' || location.pathname === '/import')) router.push('/dashboard')
   }, [unlock, router, data, location])
 
   const unlockChecking = (element: JSX.Element | Array<JSX.Element>) => {
 
     if (!location.pathname.includes("/dashboard") && !data?.accountAddress) return element
     if (unlock) {
-      if (currencies.CELO === undefined && balances.CELO === undefined && transactions === undefined) {
-        return <div className={'h-full flex items-center justify-center'}>
-          <ClipLoader />
-        </div>
-      }
+      // if (currencies.CELO === undefined && balances.CELO === undefined && transactions === undefined) {
+      //   return <div className={'h-full flex items-center justify-center'}>
+      //     <ClipLoader />
+      //   </div>
+      // }
       return element
     }
 
@@ -86,8 +82,7 @@ const CustomRouter = ({ unlock, data }: { unlock: boolean, data: IStorage | null
 
 const AuthRouter = ({ data, unlockChecking }: { data: IStorage | null, unlockChecking: Function }) => {
   const router = useHistory();
-  const currencies = useAppSelector(SelectCurrencies)
-  const balances = useAppSelector(SelectBalances)
+
 
   useEffect(() => {
     if (!data) {
@@ -95,9 +90,7 @@ const AuthRouter = ({ data, unlockChecking }: { data: IStorage | null, unlockChe
       return
     }
 
-    if ((data && data.accountAddress && data.token) && (currencies.CELO === undefined || balances.CELO === undefined)) {
-      Initalization()
-    }
+    Initalization()
 
   }, [data, router])
 

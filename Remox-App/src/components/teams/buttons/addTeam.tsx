@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useRef } from "react";
 import { ClipLoader } from "react-spinners";
 
 import { useAppDispatch } from "../../../redux/hooks"
@@ -7,7 +7,7 @@ import { useCreateTeamMutation } from "../../../redux/api";
 
 const AddTeams = ({ onDisable }: { onDisable: React.Dispatch<boolean>}) => {
 
-    const [createTeam, { data, error, isLoading }] = useCreateTeamMutation()
+    const [createTeam, { error, isLoading }] = useCreateTeamMutation()
 
     const teamName = useRef<HTMLInputElement>(null)
     const dispatch = useAppDispatch()
@@ -20,7 +20,7 @@ const AddTeams = ({ onDisable }: { onDisable: React.Dispatch<boolean>}) => {
                 dispatch(changeSuccess(true))
                 onDisable(false)
             } catch (error) {
-                console.log(error)
+                console.error(error)
             }
         }
     }

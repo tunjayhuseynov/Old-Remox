@@ -16,7 +16,6 @@ services:
         depends_on:
             - api
             - client
-            - main
         restart: always
         build:
             dockerfile: Dockerfile
@@ -31,7 +30,7 @@ services:
         depends_on: 
             - postgres
         volumes:
-            - myapp:/usr/src/app
+            - myapp:/usr/src/app/ipfs
         environment: 
             POSTGRES_PASSWORD: password
             POSTGRES_USER: user

@@ -13,14 +13,14 @@ const TransactionItem = ({ type, direction, date, amountUSD, status, amountCoin,
         }
     },[])
     
-    return <div ref={divRef} className={`grid ${detect ? 'grid-cols-[50%,45%,5%] md:grid-cols-[45%,25%,15%,15%] pl-5' : 'grid-cols-[1.5fr,1fr,1fr]'} min-h-[115px] py-6 border-b border-black `}>
+    return <div ref={divRef} className={`grid ${detect ? 'grid-cols-[25%,45%,30%] sm:grid-cols-[45%,25%,15%,15%] pl-5' : 'grid-cols-[1.5fr,1fr,1fr]'} min-h-[115px] py-6 border-b border-black `}>
         <div className="flex space-x-5">
             <div className="flex items-center justify-center">
                 <div className="bg-greylish bg-opacity-10 w-[40px] h-[40px] flex items-center justify-center rounded-full">
                     {TransactionDirection.Out === direction ? <img src="/icons/uparrow.svg" alt="" className="w-[25px] h-[25px]" /> : <img src="/icons/uparrow.svg" className="rotate-180" alt="" />}
                 </div>
             </div>
-            <div className="flex flex-col items-start justify-between">
+            <div className="hidden sm:flex flex-col items-start justify-between">
                 <div className="text-greylish">
                     {type === TransactionType.QuickTransfer && <span> Quick Transfer </span>}
                     {type === TransactionType.IncomingPayment && <span> Incoming Transfer </span>}

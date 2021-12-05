@@ -1,4 +1,4 @@
-import { GetMemberResponse, Member } from "../TeamMember/getMember";
+import { Member } from "../TeamMember/getMember";
 
 export interface GetTeamsWithMembers {
     take?: number;

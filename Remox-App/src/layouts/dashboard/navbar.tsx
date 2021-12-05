@@ -65,7 +65,7 @@ export const NavbarDropdown = () => {
         <button onClick={() => setOpen(!isOpen)} className="bg-primary text-white px-6 py-3 rounded-xl">
             Move Crypto
         </button>
-        {isOpen && <div ref={divRef} className="absolute w-[150%] rounded-2xl -left-1/4  -bottom-1 translate-y-full shadow-xl">
+        {isOpen && <div ref={divRef} className="absolute w-[150%] rounded-2xl sm:-left-1/4  -bottom-1 translate-y-full shadow-xl">
             <ul>
                 <Li link={'/pay'}><PaySVG /> Pay Someone</Li>
                 <Li link="/masspayout"><MassPayoutSVG />Mass Payout</Li>
