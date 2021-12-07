@@ -3,5 +3,5 @@ WORKDIR /usr/src/app
 COPY package*.json ./
 COPY yarn.lock ./
 COPY ./ ./
-RUN yarn install 
-CMD ["yarn", "start"]
+#RUN yarn install 
+#CMD ["yarn", "start"]

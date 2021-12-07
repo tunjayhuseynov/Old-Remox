@@ -53,7 +53,6 @@ const Details = () => {
         if (list) {
             if (list[params.id][0].from.toLowerCase() !== storage?.accountAddress.toLowerCase()) {
                 const maTx = list[params.id].find(w => w.to.toLowerCase() === storage?.accountAddress.toLowerCase())
-                console.log(maTx)
                 if (maTx) {
                     const coin = Coins[Object.entries(TransactionFeeTokenName).find(w => w[0] === maTx.tokenSymbol)![1]]
                     setTotalAmount(lodash.round((currencies[coin.name]?.price ?? 0) * Number(Web3.utils.fromWei(maTx.value, 'ether'))))
@@ -108,7 +107,6 @@ const Details = () => {
                         :
                         <Dropdown displayName="Wallet Address" className="h-[75px] bg-greylish bg-opacity-10" nameActivation={true} selected={{ name: "Choose to copy an address", coinUrl: CoinsURL.None }}
                             onSelect={(w: DropDownItem) => {
-                                console.log(w)
                                 if (w.name) window.navigator.clipboard.writeText(w.name)
                             }}
                             list={[

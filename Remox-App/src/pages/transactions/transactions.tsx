@@ -21,7 +21,7 @@ const Transactions = () => {
     const currencies = useAppSelector(SelectCurrencies)
 
     const [take, setTake] = useState(4)
-    const [trigger, { data: transactions, isLoading }] = useLazyGetTransactionsQuery()
+    const [trigger, { data: transactions, isLoading, isFetching }] = useLazyGetTransactionsQuery()
     const [list, setList] = useState<{ [name: string]: transactionType[] }>()
 
     useEffect(() => {
@@ -29,7 +29,7 @@ const Transactions = () => {
             trigger(storage.accountAddress)
             const interval = setInterval(() => {
                 trigger(storage.accountAddress)
-            }, 15000)
+            }, 20000)
             return () => clearInterval(interval)
         }
     }, [])
@@ -74,7 +74,7 @@ const Transactions = () => {
 
                 </div>
                 <div>
-                    {!isLoading && list ? Object.values(list).reverse().slice(0, take).map((tr) => {
+                    {list ? Object.values(list).reverse().slice(0, take).map((tr) => {
                         let amount, coin, coinName, direction, date, amountUSD, surplus, type, hash;
                         let transaction = tr.filter(w => w.to.toLowerCase() === storage?.accountAddress.toLowerCase() || w.from.toLowerCase() === storage?.accountAddress.toLowerCase())
                         if (transaction[0].from.toLowerCase() !== storage?.accountAddress.toLowerCase()) {

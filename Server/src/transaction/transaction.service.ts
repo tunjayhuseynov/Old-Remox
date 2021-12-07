@@ -226,6 +226,7 @@ export class TransactionService {
 	}
 
 	async sendMultipleCelo(dto: SendMultipleTransactionVsPhraseDto, accountId: string) {
+        const errors = [];
 		try {
 			await this.orbitService.config();
 			const { value: { iv } } = await this.orbitService.getData(accountId);
@@ -234,8 +235,14 @@ export class TransactionService {
 			const walletMnemonic = Wallet.fromMnemonic(accPhrase, derivationPath);
 
 			let multiTx, index;
-			const amountList: { token: string; amount: number }[] = [];
-			const errors = [];
+			// const amountList: { token: string; amount: number }[] = [];
+
+			const { celoBalance, cEURBalance, cUSDBalance, MOBI, MOO, POOF, UBE } = await this.accountInfo(
+				walletMnemonic.address
+			);
+
+			// amountList.map((item) => {});
+
 			this.kit.connection.addAccount(walletMnemonic.privateKey);
 			let goldtoken = await this.kit.contracts.getGoldToken();
 			const bacth = new this.web3.BatchRequest();
@@ -243,66 +250,68 @@ export class TransactionService {
 			for await (const item of dto.multipleAddresses) {
 				let { amount, toAddress, tokenType } = item;
 				let token = TokenType[tokenType];
+
+				if (token == TokenType.celo && parseFloat(amount) >= parseFloat(celoBalance)) {
+					errors.push('Celo amount exceeds balance');
+					continue;
+				}
+				if (token == TokenType.cUSD && parseFloat(amount) >= parseFloat(cUSDBalance)) {
+					errors.push('cUSD amount exceeds balance');
+					continue;
+				}
+				if (token == TokenType.cEUR && parseFloat(amount) >= parseFloat(cEURBalance)) {
+					errors.push('cEUR amount exceeds balance');
+					continue;
+				}
+				if (token == TokenType.UBE && parseFloat(amount) >= parseFloat(UBE)) {
+					errors.push('UBE amount exceeds balance');
+					continue;
+				}
+				if (token == TokenType.POOF && parseFloat(amount) >= parseFloat(POOF)) {
+					errors.push('POOF amount exceeds balance');
+					continue;
+				}
+				if (token == TokenType.MOBI && parseFloat(amount) >= parseFloat(MOBI)) {
+					errors.push('MOBI amount exceeds balance');
+					continue;
+				}
+				if (token == TokenType.MOO && parseFloat(amount) >= parseFloat(MOO)) {
+					errors.push('MOO amount exceeds balance');
+					continue;
+				}
+				if (errors.length > 0) continue;
+
 				let amountWei = this.kit.web3.utils.toWei(amount, 'ether');
 				if (token == undefined) {
 					throw new HttpException('This wallet type isnt exist', HttpStatus.FORBIDDEN);
 				}
 
 				if (token == TokenType.celo) {
-					console.log(token);
-
 					multiTx = await goldtoken.transfer(toAddress, amountWei).send({ from: walletMnemonic.address });
-					bacth.add(multiTx.waitReceipt());
+					//bacth.add(await multiTx.waitReceipt());
 				} else if (token == TokenType.cUSD || token == TokenType.cEUR) {
-					console.log(token);
-
 					let stabletoken = await this.kit.contracts.getStableToken(token);
 					multiTx = await stabletoken
 						.transfer(toAddress, amountWei)
 						.send({ from: walletMnemonic.address, feeCurrency: stabletoken.address });
-					bacth.add(multiTx.waitReceipt());
+					//bacth.add(await multiTx.waitReceipt());
 				} else {
 					let altToken = AltToken[token];
-                    
 					let stabletoken = await this.kit.contracts.getErc20(altToken);
 					multiTx = await stabletoken.transfer(toAddress, amountWei).send({ from: walletMnemonic.address });
-					console.log(altToken);
-					bacth.add(multiTx.waitReceipt());
+					//bacth.add(await multiTx.waitReceipt());
 				}
 
-				index = amountList.findIndex((item) => item.token == token);
-				index == -1
-                ? amountList.push({ token, amount: parseFloat(amount) })
-                : (amountList[index].amount += parseFloat(amount));
-                console.log(amountList);
-			};
-
-			const { celoBalance, cEURBalance, cUSDBalance, MOBI, MOO, POOF, UBE } = await this.accountInfo(
-				walletMnemonic.address
-			);
-			console.log(amountList);
-			amountList.map((item) => {
-				if (item.token == TokenType.celo && item.amount >= parseFloat(celoBalance))
-					errors.push('Celo amount exceeds balance');
-				if (item.token == TokenType.cUSD && item.amount >= parseFloat(cUSDBalance))
-					errors.push('cUSD amount exceeds balance');
-				if (item.token == TokenType.cEUR && item.amount >= parseFloat(cEURBalance))
-					errors.push('cEUR amount exceeds balance');
-				if (item.token == TokenType.UBE && item.amount >= parseFloat(UBE))
-					errors.push('UBE amount exceeds balance');
-				if (item.token == TokenType.POOF && item.amount >= parseFloat(POOF))
-					errors.push('POOF amount exceeds balance');
-				if (item.token == TokenType.MOBI && item.amount >= parseFloat(MOBI))
-					errors.push('MOBI amount exceeds balance');
-				if (item.token == TokenType.MOO && item.amount >= parseFloat(MOO))
-					errors.push('MOO amount exceeds balance');
-			});
-			if (errors.length != 0) throw new HttpException(errors.join(), HttpStatus.FORBIDDEN);
-
-			bacth.execute();
+			}
+			if (errors.length != 0) throw new HttpException([...new Set(errors)].join(), HttpStatus.FORBIDDEN);
+			//bacth.execute();
 			return 'success';
 		} catch (e) {
-			throw new HttpException(e.message, HttpStatus.FORBIDDEN);
+            console.error(e.message)
+            if(errors.length > 0){
+                throw new HttpException(e.message, HttpStatus.FORBIDDEN);
+            }
+            throw new HttpException("Something went wrong, please chech the amounts you have entered", HttpStatus.FORBIDDEN);
 		}
 	}
 }

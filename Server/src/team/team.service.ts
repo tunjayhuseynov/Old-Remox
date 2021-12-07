@@ -85,7 +85,7 @@ export class TeamService {
             const currentTeam = await this.teamRepo.findOne({ id: teamId, accountId });
             if (!currentTeam) throw new HttpException("There is no team with this property", HttpStatus.BAD_REQUEST);
             
-            const result =  await this.isTeamNamExist(accountId,dto.title)
+            const {result} =  await this.isTeamNamExist(accountId,dto.title)
             if(result) throw new HttpException("You already use this team name", HttpStatus.BAD_REQUEST);
 
             currentTeam["title"] = escaper(dto.title)
