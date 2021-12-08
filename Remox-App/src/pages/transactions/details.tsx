@@ -51,11 +51,12 @@ const Details = () => {
 
     useEffect(() => {
         if (list) {
+            console.log(list[params.id])
             if (list[params.id][0].from.toLowerCase() !== storage?.accountAddress.toLowerCase()) {
                 const maTx = list[params.id].find(w => w.to.toLowerCase() === storage?.accountAddress.toLowerCase())
                 if (maTx) {
                     const coin = Coins[Object.entries(TransactionFeeTokenName).find(w => w[0] === maTx.tokenSymbol)![1]]
-                    setTotalAmount(lodash.round((currencies[coin.name]?.price ?? 0) * Number(Web3.utils.fromWei(maTx.value, 'ether'))))
+                    setTotalAmount(lodash.round((currencies[coin.name]?.price ?? 0) * Number(Web3.utils.fromWei(maTx.value, 'ether')), 6))
 
                     setTransactionFee(Number(Web3.utils.fromWei((Number(maTx.gasUsed) * Number(maTx.gasPrice)).toString(), 'ether')))
                 }
@@ -64,7 +65,7 @@ const Details = () => {
                     const coin = Coins[Object.entries(TransactionFeeTokenName).find(w => w[0] === c.tokenSymbol)![1]]
                     a += (currencies[coin.name]?.price ?? 0) * Number(Web3.utils.fromWei(c.value, 'ether'))
                     return a;
-                }, 0), 6)
+                }, 0), 76)
                 setTotalAmount(total)
 
                 const fee = list[params.id].reduce((a, c) => {
@@ -98,11 +99,11 @@ const Details = () => {
                     {TransactionDetailInput("Transaction Fee", `${transactionFee}`)}
                     {TransactionDetailInput("Created Date & Time", `${dateFormat(new Date(Number(list[params.id][0].timeStamp) * 1e3), 'dd/mm/yyyy hh:MM:ss')}`)}
                     {TransactionDetailInput("Status", "Completed")}
-                    {list[params.id][0].from.toLowerCase() !== storage?.accountAddress.toLowerCase() ?
+                    {list[params.id].length === 1  ?
                         TransactionDetailInput("Wallet Address",
-                            list[params.id][0].from.split('').reduce((a, c, i, arr) => {
+                            (list[params.id][0].from.toLowerCase() !== storage?.accountAddress.toLowerCase() ? list[params.id][0].from : list[params.id][0].to).split('').reduce((a, c, i, arr) => {
                                 return i < 10 || (arr.length - i) < 4 ? a + c : a.split('.').length - 1 < 6 ? a + '.' : a
-                            }, '')
+                            }, ''), undefined, () => window.navigator.clipboard.writeText(list[params.id][0].from)
                         )
                         :
                         <Dropdown displayName="Wallet Address" className="h-[75px] bg-greylish bg-opacity-10" nameActivation={true} selected={{ name: "Choose to copy an address", coinUrl: CoinsURL.None }}
@@ -121,13 +122,13 @@ const Details = () => {
 export default Details;
 
 
-const TransactionDetailInput = (title: string, children: JSX.Element | JSX.Element[] | string, url?: string) => {
+const TransactionDetailInput = (title: string, children: JSX.Element | JSX.Element[] | string, url?: string, onClick?: () => void) => {
 
     return <div className="bg-greylish bg-opacity-10 flex flex-col px-4 py-3 rounded-xl min-h-[75px]">
         <div className="text-sm text-greylish opacity-80">
             {title}
         </div>
-        <div className={`font-bold text-lg truncate ${url && "cursor-pointer"}`} onClick={() => {
+        <div className={`font-bold text-lg truncate ${onClick && "cursor-pointer"} ${url && "cursor-pointer"}`} onClick={() => {
             url ? window.open(url, '_blank') : console.log("Wish you more money :)")
         }}>
             {children}
