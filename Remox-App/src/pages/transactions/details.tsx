@@ -65,7 +65,7 @@ const Details = () => {
                     const coin = Coins[Object.entries(TransactionFeeTokenName).find(w => w[0] === c.tokenSymbol)![1]]
                     a += (currencies[coin.name]?.price ?? 0) * Number(Web3.utils.fromWei(c.value, 'ether'))
                     return a;
-                }, 0), 76)
+                }, 0), 6)
                 setTotalAmount(total)
 
                 const fee = list[params.id].reduce((a, c) => {
