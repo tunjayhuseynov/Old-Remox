@@ -1,6 +1,6 @@
 import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
-import { IsNotEmpty, IsOptional, IsString, IsUUID } from "class-validator";
-import { TokenType } from "src/transaction/transaction.entity";
+import { IsEnum, IsNotEmpty, IsOptional, IsString, IsUUID } from "class-validator";
+import { TokenType } from "../../transaction/transaction.entity";
 
 export class CreateTeamMemberDto{
     @ApiProperty({description:'Name of team member'})
@@ -15,6 +15,7 @@ export class CreateTeamMemberDto{
 
     @ApiProperty({ description: 'Type of Token', enum: TokenType, enumName: "TokenType" })
     @IsNotEmpty()
+    @IsEnum(TokenType)
     currency:TokenType;
 
     @ApiProperty({description:'The amount send'})
@@ -46,6 +47,7 @@ export class UpdateTeamMemberDto{
 
     @ApiPropertyOptional({ description: 'Type of Token', enum: TokenType, enumName: "TokenType" })
     @IsOptional()
+    @IsEnum(TokenType)
     currency?:TokenType;
 
     @ApiPropertyOptional({description:'The amount send'})

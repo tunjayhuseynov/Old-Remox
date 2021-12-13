@@ -27,15 +27,6 @@ export class TransactionController {
     }
 
     @UseGuards(AuthGuard('jwt'))
-    @ApiForbiddenResponse({ description: 'Forbidden.' })
-    @ApiBearerAuth('JWT-auth')
-    @Get("/:hash")
-    async getTransaction(@Res() res:Response,@Req() req:any,@Param() param:ParamDto):Promise<Response> {
-        const result = await this.transactionService.getTransaction(param.hash)
-        return res.status(HttpStatus.OK).json(result)
-    }
-
-    @UseGuards(AuthGuard('jwt'))
     @ApiBody({ type: SendCoinDto })
     @ApiOkResponse({ type: SendCoinDto })
     @ApiForbiddenResponse({ description: 'Forbidden.' })

@@ -1,7 +1,7 @@
 const ContractKit = require('@celo/contractkit')
 import {ContractKit as contractkit} from '@celo/contractkit'
 import Web3 from "web3"
-import { CeloProvider, CeloWallet } from '@celo-tools/celo-ethers-wrapper'
+import { CeloProvider } from '@celo-tools/celo-ethers-wrapper'
 
 export class Provider {
     public web3:Web3;

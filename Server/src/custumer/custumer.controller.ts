@@ -4,7 +4,6 @@ import { ApiBody, ApiTags, ApiForbiddenResponse, ApiBearerAuth } from '@nestjs/s
 import { Response } from 'express'
 import { AuthGuard } from '@nestjs/passport';
 import { AddCustumerDto,ParamDto } from './dto';
-import { PaginationQueryDto } from 'src/generic/paginationQuery';
 
 @ApiTags('Custumer')
 @Controller('custumer')
@@ -25,8 +24,8 @@ export class CustumerController {
     @ApiForbiddenResponse({ description: 'Forbidden.' })
     @ApiBearerAuth('JWT-auth')
     @Get("byAccount")
-    async getCustumers(@Res() res:Response,@Req() req:any,@Query() {take,skip}:PaginationQueryDto):Promise<Response> {
-        const result = await this.custumerService.getCustumers(req.user.userId,take,skip)
+    async getCustumers(@Res() res:Response,@Req() req:any):Promise<Response> {
+        const result = await this.custumerService.getCustumers(req.user.userId)
         return res.status(HttpStatus.OK).json(result)
     }
 

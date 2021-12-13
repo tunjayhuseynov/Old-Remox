@@ -25,6 +25,7 @@ const TransactionItem = ({ type, direction, date, amountUSD, status, amountCoin,
                     {type === TransactionType.QuickTransfer && <span> Quick Transfer </span>}
                     {type === TransactionType.IncomingPayment && <span> Incoming Transfer </span>}
                     {type === TransactionType.MassPayout && <span> Mass Payout </span>}
+                    {type === TransactionType.MassPayment && <span> Mass Payment </span>}
                 </div>
                 <div className="text-sm text-greylish">
                     {date}

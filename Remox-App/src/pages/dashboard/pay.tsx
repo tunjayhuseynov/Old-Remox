@@ -15,7 +15,8 @@ import Input from "../../components/pay/payinput";
 import { AltCoins, AltcoinsList, Coins, CoinsNameVisual, StableTokens, TransactionFeeTokenName } from "../../types/coins";
 import { useAppDispatch } from "../../redux/hooks";
 import { changeError, selectError } from "../../redux/reducers/notificationSlice";
-import Initalization from "../../utility/init";
+import { useLazyGetTransactionsQuery } from '../../redux/api/blockscout'
+import { setTransactions } from "../../redux/reducers/transactions";
 
 
 const Pay = () => {
@@ -26,6 +27,7 @@ const Pay = () => {
     const router = useHistory();
 
     const { data, refetch } = useGetBalanceQuery()
+
     const [sendCelo] = useSendCeloMutation()
     const [sendStableToken] = useSendStableTokenMutation()
     const [sendMultiple] = useSendMultipleTransactionsMutation()
@@ -61,17 +63,20 @@ const Pay = () => {
 
     useEffect(() => {
         if (csvImport.length > 0) {
-            for (let index = 0; index < csvImport.length; index++) {
-                const [name, address, amount, coin] = csvImport[index]
-                nameRef.current.push(name);
-                addressRef.current.push(address);
-                amountRef.current.push(amount);
-                const wallet = [...wallets];
-                wallet[index] = { ...Coins[coin as TransactionFeeTokenName], type: Coins[coin as TransactionFeeTokenName].value };
-                setWallets(wallet)
-
+            const list = csvImport.filter(w=> w[0] && w[1] && w[2] && w[3])
+            for (let index = 0; index < list.length; index++) {
+                const [name, address, amount, coin] = list[index].slice(0,4)
+              
+                if (name) nameRef.current.push(name);
+                if (address) addressRef.current.push(address);
+                if (amount) amountRef.current.push(amount);
+                if (coin) {
+                    const wallet = [...wallets];
+                    wallet[index] = { ...Coins[coin as TransactionFeeTokenName], type: Coins[coin as TransactionFeeTokenName].value };
+                    setWallets(wallet)
+                }
             }
-            setIndex((index === 1 ? 0 : index) + csvImport.length)
+            setIndex((index === 1 ? 0 : index) + list.length)
             fileInput.current!.files = new DataTransfer().files;
         }
     }, [csvImport])
@@ -150,7 +155,7 @@ const Pay = () => {
             }
             setSuccess(true);
             refetch()
-            Initalization()
+            
 
         } catch (error: any) {
             console.error(error)
@@ -201,7 +206,7 @@ const Pay = () => {
                             <div className="flex flex-col">
                                 <span className="text-left">Description (Optional)</span>
                                 <div className="grid grid-cols-1">
-                                    <textarea className="border-2 rounded-xl" name="description" id="" cols={30} rows={5}></textarea>
+                                    <textarea className="border-2 rounded-xl p-1 outline-none" name="description" id="" cols={30} rows={5}></textarea>
                                 </div>
                             </div>
                         </div>

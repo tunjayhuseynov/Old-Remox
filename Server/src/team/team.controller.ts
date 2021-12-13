@@ -25,8 +25,8 @@ export class TeamController {
     @ApiForbiddenResponse({ description: 'Forbidden.' })
     @ApiBearerAuth('JWT-auth')
     @Get("byAccount")
-    async getTeams(@Res() res:Response,@Req() req:any,@Query() {take,skip}:PaginationQueryDto):Promise<Response> {
-        const result = await this.teamService.getTeams(req.user.userId,take,skip)
+    async getTeams(@Res() res:Response,@Req() req:any):Promise<Response> {
+        const result = await this.teamService.getTeams(req.user.userId)
         return res.status(HttpStatus.OK).json(result)
     }
 

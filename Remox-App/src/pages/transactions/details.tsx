@@ -51,7 +51,6 @@ const Details = () => {
 
     useEffect(() => {
         if (list) {
-            console.log(list[params.id])
             if (list[params.id][0].from.toLowerCase() !== storage?.accountAddress.toLowerCase()) {
                 const maTx = list[params.id].find(w => w.to.toLowerCase() === storage?.accountAddress.toLowerCase())
                 if (maTx) {

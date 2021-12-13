@@ -1,9 +1,9 @@
-import { Body, Controller, Get, HttpStatus, Post, Put, Req, Res, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, HttpStatus, Patch, Post, Put, Req, Res, UseGuards } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { ApiBearerAuth, ApiBody, ApiForbiddenResponse, ApiOkResponse, ApiTags } from '@nestjs/swagger';
 import { Response } from 'express'
 import { AccountService } from './account.service';
-import {CreateAccountDto, IsAccountExistDto, ReLoginDto, SigninDto, UpdateAccountDto} from './dto'
+import {CreateAccountDto, IsAccountExistDto, ReLoginDto, SetNotificationTimeDto, SigninDto, UpdateAccountDto} from './dto'
 
 @ApiTags('Account')
 @Controller('account')
@@ -60,5 +60,22 @@ export class AccountController {
         return res.status(HttpStatus.OK).json(result)
     }
 
+    @UseGuards(AuthGuard('jwt'))
+    @ApiBody({ type: SetNotificationTimeDto })
+    @ApiForbiddenResponse({ description: 'Forbidden.' })
+    @ApiBearerAuth('JWT-auth')
+    @Patch('setTime')
+    async setNotificationTime(@Req() req: any,@Res() res: Response,@Body() dto:SetNotificationTimeDto): Promise<Response> {
+        const result = await this.accountService.setNotificationTime(dto,req.user.userId);
+        return res.status(HttpStatus.OK).json(result)
+    }
 
+    @UseGuards(AuthGuard('jwt'))
+    @ApiForbiddenResponse({ description: 'Forbidden.' })
+    @ApiBearerAuth('JWT-auth')
+    @Get('time')
+    async getNotificationTime(@Req() req: any,@Res() res: Response): Promise<Response> {
+        const result = await this.accountService.getNotificationTime(req.user.userId);
+        return res.status(HttpStatus.OK).json(result)
+    }
 }

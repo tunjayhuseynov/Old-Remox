@@ -28,7 +28,7 @@ interface IBalanceMembers {
 }
 
 interface ICurrency {
-	coins: ICoinMembers;
+	celoCoins: ICoinMembers;
 	balances: IBalanceMembers;
 }
 
@@ -43,7 +43,7 @@ export interface ICoinMembers {
 }
 
 const State: ICurrency = {
-	coins: {
+	celoCoins: {
 		CELO: undefined,
 		cUSD: undefined,
 		cEUR: undefined,
@@ -63,14 +63,14 @@ const State: ICurrency = {
 	}
 };
 
-export const CurrencyAPI = createSlice({
-	name: 'currencyAPI',
+export const CurrencySlice = createSlice({
+	name: 'currencySlice',
 	initialState: State,
 	reducers: {
 		updateAllCurrencies: (state: ICurrency, action) => {
 			if(!action.payload) return
 			const [ celo, cusd, ceur, ube, moo, mobi, poof ]: ICurrencyInternal[] = action.payload;
-			state.coins = {
+			state.celoCoins = {
 				CELO: { percent_24: celo.percent_24, price: celo.price },
 				cUSD: { percent_24: cusd.percent_24, price: cusd.price },
 				cEUR: { percent_24: ceur.percent_24, price: ceur.price },
@@ -83,12 +83,12 @@ export const CurrencyAPI = createSlice({
 		updateBalance: (state: ICurrency, action) => {
 			if(!action.payload) return
 			const [ celo, cusd, ceur, ube, moo, mobi, poof ]: ICurrencyInternal[] = action.payload;
-			state.coins = {
-				CELO: { ...state.coins.CELO, current_balance: celo.current_balance },
-				cUSD: { ...state.coins.cUSD, current_balance: cusd.current_balance },
-				cEUR: { ...state.coins.cEUR, current_balance: ceur.current_balance },
-				UBE: { ...state.coins.UBE, current_balance: ube.current_balance },
-				MOO: { ...state.coins.MOO, current_balance: moo.current_balance },
+			state.celoCoins = {
+				CELO: { ...state.celoCoins.CELO, current_balance: celo.current_balance },
+				cUSD: { ...state.celoCoins.cUSD, current_balance: cusd.current_balance },
+				cEUR: { ...state.celoCoins.cEUR, current_balance: ceur.current_balance },
+				UBE: { ...state.celoCoins.UBE, current_balance: ube.current_balance },
+				MOO: { ...state.celoCoins.MOO, current_balance: moo.current_balance },
 				MOBI: { current_balance: mobi.current_balance },
 				POOF: { current_balance: poof.current_balance }
 			};
@@ -96,11 +96,6 @@ export const CurrencyAPI = createSlice({
 		updateUserBalance: (state: ICurrency, action) => {
 			if(!action.payload) return
 			const [ celo, cusd, ceur, ube, moo, mobi, poof ]: IBalanceItem[] = action.payload;
-			if (state.balances.CELO === undefined) {
-				setInterval(() => {
-					Initalization();
-				}, 20000);
-			}
 			state.balances = {
 				CELO: {
 					amount: celo.amount,
@@ -156,12 +151,12 @@ export const CurrencyAPI = createSlice({
 	}
 });
 
-export const { updateAllCurrencies, updateUserBalance } = CurrencyAPI.actions;
+export const { updateAllCurrencies, updateUserBalance } = CurrencySlice.actions;
 
-export const SelectCurrencies = (state: RootState): ICoinMembers => state.currencies.coins;
-export const SelectBalances = (state: RootState): IBalanceMembers => state.currencies.balances;
-export const SelectCelo = (state: RootState) => state.currencies.coins.CELO;
-export const SelectCusd = (state: RootState) => state.currencies.coins.cUSD;
-export const SelectCeur = (state: RootState) => state.currencies.coins.cEUR;
+export const SelectCurrencies = (state: RootState): ICoinMembers => state.currencyandbalance.celoCoins;
+export const SelectBalances = (state: RootState): IBalanceMembers => state.currencyandbalance.balances;
+export const SelectCelo = (state: RootState) => state.currencyandbalance.celoCoins.CELO;
+export const SelectCusd = (state: RootState) => state.currencyandbalance.celoCoins.cUSD;
+export const SelectCeur = (state: RootState) => state.currencyandbalance.celoCoins.cEUR;
 
-export default CurrencyAPI.reducer;
+export default CurrencySlice.reducer;

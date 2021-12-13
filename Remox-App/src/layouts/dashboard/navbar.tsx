@@ -1,4 +1,4 @@
-import { IoMdNotificationsOutline } from 'react-icons/io';
+import { IoIosArrowDown, IoMdNotificationsOutline } from 'react-icons/io';
 import { BsSearch } from 'react-icons/bs'
 import { useState, useEffect, useCallback, useRef, useContext } from 'react'
 import { Link } from 'react-router-dom';
@@ -7,12 +7,15 @@ import { useAppDispatch, useAppSelector } from '../../redux/hooks';
 import { selectStorage } from '../../redux/reducers/storage';
 import { Squash as Hamburger } from 'hamburger-react'
 import { selectToggle, setMenu } from '../../redux/reducers/toggles';
+import NotificationCointainer from '../../components/notification'
+import useRefetchData from '../../hooks/useRefetchData';
 
 
 const Navbar = () => {
     const storage = useAppSelector(selectStorage)
     const menuBar = useAppSelector(selectToggle)
     const dispatch = useAppDispatch()
+    useRefetchData()
 
     return <div className="grid grid-cols-3 md:grid-cols-5 gap-12">
         <div className="md:hidden pl-4">
@@ -32,12 +35,14 @@ const Navbar = () => {
         <div className="actions hidden md:flex items-center justify-evenly md:col-span-2">
             {storage ? <Visitcard name="Remox" address={storage.accountAddress} /> : <ClipLoader />}
             <NavbarDropdown />
-            <IoMdNotificationsOutline className="text-2xl" />
+            <div className="relative">
+                <NotificationCointainer />
+            </div>
         </div>
     </div>
 }
 
-export const Visitcard = ({ name, address }: { name: string, address: string }) => <div className="px-5 py-1 flex flex-col bg-gray-50 rounded-xl cursor-pointer" onClick={()=>navigator.clipboard.writeText(address.trim())}>
+export const Visitcard = ({ name, address }: { name: string, address: string }) => <div className="px-5 py-1 flex flex-col bg-gray-50 rounded-xl cursor-pointer" onClick={() => navigator.clipboard.writeText(address.trim())}>
     <h3 className="text-xl">{name}</h3>
     <p className="text-xs" >{address.split('').reduce((a, c, i, arr) => {
         return i < 10 || (arr.length - i) < 4 ? a + c : a.split('.').length - 1 < 6 ? a + '.' : a
@@ -62,8 +67,11 @@ export const NavbarDropdown = () => {
     }, [click, divRef])
 
     return <div className="relative">
-        <button onClick={() => setOpen(!isOpen)} className="bg-primary text-white px-6 py-3 rounded-xl">
+        <button onClick={() => setOpen(!isOpen)} className="bg-primary text-white px-6 py-3 rounded-xl flex items-center gap-x-2">
             Move Crypto
+            <div>
+                <IoIosArrowDown className='transition' style={isOpen ? { transform: "rotate(180deg)" } : undefined} />
+            </div>
         </button>
         {isOpen && <div ref={divRef} className="absolute w-[150%] rounded-2xl sm:-left-1/4  -bottom-1 translate-y-full shadow-xl">
             <ul>

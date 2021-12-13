@@ -62,9 +62,21 @@ export const accountAPI = createApi({
                 method: 'PUT',
                 body: data
             })
+        }),
+        setTime: builder.mutation<void, {time: string}>({
+            query: (data) => ({
+                url: `/account/setTime`,
+                method: 'PATCH',
+                body: data
+            })
+        }),
+        getTime: builder.query<{date: string}, void>({
+            query: () => ({
+                url: `/account/time`,
+            })
         })
     }),
 })
 
 
-export const { useSignInMutation, useAccountCreateMutation, useCreatePasswordMutation, useAccountExistMutation, useUnlockMutation, usePutAccountInfoMutation } = accountAPI
+export const { useLazyGetTimeQuery, useSetTimeMutation , useSignInMutation, useAccountCreateMutation, useCreatePasswordMutation, useAccountExistMutation, useUnlockMutation, usePutAccountInfoMutation } = accountAPI

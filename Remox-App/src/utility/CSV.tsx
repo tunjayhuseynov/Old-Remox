@@ -7,7 +7,6 @@ class CSV {
             const url = URL.createObjectURL(file)
 
             const res = await csv(url)
-
             if (res) {
                 if (res.columns[0].toLowerCase().includes("name;address;amount;coin")) {
                     const result: string[][] = []
@@ -21,7 +20,7 @@ class CSV {
                     }
                     resolve(result)
                 } else {
-                    reject(new Error("Columns are invalid. Please, set the column order like that: Name Address Amount"))
+                    reject(new Error("Columns are invalid. Please, set the column order like that: Name Address Amount Coin"))
                 }
             } else {
                 reject(new Error(`Cannot import an empty file`))

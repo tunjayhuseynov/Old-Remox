@@ -60,4 +60,4 @@ export const transactionAPI = createApi({
 })
 
 
-export const { useGetBalanceQuery, useGetCurrenciesQuery,  useSendCeloMutation, useSendStableTokenMutation, useSendAltTokenMutation, useSendMultipleTransactionsMutation } = transactionAPI
+export const { useGetBalanceQuery, useLazyGetBalanceQuery, useLazyGetCurrenciesQuery ,useGetCurrenciesQuery,  useSendCeloMutation, useSendStableTokenMutation, useSendAltTokenMutation, useSendMultipleTransactionsMutation } = transactionAPI

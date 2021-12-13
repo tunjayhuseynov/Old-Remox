@@ -8,6 +8,7 @@ import { AnimatePresence } from 'framer-motion';
 import { IoMdNotificationsOutline } from 'react-icons/io';
 import { selectStorage } from '../../redux/reducers/storage';
 import { ClipLoader } from 'react-spinners';
+import NotificationCointainer from '../../components/notification';
 
 const Dashboard = ({ children }: { children?: JSX.Element | JSX.Element[] }) => {
     const toggle = useAppSelector(selectToggle)
@@ -21,7 +22,9 @@ const Dashboard = ({ children }: { children?: JSX.Element | JSX.Element[] }) => 
                         <div className="actions flex flex-col items-center justify-evenly space-y-5">
                             {storage ? <Visitcard name="Remox" address={storage.accountAddress} /> : <ClipLoader />}
                             <NavbarDropdown />
-                            <IoMdNotificationsOutline className="text-2xl" />
+                            <div className="relative">
+                                <NotificationCointainer />
+                            </div>
                         </div>
                         <Siderbarlist />
                     </div>

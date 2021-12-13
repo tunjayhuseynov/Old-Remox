@@ -2,11 +2,11 @@ const ContractKit = require('@celo/contractkit')
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { CreateAccountDto, IsAccountExistDto, OrbitEntityDto, ReLoginDto, SigninDto, UpdateAccountDto } from './dto';
+import { CreateAccountDto, IsAccountExistDto, OrbitEntityDto, ReLoginDto, SetNotificationTimeDto, SigninDto, UpdateAccountDto } from './dto';
 import { Account } from './account.entity';
 import { JwtService } from '@nestjs/jwt';
 import { utils, Wallet } from 'ethers';
-import { encrypt,existEncrypt } from '../utils/crypto'
+import { encrypt, existEncrypt } from '../utils/crypto'
 import bcrypt from 'bcrypt'
 import { OrbitService } from 'src/orbit/orbit.service';
 import { v4 as uuidv4 } from 'uuid';
@@ -20,6 +20,7 @@ export class AccountService {
 
     async createAccount(dto: CreateAccountDto) {
         try {
+            await this.orbitService.config()
 
             //blockchain side
             const entropy = utils.randomBytes(32)
@@ -28,7 +29,7 @@ export class AccountService {
             const walletMnemonic = Wallet.fromMnemonic(mnemonic, derivationPath);
             const { iv, content } = encrypt(mnemonic)
 
-            const id = uuidv4() 
+            const id = uuidv4()
             const hashedPassword = await bcrypt.hash(dto.password, 10);
             //ipfs orbitdb side
             const orbitDto = new OrbitEntityDto()
@@ -38,8 +39,7 @@ export class AccountService {
             orbitDto.address = walletMnemonic.address;
             orbitDto.password = hashedPassword;
             orbitDto.iv = iv
-            await this.orbitService.config()
-            await this.orbitService.addData(orbitDto,id)
+            await this.orbitService.addData(orbitDto, id)
 
             return {
                 token: this.generateJwt(id, walletMnemonic.address),
@@ -54,26 +54,23 @@ export class AccountService {
 
     async signin(dto: SigninDto) {
         try {
+            await this.orbitService.config()
+
             const derivationPath = "m/44'/52752'/0'/0" + '/0';
             const walletMnemonic = Wallet.fromMnemonic(dto.phrase, derivationPath);
-            const account = await this.accountRepo.findOne({ accountAddress: walletMnemonic.address })
+
+            const account = await this.orbitService.findOneAccount(walletMnemonic.address)
             if (!account) {
                 throw new HttpException("There is no account belong this phrase", HttpStatus.NOT_FOUND)
             }
 
-            await this.orbitService.config()
-            await this.orbitService.findAll(walletMnemonic.address)
-            const { value: { password,iv } } = await this.orbitService.getData(account.id)
-
-            const isEqual = await bcrypt.compare(dto.password, password)
+            const isEqual = await bcrypt.compare(dto.password, account.password)
             if (!isEqual) throw new HttpException("Your password is uncorrect for this account", HttpStatus.NOT_FOUND)
 
-            const token = this.generateJwt(account.id, account.accountAddress);
-            const {  content,iv:newiv } = existEncrypt(dto.phrase,iv);
-            await this.orbitService.config()//
-            await this.orbitService.setIv(newiv, account.id)//will be deleted
+            const token = this.generateJwt(account.id, account.address);
+            const { content } = existEncrypt(dto.phrase, account.iv);
 
-            return { token, accountAddress: account.accountAddress, encryptedPhrase: content }
+            return { token, accountAddress: account.address, encryptedPhrase: content }
         } catch (e) {
             throw new HttpException(e.message, HttpStatus.INTERNAL_SERVER_ERROR)
         }
@@ -82,25 +79,25 @@ export class AccountService {
 
     async createPassword(dto: SigninDto) {
         try {
+            await this.orbitService.config()
+
             const derivationPath = "m/44'/52752'/0'/0" + '/0';
             const walletMnemonic = Wallet.fromMnemonic(dto.phrase, derivationPath);
             const { iv, content } = encrypt(dto.phrase)
 
-            const isExistAddress = await this.accountRepo.findOne({accountAddress: walletMnemonic.address})
-            if(isExistAddress) throw new HttpException("There is already this account in app", HttpStatus.NOT_FOUND)
+            const isExistAddress = await this.orbitService.findOneAccount(walletMnemonic.address)
+            if (isExistAddress) throw new HttpException("There is already this account in app", HttpStatus.NOT_FOUND)
 
-            const newAccount = this.accountRepo.create({ accountAddress: walletMnemonic.address })
-            const result = await this.accountRepo.save(newAccount)
+            const id = uuidv4()
             const hashedPassword = await bcrypt.hash(dto.password, 10);
             const orbitDto = new OrbitEntityDto()
             orbitDto.address = walletMnemonic.address;
             orbitDto.iv = iv
             orbitDto.password = hashedPassword;
-            await this.orbitService.config()
-            await this.orbitService.addData(orbitDto, newAccount.id)
+            await this.orbitService.addData(orbitDto, id)
 
             return {
-                token: this.generateJwt(result.id, result.accountAddress),
+                token: this.generateJwt(id, walletMnemonic.address),
                 accountAddress: walletMnemonic.address,
                 encryptedPhrase: content
             }
@@ -111,18 +108,16 @@ export class AccountService {
 
     async reLogin(dto: ReLoginDto) {
         try {
-            const account = await this.accountRepo.findOne({ accountAddress: dto.address })
+            await this.orbitService.config()
+            const account = await this.orbitService.findOneAccount(dto.address)
             if (!account) {
                 throw new HttpException("There is no account belong this address", HttpStatus.NOT_FOUND)
             }
 
-            await this.orbitService.config()
-            const { value: { password } } = await this.orbitService.getData(account.id)
-
-            const isEqual = await bcrypt.compare(dto.password, password)
+            const isEqual = await bcrypt.compare(dto.password, account.password)
             if (!isEqual) throw new HttpException("Your password is uncorrect for this account", HttpStatus.NOT_FOUND)
 
-            const token = this.generateJwt(account.id, account.accountAddress);
+            const token = this.generateJwt(account.id, account.address);
             return { token }
         } catch (e) {
             throw new HttpException(e.message, HttpStatus.INTERNAL_SERVER_ERROR)
@@ -131,10 +126,12 @@ export class AccountService {
 
     async isAccountExist(dto: IsAccountExistDto) {
         try {
+            await this.orbitService.config()
+
             const derivationPath = "m/44'/52752'/0'/0" + '/0';
             const walletMnemonic = Wallet.fromMnemonic(dto.phrase, derivationPath);
-            const account = await this.accountRepo.findOne({ accountAddress: walletMnemonic.address })
-            let result = account ? true : false
+            const account = await this.orbitService.findOneAccount(walletMnemonic.address)
+            let result = account ? true : false;
             return { result }
         } catch (e) {
             throw new HttpException(e.message, HttpStatus.INTERNAL_SERVER_ERROR)
@@ -143,9 +140,31 @@ export class AccountService {
 
     async updateAccount(dto: UpdateAccountDto, accountId: string) {
         try {
-
             await this.orbitService.config()
+
             return await this.orbitService.setDatas(accountId, dto)
+        } catch (e) {
+            throw new HttpException(e.message, HttpStatus.INTERNAL_SERVER_ERROR)
+        }
+    }
+
+    async setNotificationTime(dto: SetNotificationTimeDto, accountId: string) {
+        try {
+            await this.orbitService.config()
+
+            await this.orbitService.setTime(accountId, dto.time)
+            return { date: dto.time }
+        } catch (e) {
+            throw new HttpException(e.message, HttpStatus.INTERNAL_SERVER_ERROR)
+        }
+    }
+
+    async getNotificationTime(accountId: string) {
+        try {
+            await this.orbitService.config()
+
+            const {time} =  await this.orbitService.getTime(accountId)
+            return { date:time }
         } catch (e) {
             throw new HttpException(e.message, HttpStatus.INTERNAL_SERVER_ERROR)
         }

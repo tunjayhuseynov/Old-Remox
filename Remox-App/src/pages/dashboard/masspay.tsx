@@ -271,7 +271,7 @@ const MassPay = () => {
                             <div className="flex flex-col">
                                 <span className="text-left">Description (Optional)</span>
                                 <div className="grid grid-cols-1">
-                                    <textarea className="border-2 rounded-xl" name="description" id="" cols={30} rows={5}></textarea>
+                                    <textarea className="border-2 rounded-xl p-1 outline-none" name="description" id="" cols={30} rows={5}></textarea>
                                 </div>
                             </div>
                         </div>

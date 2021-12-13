@@ -96,3 +96,10 @@ export class UpdateAccountDto {
     @IsString()
     companyName?: string
 }
+
+export class SetNotificationTimeDto {
+    @ApiPropertyOptional({ description: 'Last notification seen date' })
+    @IsNotEmpty()
+    @IsString()
+    time!: string
+}

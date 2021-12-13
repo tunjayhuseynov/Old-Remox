@@ -14,38 +14,25 @@ import { CSVLink } from "react-csv";
 import lodash from "lodash";
 import { Transactions as transactionType } from "../../types/sdk";
 import _ from "lodash";
+import useTransactionProcess from "../../hooks/useTransactionProcess";
 
 
 const Transactions = () => {
     const storage = useAppSelector(selectStorage);
-    const currencies = useAppSelector(SelectCurrencies)
 
     const [take, setTake] = useState(4)
-    const [trigger, { data: transactions, isLoading, isFetching }] = useLazyGetTransactionsQuery()
-    const [list, setList] = useState<{ [name: string]: transactionType[] }>()
+    const [trigger, { data: transactions }] = useLazyGetTransactionsQuery()
+    const list = useTransactionProcess()
 
     useEffect(() => {
         if (storage?.accountAddress) {
             trigger(storage.accountAddress)
             const interval = setInterval(() => {
                 trigger(storage.accountAddress)
-            }, 20000)
+            }, 10000)
             return () => clearInterval(interval)
         }
     }, [])
-
-    useEffect(() => {
-        if (transactions?.result) {
-            const res = lodash.groupBy(transactions.result, lodash.iteratee('blockNumber'))
-            let newObject: { [name: string]: transactionType[] } = {}
-            Object.entries(res).map(([key, value]) => {
-                const data = _(value).orderBy((o) => BigInt(o.value), ['desc']).uniqBy('hash').value()
-                newObject[key] = data
-            })
-            setList(newObject)
-        }
-
-    }, [transactions?.result])
 
     return <>
         <div>
@@ -71,53 +58,10 @@ const Transactions = () => {
                             <img src="/icons/downloadicon.svg" alt="" />
                         </CSVLink>}
                     </div>
-
                 </div>
                 <div>
-                    {list ? Object.values(list).reverse().slice(0, take).map((tr) => {
-                        let amount, coin, coinName, direction, date, amountUSD, surplus, type, hash;
-                        let transaction = tr.filter(w => w.to.toLowerCase() === storage?.accountAddress.toLowerCase() || w.from.toLowerCase() === storage?.accountAddress.toLowerCase())
-                        if (transaction[0].from.toLowerCase() !== storage?.accountAddress.toLowerCase()) {
-                            transaction = transaction.filter(w => w.to.toLowerCase() === storage?.accountAddress.toLowerCase())
-                        }
-                        if (transaction.length === 1) {
-                            const tx = transaction[0];
-                            hash = tx.blockNumber
-                            amount = parseFloat(Web3.utils.fromWei(tx.value, 'ether')).toFixed(2)
-                            coin = Coins[Object.entries(TransactionFeeTokenName).find(w => w[0] === tx.tokenSymbol)![1]];
-                            coinName = coin.name;
-                            direction = tx.from.trim().toLowerCase() === storage?.accountAddress.trim().toLowerCase() ? TransactionDirection.Out : TransactionDirection.In
-                            date = dateFormat(new Date(parseInt(tx.timeStamp) * 1e3), "mediumDate")
-                            amountUSD = (currencies[coin.name]?.price ?? 0) * parseFloat(parseFloat(Web3.utils.fromWei(tx.value, 'ether')).toFixed(4))
-                            surplus = direction === TransactionDirection.In ? '+' : '-'
-                            type = direction === TransactionDirection.In ? TransactionType.IncomingPayment : TransactionType.QuickTransfer
-                        } else if (transaction.length > 1) {
-                            const tx = transaction;
-                            hash = tx[0].blockNumber
-                            amount = parseFloat(Web3.utils.fromWei(tx.reduce((a, c) => a + parseFloat(c.value), 0).toString(), 'ether')).toFixed(2)
-                            coinName = tx.reduce((a, item, index, arr) => {
-                                const coin = Coins[Object.entries(TransactionFeeTokenName).find(w => w[0] === item.tokenSymbol)![1]].name
-                                if (!a.includes(coin)) {
-                                    a += `${coin}, `;
-                                }
-
-                                return a
-                            }, '')
-                            if (coinName.includes(','))
-                                coinName = coinName.slice(0, -2);
-                            direction = TransactionDirection.Out
-                            date = dateFormat(new Date(parseInt(tx[0].timeStamp) * 1e3), "mediumDate")
-                            amountUSD = tx.reduce((a, c) => {
-                                const coin = Coins[Object.entries(TransactionFeeTokenName).find(w => w[0] === c.tokenSymbol)![1]]
-                                a += (currencies[coin.name]?.price ?? 0) * parseFloat(parseFloat(Web3.utils.fromWei(c.value, 'ether')).toFixed(4))
-                                return a;
-                            }, 0)
-                            surplus = '-'
-                            type = TransactionType.MassPayout
-                        } else return <></>
-                        return <TransactionItem key={generate()} hash={hash} amountCoin={`${amount} ${coinName}`} type={type} direction={direction} date={date} amountUSD={`${surplus} ${amountUSD.toFixed(3)} $`} status={TransactionStatus.Completed} />
-
-                    }) : <div className="text-center"><ClipLoader /></div>}
+                    {list ? list.slice(0, take).map(({ hash, amount, coinName, type, direction, date, surplus, amountUSD }) => <TransactionItem key={generate()} hash={hash} amountCoin={`${amount} ${coinName}`} type={type} direction={direction} date={date} amountUSD={`${surplus} ${amountUSD.toFixed(3)} $`} status={TransactionStatus.Completed} />
+                    ) : <div className="text-center"><ClipLoader /></div>}
                 </div>
                 {list && take < 100 && take < Object.values(list).length && <div className="flex justify-center py-4">
                     <button className="text-primary px-5 py-3 rounded-xl border border-primary" onClick={() => {

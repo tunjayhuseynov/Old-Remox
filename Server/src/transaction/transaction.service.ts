@@ -10,7 +10,6 @@ import { decrypt } from '../utils/crypto';
 import { OrbitService } from 'src/orbit/orbit.service';
 import { Provider } from '../blockchain/provider';
 import { abi, AltToken, tokenAdress } from '../contractTokenAbi';
-import { AltTokenType } from './transaction.entity';
 import { newLogExplorer, newBlockExplorer } from '@celo/explorer';
 import fs from 'fs';
 import path from 'path';
@@ -86,25 +85,25 @@ export class TransactionService {
 		}
 	}
 
-	async getTransaction(hash: string) {
-		try {
-			const explorer = await newLogExplorer(this.kit);
-			const block = await newBlockExplorer(this.kit);
-			const tx = await explorer.fetchTxReceipt(hash);
-			console.log({ tx, logs: tx.logs, topics: tx.logs[0].topics });
-			let a = explorer.getKnownLogs(tx);
-			console.log(a);
-			const logs = explorer.tryParseLog(tx.logs[0]);
-			console.log({ logs });
+	// async getTransaction(hash: string) {
+	//     try {
+	//         const explorer = await newLogExplorer(this.kit)
+	//         const block = await newBlockExplorer(this.kit)
+	//         const tx = await explorer.fetchTxReceipt(hash)
+	//         console.log({ tx, logs: tx.logs, topics: tx.logs[0].topics })
+	//         let a = explorer.getKnownLogs(tx)
+	//         console.log(a)
+	//         const logs = explorer.tryParseLog(tx.logs[0])
+	//         console.log({ logs })
 
-			const blockInfo = await block.fetchBlock(9973207);
-			// console.log({blockInfo: blockInfo.transactions})
+	//         const blockInfo = await block.fetchBlock(9973207)
+	//         // console.log({blockInfo: blockInfo.transactions})
 
-			return 'success';
-		} catch (e) {
-			throw new HttpException(e.message, HttpStatus.FORBIDDEN);
-		}
-	}
+	//         return 'success'
+	//     } catch (e) {
+	//         throw new HttpException(e.message, HttpStatus.FORBIDDEN);
+	//     }
+	// }
 
 	async sendCelo(dto: SendCoinDto, accountId: string) {
 		try {
@@ -114,7 +113,7 @@ export class TransactionService {
 			const derivationPath = "m/44'/52752'/0'/0" + '/0';
 			const walletMnemonic = Wallet.fromMnemonic(accPhrase, derivationPath);
 			this.kit.connection.addAccount(walletMnemonic.privateKey);
-			let { amount, toAddress } = dto;
+			let { amount, toAddress, comment } = dto;
 
 			const isAddressExist = this.web3.utils.isAddress(toAddress);
 			if (!isAddressExist)
@@ -123,25 +122,20 @@ export class TransactionService {
 			const amountWei = this.kit.web3.utils.toWei(amount, 'ether');
 
 			let goldtoken = await this.kit.contracts.getGoldToken();
-			let celotx = await goldtoken.transfer(toAddress, amountWei).send({ from: walletMnemonic.address });
+			let celotx = comment
+				? await goldtoken
+						.transferWithComment(toAddress, amountWei, comment)
+						.send({ from: walletMnemonic.address })
+				: await goldtoken.transfer(toAddress, amountWei).send({ from: walletMnemonic.address });
 
 			let celoReceipt = await celotx.waitReceipt();
-			const { blockNumber, gasUsed, status, transactionHash, events } = celoReceipt;
 
-			const value = events.Transfer.returnValues.value.toString();
-			const newTran = this.tranRepo.create({
-				tokenType: TokenType.celo,
+			return {
 				from: walletMnemonic.address,
-				value,
 				to: toAddress,
-				tranHash: transactionHash,
-				status,
-				gasUsed,
-				block: blockNumber
-			});
-			const result = await this.tranRepo.save(newTran);
-
-			return result;
+				value: amount,
+				transactionHash: celoReceipt.transactionHash
+			};
 		} catch (e) {
 			console.log(e);
 			throw new HttpException(e.message, HttpStatus.FORBIDDEN);
@@ -157,7 +151,7 @@ export class TransactionService {
 			const derivationPath = "m/44'/52752'/0'/0" + '/0';
 			const walletMnemonic = Wallet.fromMnemonic(accPhrase, derivationPath);
 			this.kit.connection.addAccount(walletMnemonic.privateKey);
-			let { amount, toAddress } = dto;
+			let { amount, toAddress, comment } = dto;
 
 			const isAddressExist = this.web3.utils.isAddress(toAddress);
 			if (!isAddressExist)
@@ -165,26 +159,22 @@ export class TransactionService {
 
 			const amountWei = this.kit.web3.utils.toWei(amount, 'ether');
 			let stabletoken = await this.kit.contracts.getStableToken(dto.stableTokenType);
-			let satbleTokentx = await stabletoken
-				.transfer(toAddress, amountWei)
-				.send({ from: walletMnemonic.address, feeCurrency: stabletoken.address });
+
+			let satbleTokentx = comment
+				? await stabletoken
+						.transferWithComment(toAddress, amountWei, comment)
+						.send({ from: walletMnemonic.address, feeCurrency: stabletoken.address })
+				: await stabletoken
+						.transfer(toAddress, amountWei)
+						.send({ from: walletMnemonic.address, feeCurrency: stabletoken.address });
 
 			let stReceipt = await satbleTokentx.waitReceipt();
-			const { blockNumber, gasUsed, status, transactionHash, events } = stReceipt;
-
-			const value = events.Transfer[0].returnValues.value.toString();
-			const newTran = this.tranRepo.create({
-				tokenType: TokenType[dto.stableTokenType],
+			return {
 				from: walletMnemonic.address,
-				value,
 				to: toAddress,
-				tranHash: transactionHash,
-				status,
-				gasUsed,
-				block: blockNumber
-			});
-			const result = await this.tranRepo.save(newTran);
-			return result;
+				value: amount,
+				transactionHash: stReceipt.transactionHash
+			};
 		} catch (e) {
 			throw new HttpException(e.message, HttpStatus.FORBIDDEN);
 		}
@@ -226,7 +216,6 @@ export class TransactionService {
 	}
 
 	async sendMultipleCelo(dto: SendMultipleTransactionVsPhraseDto, accountId: string) {
-        const errors = [];
 		try {
 			await this.orbitService.config();
 			const { value: { iv } } = await this.orbitService.getData(accountId);
@@ -235,14 +224,8 @@ export class TransactionService {
 			const walletMnemonic = Wallet.fromMnemonic(accPhrase, derivationPath);
 
 			let multiTx, index;
-			// const amountList: { token: string; amount: number }[] = [];
-
-			const { celoBalance, cEURBalance, cUSDBalance, MOBI, MOO, POOF, UBE } = await this.accountInfo(
-				walletMnemonic.address
-			);
-
-			// amountList.map((item) => {});
-
+			const amountList: { token: string; amount: number }[] = [];
+			const errors = [];
 			this.kit.connection.addAccount(walletMnemonic.privateKey);
 			let goldtoken = await this.kit.contracts.getGoldToken();
 			const bacth = new this.web3.BatchRequest();
@@ -250,68 +233,65 @@ export class TransactionService {
 			for await (const item of dto.multipleAddresses) {
 				let { amount, toAddress, tokenType } = item;
 				let token = TokenType[tokenType];
-
-				if (token == TokenType.celo && parseFloat(amount) >= parseFloat(celoBalance)) {
-					errors.push('Celo amount exceeds balance');
-					continue;
-				}
-				if (token == TokenType.cUSD && parseFloat(amount) >= parseFloat(cUSDBalance)) {
-					errors.push('cUSD amount exceeds balance');
-					continue;
-				}
-				if (token == TokenType.cEUR && parseFloat(amount) >= parseFloat(cEURBalance)) {
-					errors.push('cEUR amount exceeds balance');
-					continue;
-				}
-				if (token == TokenType.UBE && parseFloat(amount) >= parseFloat(UBE)) {
-					errors.push('UBE amount exceeds balance');
-					continue;
-				}
-				if (token == TokenType.POOF && parseFloat(amount) >= parseFloat(POOF)) {
-					errors.push('POOF amount exceeds balance');
-					continue;
-				}
-				if (token == TokenType.MOBI && parseFloat(amount) >= parseFloat(MOBI)) {
-					errors.push('MOBI amount exceeds balance');
-					continue;
-				}
-				if (token == TokenType.MOO && parseFloat(amount) >= parseFloat(MOO)) {
-					errors.push('MOO amount exceeds balance');
-					continue;
-				}
-				if (errors.length > 0) continue;
-
 				let amountWei = this.kit.web3.utils.toWei(amount, 'ether');
 				if (token == undefined) {
 					throw new HttpException('This wallet type isnt exist', HttpStatus.FORBIDDEN);
 				}
 
 				if (token == TokenType.celo) {
-					multiTx = await goldtoken.transfer(toAddress, amountWei).send({ from: walletMnemonic.address });
-					//bacth.add(await multiTx.waitReceipt());
+					multiTx = dto.comment
+						? await goldtoken
+								.transferWithComment(toAddress, amountWei, dto.comment)
+								.send({ from: walletMnemonic.address })
+						: await goldtoken.transfer(toAddress, amountWei).send({ from: walletMnemonic.address });
+					bacth.add(multiTx.waitReceipt());
 				} else if (token == TokenType.cUSD || token == TokenType.cEUR) {
 					let stabletoken = await this.kit.contracts.getStableToken(token);
-					multiTx = await stabletoken
-						.transfer(toAddress, amountWei)
-						.send({ from: walletMnemonic.address, feeCurrency: stabletoken.address });
-					//bacth.add(await multiTx.waitReceipt());
+					multiTx = dto.comment
+						? await stabletoken
+								.transferWithComment(toAddress, amountWei, dto.comment)
+								.send({ from: walletMnemonic.address, feeCurrency: stabletoken.address })
+						: await stabletoken
+								.transfer(toAddress, amountWei)
+								.send({ from: walletMnemonic.address, feeCurrency: stabletoken.address });
+					bacth.add(multiTx.waitReceipt());
 				} else {
 					let altToken = AltToken[token];
 					let stabletoken = await this.kit.contracts.getErc20(altToken);
 					multiTx = await stabletoken.transfer(toAddress, amountWei).send({ from: walletMnemonic.address });
-					//bacth.add(await multiTx.waitReceipt());
+					// bacth.add(multiTx.waitReceipt())
 				}
-
+				index = amountList.findIndex((item) => item.token == token);
+				index == -1
+					? amountList.push({ token, amount: parseFloat(amount) })
+					: (amountList[index].amount += parseFloat(amount));
 			}
-			if (errors.length != 0) throw new HttpException([...new Set(errors)].join(), HttpStatus.FORBIDDEN);
-			//bacth.execute();
+
+			const { celoBalance, cEURBalance, cUSDBalance, MOBI, MOO, POOF, UBE } = await this.accountInfo(
+				walletMnemonic.address
+			);
+			amountList.map((item) => {
+				if (item.token == TokenType.celo && item.amount >= parseFloat(celoBalance))
+					errors.push('Celo amount exceeds balance');
+				if (item.token == TokenType.cUSD && item.amount >= parseFloat(cUSDBalance))
+					errors.push('cUSD amount exceeds balance');
+				if (item.token == TokenType.cEUR && item.amount >= parseFloat(cEURBalance))
+					errors.push('cEUR amount exceeds balance');
+				if (item.token == TokenType.UBE && item.amount >= parseFloat(UBE))
+					errors.push('UBE amount exceeds balance');
+				if (item.token == TokenType.POOF && item.amount >= parseFloat(POOF))
+					errors.push('POOF amount exceeds balance');
+				if (item.token == TokenType.MOBI && item.amount >= parseFloat(MOBI))
+					errors.push('MOBI amount exceeds balance');
+				if (item.token == TokenType.MOO && item.amount >= parseFloat(MOO))
+					errors.push('MOO amount exceeds balance');
+			});
+			if (errors.length != 0) throw new HttpException(errors.join(), HttpStatus.FORBIDDEN);
+
+			bacth.execute();
 			return 'success';
 		} catch (e) {
-            console.error(e.message)
-            if(errors.length > 0){
-                throw new HttpException(e.message, HttpStatus.FORBIDDEN);
-            }
-            throw new HttpException("Something went wrong, please chech the amounts you have entered", HttpStatus.FORBIDDEN);
+			throw new HttpException(e.message, HttpStatus.FORBIDDEN);
 		}
 	}
 }

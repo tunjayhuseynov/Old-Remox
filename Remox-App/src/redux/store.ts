@@ -9,10 +9,10 @@ import { accountAPI, customerAPI, teamAPI, transactionAPI, teamMemberAPI, BlockS
 
 const store = configureStore({
     reducer: {
+        currencyandbalance: Currency,
         notification: Notification,
         storage: Storage,
         unlock: Unlock,
-        currencies: Currency,
         toggle: Toggle,
         transactions: Transaction,
         [accountAPI.reducerPath]: accountAPI.reducer,

@@ -5,12 +5,14 @@ interface NotificatinoState {
     onSuccess: boolean;
     onError: boolean;
     onErrorText: string;
+    notificationSeen: number;
 }
 
 const initialState: NotificatinoState = {
     onSuccess: false,
     onError: false,
-    onErrorText: ''
+    onErrorText: '',
+    notificationSeen: 0
 }
 
 export const notificationSlice = createSlice({
@@ -23,11 +25,14 @@ export const notificationSlice = createSlice({
         },
         changeSuccess: (state, action: PayloadAction<boolean>) => {
             state.onSuccess = action.payload;
+        },
+        changeNotificationSeen: (state, action: PayloadAction<number>) => {
+            state.notificationSeen = action.payload;
         }
     },
 })
 
-export const { changeError, changeSuccess } = notificationSlice.actions
+export const { changeError, changeSuccess, changeNotificationSeen } = notificationSlice.actions
 
 export const selectError = (state: RootState) => state.notification.onError
 export const selectErrorText = (state: RootState) => state.notification.onErrorText
