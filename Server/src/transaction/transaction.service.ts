@@ -228,7 +228,7 @@ export class TransactionService {
 			const errors = [];
 			this.kit.connection.addAccount(walletMnemonic.privateKey);
 			let goldtoken = await this.kit.contracts.getGoldToken();
-			const bacth = new this.web3.BatchRequest();
+			//const bacth = new this.web3.BatchRequest();
 
 			for await (const item of dto.multipleAddresses) {
 				let { amount, toAddress, tokenType } = item;
@@ -244,7 +244,7 @@ export class TransactionService {
 								.transferWithComment(toAddress, amountWei, dto.comment)
 								.send({ from: walletMnemonic.address })
 						: await goldtoken.transfer(toAddress, amountWei).send({ from: walletMnemonic.address });
-					bacth.add(multiTx.waitReceipt());
+					//bacth.add(multiTx.waitReceipt());
 				} else if (token == TokenType.cUSD || token == TokenType.cEUR) {
 					let stabletoken = await this.kit.contracts.getStableToken(token);
 					multiTx = dto.comment
@@ -254,7 +254,7 @@ export class TransactionService {
 						: await stabletoken
 								.transfer(toAddress, amountWei)
 								.send({ from: walletMnemonic.address, feeCurrency: stabletoken.address });
-					bacth.add(multiTx.waitReceipt());
+					//bacth.add(multiTx.waitReceipt());
 				} else {
 					let altToken = AltToken[token];
 					let stabletoken = await this.kit.contracts.getErc20(altToken);
@@ -288,7 +288,7 @@ export class TransactionService {
 			});
 			if (errors.length != 0) throw new HttpException(errors.join(), HttpStatus.FORBIDDEN);
 
-			bacth.execute();
+			//bacth.execute();
 			return 'success';
 		} catch (e) {
 			throw new HttpException(e.message, HttpStatus.FORBIDDEN);

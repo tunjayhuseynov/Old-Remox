@@ -84,7 +84,7 @@ const Details = () => {
                     Transaction Details
                 </div>
                 {list ? <div className="flex flex-col sm:grid sm:grid-cols-3 py-5 gap-14">
-                    {list[params.id].length === 1 || list[params.id][0].from.toLowerCase() !== storage?.accountAddress.toLowerCase() ?
+                    {list[params.id].length === 1 ?
                         TransactionDetailInput("Transaction Hash", `${list[params.id][0].hash}`, `https://explorer.celo.org/tx/${list[params.id][0].hash}/token-transfers`)
                         :
                         <Dropdown displayName="Transaction Hash" className="h-full bg-greylish bg-opacity-10 font-semibold" onSelect={(w: DropDownItem) => {
@@ -93,12 +93,12 @@ const Details = () => {
                             ...list[params.id].map(w => ({ name: w.hash, coinUrl: CoinsURL.None })),
                         ]} />
                     }
-                    {TransactionDetailInput("Paid To", list[params.id].length === 1 || list[params.id][0].from.toLowerCase() !== storage?.accountAddress.toLowerCase() ? `1 person` : `${list[params.id].length} people`)}
+                    {TransactionDetailInput("Paid To", [...new Set(list[params.id].map(w=>w.to))].length === 1 ? '1 person' : `${[...new Set(list[params.id].map(w=>w.to))].length} people`)}
                     {TransactionDetailInput("Total Amount", `${totalAmount} USD`)}
                     {TransactionDetailInput("Transaction Fee", `${transactionFee}`)}
                     {TransactionDetailInput("Created Date & Time", `${dateFormat(new Date(Number(list[params.id][0].timeStamp) * 1e3), 'dd/mm/yyyy hh:MM:ss')}`)}
                     {TransactionDetailInput("Status", "Completed")}
-                    {list[params.id].length === 1  ?
+                    {list[params.id].length === 1 ||  [...new Set(list[params.id].map(w=>w.to))].length === 1 ?
                         TransactionDetailInput("Wallet Address",
                             (list[params.id][0].from.toLowerCase() !== storage?.accountAddress.toLowerCase() ? list[params.id][0].from : list[params.id][0].to).split('').reduce((a, c, i, arr) => {
                                 return i < 10 || (arr.length - i) < 4 ? a + c : a.split('.').length - 1 < 6 ? a + '.' : a
