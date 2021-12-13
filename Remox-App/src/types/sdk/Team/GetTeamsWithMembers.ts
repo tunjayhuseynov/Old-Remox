@@ -14,6 +14,6 @@ export interface GetTeamsWithMembersResponse {
 export interface TeamInfoWithMembers {
     id: string,
     title: string,
-    teamMembers: Member[],
+    members?: Member[],
     teamMembersCount: number,
 }

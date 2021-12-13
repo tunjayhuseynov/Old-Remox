@@ -36,15 +36,15 @@ const TeamContainer = (props : TeamInfoWithMembers) => {
                 <img src="/icons/trashicon.svg" alt="" />
             </div>
         </div>
-        {props.teamMembers.slice(0, num).map(w =>
+        {props.members && props.members.slice(0, num).map(w =>
             <div key={generate()} className="grid grid-cols-2 sm:grid-cols-[30%,30%,1fr] lg:grid-cols-[20%,20%,20%,1fr] py-6 border-b border-black pb-5 px-5 text-sm">
                 <TeamItem teamName={props.title} {...w}/>
             </div>
         )}
-        {props.teamMembers.length > 3 && num !== 100 ? <button className="py-3 pb-5 px-5 font-bold text-primary" onClick={() => setNum(100)}>
+        {props.members && props.members.length > 3 && num !== 100 ? <button className="py-3 pb-5 px-5 font-bold text-primary" onClick={() => setNum(100)}>
             Show More
         </button> : null}
-        {!props.teamMembers.length ? <div className="b-5 px-5 border-b border-black pb-5">No Team Member Yet</div> : undefined}
+        {!props.members ? <div className="b-5 px-5 border-b border-black pb-5">No Team Member Yet</div> : undefined}
         {deleteModal && <Modal onDisable={setDeleteModal}>
             <Delete name={props.title} onCurrentModal={setDeleteModal} onDelete={DeleteTeam} />
         </Modal>}

@@ -82,8 +82,11 @@ const MassPay = () => {
 
     useEffect(() => {
         if (teams && teams.teams.length && selectedTeam && selectedTeam.address) {
-            resMember.current = teams.teams.find(w => w.id === selectedTeam.address)!.teamMembers.map(w => ({ ...w, selected: false }))
-            setMembers(teams.teams.find(w => w.id === selectedTeam.address)!.teamMembers)
+            const team = teams.teams.find(w => w.id === selectedTeam.address)
+            if(team && team.members){
+                resMember.current = team.members.map(w => ({ ...w, selected: false }))
+            }
+            setMembers(teams.teams.find(w => w.id === selectedTeam.address)!.members)
         }
     }, [selectedTeam, teams])
 

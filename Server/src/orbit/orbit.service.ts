@@ -219,6 +219,7 @@ export class OrbitService {
     ///team metods//////////
     async addTeam(id: string, title: string) {
         try {
+            await this.db.load()
             const account = this.db.get(id)
             const teamId = uuidv4()
             if (!account.teams) {
