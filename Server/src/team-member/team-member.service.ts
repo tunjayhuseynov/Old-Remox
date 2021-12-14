@@ -38,6 +38,18 @@ export class TeamMemberService {
         }
     }
 
+    async getMember(memberId: string, accountId: string) {
+        try {
+            await this.orbitService.config()
+
+            const member = await this.orbitService.getMember(accountId,memberId)
+
+            return { member,}
+        } catch (e) {
+            throw new HttpException(e.message, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
     async getMembersByTeam(teamId: string, accountId: string) {
         try {
             await this.orbitService.config()

@@ -28,7 +28,7 @@ const EditMember = (props: Member & { onCurrentModal: Dispatch<boolean> }) => {
 
     useEffect(() => {
         if (member && data) {
-            setSelectedTeam({ name: data.teams.find(w => w.id === member.teamId)!.title, coinUrl: CoinsURL.None, id: member.teamId })
+            setSelectedTeam({ name: data.teams.find(w => w.id === member.member.teamId)!.title, coinUrl: CoinsURL.None, id: member.member.teamId })
         }
     }, [member, data])
 
@@ -78,7 +78,7 @@ const EditMember = (props: Member & { onCurrentModal: Dispatch<boolean> }) => {
                     <div className="flex flex-col space-y-3">
                         <div className="font-bold">Name</div>
                         <div className="flex space-x-2 items-center w-3/4">
-                            <input name="memberName" type="text" defaultValue={member!.name} className="w-full border-2 border-black border-opacity-50 outline-none rounded-md px-3 py-2" required />
+                            <input name="memberName" type="text" defaultValue={member.member!.name} className="w-full border-2 border-black border-opacity-50 outline-none rounded-md px-3 py-2" required />
                         </div>
                     </div>
                     <div className="flex flex-col space-y-3">
@@ -97,7 +97,7 @@ const EditMember = (props: Member & { onCurrentModal: Dispatch<boolean> }) => {
                                     {!selectedWallet ? <ClipLoader /> : <Dropdown onSelect={setSelectedWallet} className="border-none" nameActivation={true} selected={selectedWallet} list={Object.values(Coins).map(w => ({ name: "", type: w.value, value: w.value, coinUrl: w.coinUrl, id: w.value }))} />}
                                 </div>
                                 <div>
-                                    <input name="amount" type="number" defaultValue={member!.amount} className="w-full outline-none pr-3" required step={'any'}/>
+                                    <input name="amount" type="number" defaultValue={member.member!.amount} className="w-full outline-none pr-3" required step={'any'}/>
                                 </div>
                             </div>
                         </div>
@@ -105,7 +105,7 @@ const EditMember = (props: Member & { onCurrentModal: Dispatch<boolean> }) => {
                     <div className="flex flex-col space-y-3">
                         <div className="font-bold">Wallet Address</div>
                         <div className="flex space-x-2 items-center w-3/4">
-                            <input name="address" type="text" defaultValue={member!.address} className="w-full text-xs border border-black border-opacity-50 outline-none rounded-md px-3 py-2" required />
+                            <input name="address" type="text" defaultValue={member.member!.address} className="w-full text-xs border border-black border-opacity-50 outline-none rounded-md px-3 py-2" required />
                         </div>
                     </div>
                 </div>

@@ -24,6 +24,15 @@ export class TeamMemberController {
     @UseGuards(AuthGuard('jwt'))
     @ApiForbiddenResponse({ description: 'Forbidden.' })
     @ApiBearerAuth('JWT-auth')
+    @Get("/:id")
+    async getMember(@Res() res: Response, @Req() req: any, @Param() param: ParamDto): Promise<Response> {
+        const result = await this.teamMemberService.getMember(param.id, req.user.userId)
+        return res.status(HttpStatus.OK).json(result)
+    }
+    
+    @UseGuards(AuthGuard('jwt'))
+    @ApiForbiddenResponse({ description: 'Forbidden.' })
+    @ApiBearerAuth('JWT-auth')
     @Get("byTeam/:id")
     async getMembersByTeam(@Res() res: Response, @Req() req: any, @Param() param: ParamDto): Promise<Response> {
         const result = await this.teamMemberService.getMembersByTeam(param.id, req.user.userId)

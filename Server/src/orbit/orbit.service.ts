@@ -340,6 +340,33 @@ export class OrbitService {
         }
     }
 
+    async getMember(id:string,memberId:string){
+        let memberIndex: number = -1
+        let teamIndex: number = -1;
+        try {
+            await this.db.load()
+            const account = this.db.get(id)
+            if (!account.teams) throw new HttpException("You don't have any team", HttpStatus.BAD_REQUEST);
+
+            account.teams.some((team, index) => {
+                if (team.members) {
+                    memberIndex = team.members.findIndex(i => i.id == memberId)
+                    teamIndex = index
+                    if (memberIndex != -1) return true
+                }
+            })
+            if (memberIndex == -1) throw new HttpException("There is not member with this property", HttpStatus.BAD_REQUEST);
+
+            let member = account.teams[teamIndex].members[memberIndex]
+            member["teamId"] = account.teams[teamIndex].id
+            await this.orbitDb.stop()
+
+            return {...member}
+        } catch (error) {
+            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
     async updateMember(id: string, dto: UpdateTeamMemberDto) {
         let memberIndex: number = -1
         let teamIndex: number = -1;
@@ -372,7 +399,7 @@ export class OrbitService {
                 if (index == -1) throw new HttpException("There is not any team with this property", HttpStatus.BAD_REQUEST);
 
                 account.teams[teamIndex].members.splice(memberIndex, 1)
-                account.teams[index].members.push(newMember)
+                !account.teams[index].members ? account.teams[index]["members"] = [newMember] : account.teams[index].members.push(newMember)
             } else {
                 account.teams[teamIndex].members[memberIndex] = newMember
             }

@@ -79,7 +79,7 @@ const Teams = () => {
             </div>
             <div>
                 {teams.map(w => w && w.members && w.members.length > 0 ? <Fragment key={generate()}><TeamContainer {...w} /></Fragment> : undefined)}
-                {teams.map(w => w && !w?.members ? <Fragment key={generate()}><TeamContainer {...w} /></Fragment> : undefined)}
+                {teams.map(w => w && (!w?.members || w?.members?.length === 0) ? <Fragment key={generate()}><TeamContainer {...w} /></Fragment> : undefined)}
 
                 {(result.isLoading || result.isFetching) && <div className="flex justify-center py-10"><ClipLoader /></div>}
             </div>

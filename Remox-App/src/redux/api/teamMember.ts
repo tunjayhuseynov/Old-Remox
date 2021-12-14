@@ -31,7 +31,7 @@ export const teamMemberAPI = createApi({
             })
         }),
 
-        getMember: builder.query<Member, string>({
+        getMember: builder.query<{member: Member}, string>({
             query: (id) => ({
                 url: `/team-member/${id}`
             })
