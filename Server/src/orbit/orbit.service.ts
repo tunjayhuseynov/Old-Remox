@@ -358,7 +358,7 @@ export class OrbitService {
             if (memberIndex == -1) throw new HttpException("There is not member with this property", HttpStatus.BAD_REQUEST);
 
             let member = account.teams[teamIndex].members[memberIndex]
-            member["teamId"] = account.teams[teamIndex].id
+            member['teamId'] = account.teams[teamIndex].id
             await this.orbitDb.stop()
 
             return {...member}
@@ -394,11 +394,12 @@ export class OrbitService {
 
             checkedUpdates.forEach(item => newMember[item] = escaper(dto[item]))
 
-            if (dto.teamId) {
+            if (dto.teamId && dto.teamId!=account.teams[teamIndex].id) {
                 let index = account.teams.findIndex(i => i.id == dto.teamId)
                 if (index == -1) throw new HttpException("There is not any team with this property", HttpStatus.BAD_REQUEST);
 
                 account.teams[teamIndex].members.splice(memberIndex, 1)
+
                 !account.teams[index].members ? account.teams[index]["members"] = [newMember] : account.teams[index].members.push(newMember)
             } else {
                 account.teams[teamIndex].members[memberIndex] = newMember

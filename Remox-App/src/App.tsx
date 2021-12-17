@@ -11,6 +11,7 @@ import Home from './pages/home';
 import Create from './pages/create';
 import { useEffect } from 'react'
 import Unlock from './pages/unlock';
+import Swap from './pages/swap'
 import Import from './pages/import/index';
 import Assets from './pages/dashboard/assets'
 import Teams from './pages/teams/index'
@@ -106,6 +107,7 @@ const AuthRouter = ({ data, unlockChecking }: { data: IStorage | null, unlockChe
           <Route path={path + '/teams'} exact render={() => unlockChecking(<Teams />)} />
           <Route path={path + '/transactions'} exact render={() => unlockChecking(<Transactions />)} />
           <Route path={path + '/transactions/:id'} exact render={() => unlockChecking(<Details />)} />
+          <Route path={path + '/swap'} exact render={() => unlockChecking(<Swap />)} />
         </Switch>
       </Dashboard>
     }} >

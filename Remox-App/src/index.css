@@ -16,3 +16,9 @@ video {
   max-width: none;
   height: auto;
 }
+
+input[class~="unvisibleArrow"]::-webkit-outer-spin-button,
+input[class~="unvisibleArrow"]::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}

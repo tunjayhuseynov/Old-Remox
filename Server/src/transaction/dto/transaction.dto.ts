@@ -1,4 +1,4 @@
-import { IsString, IsNotEmpty, IsArray, ValidateNested, IsEnum, IsOptional } from 'class-validator'
+import { IsString, IsNotEmpty, IsArray, ValidateNested, IsEnum, IsOptional, IsNumber } from 'class-validator'
 import { ApiProperty } from '@nestjs/swagger';
 import { TokenType,StableTokenType, AltTokenType } from '../transaction.entity';
 import { Type } from 'class-transformer';
@@ -55,6 +55,7 @@ export class SendMultipleTransactionDto{
     @IsEnum(TokenType)
     tokenType: TokenType
 }
+
 export class SendMultipleTransactionVsPhraseDto{
     @ApiProperty({ description: 'Address,amount and wallet type array',type:[SendMultipleTransactionDto] })
     @IsArray()
@@ -71,4 +72,28 @@ export class SendMultipleTransactionVsPhraseDto{
     @IsOptional()
     @IsString()
     comment?:string
+}
+
+export class MimimumAmountDto{
+    @ApiProperty({ description: 'Type of input token', enum: TokenType, enumName: "TokenType" })
+    @IsNotEmpty()
+    @IsEnum(TokenType)
+    input: TokenType
+
+    @ApiProperty({ description: 'Type of output token', enum: TokenType, enumName: "TokenType" })
+    @IsNotEmpty()
+    @IsEnum(TokenType)
+    output: TokenType
+
+    @ApiProperty({ description: 'Amount of exchange', enum: TokenType, enumName: "TokenType" })
+    @IsNotEmpty()
+    @IsString()
+    amount: string
+}
+
+export class SwapDto extends MimimumAmountDto{
+    @ApiProperty({ description: 'Phrase of address' })
+    @IsNotEmpty()
+    @IsString()
+    phrase:string
 }

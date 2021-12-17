@@ -5,6 +5,7 @@ export type DropDownItem = DropDownPriceItem | DropDownAddressItem | DropDownOnl
 
 interface BaseDropDown {
     name: string,
+    feeName?: string,
     className?: string, 
     id?: string,
     value?: CoinsName,

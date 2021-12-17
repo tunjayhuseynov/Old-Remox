@@ -1,7 +1,7 @@
 import { Controller, Post, Get, Body, Res, HttpStatus, UseGuards, Req, Param } from '@nestjs/common';
 import { TransactionService } from './transaction.service';
 import { ApiBody, ApiTags, ApiOkResponse, ApiForbiddenResponse, ApiBearerAuth } from '@nestjs/swagger';
-import { ParamDto, SendAltCoinDto, SendCoinDto, SendMultipleTransactionVsPhraseDto, SendStableCoinDto } from './dto'
+import { MimimumAmountDto, ParamDto, SendAltCoinDto, SendCoinDto, SendMultipleTransactionVsPhraseDto, SendStableCoinDto, SwapDto } from './dto'
 import { IGetBalance } from './interface';
 import { Response } from 'express'
 import { AuthGuard } from '@nestjs/passport';
@@ -23,6 +23,17 @@ export class TransactionController {
     @Get('currency')
     async getCoinCurrency(@Res() res: Response, @Req() req: any): Promise<Response> {
         const result = await this.transactionService.getCoinCurrency();
+        return res.status(HttpStatus.OK).json(result)
+    }
+
+    @UseGuards(AuthGuard('jwt'))
+    @ApiBody({ type: MimimumAmountDto })
+    @ApiOkResponse()
+    @ApiForbiddenResponse({ description: 'Forbidden.' })
+    @ApiBearerAuth('JWT-auth')
+    @Post('minimumAmountOut')
+    async minimumAmountOut(@Req() req: any, @Res() res: Response, @Body() dto: MimimumAmountDto): Promise<Response> {
+        const result = await this.transactionService.minmumAmountOut(dto);
         return res.status(HttpStatus.OK).json(result)
     }
 
@@ -66,6 +77,17 @@ export class TransactionController {
     @Post('multipleTran')
     async sendMultipleTran(@Req() req: any, @Res() res: Response, @Body() dto: SendMultipleTransactionVsPhraseDto): Promise<Response> {
         const result = await this.transactionService.sendMultipleCelo(dto, req.user.userId);
+        return res.status(HttpStatus.OK).json(result)
+    }
+
+    @UseGuards(AuthGuard('jwt'))
+    @ApiBody({ type: SwapDto })
+    @ApiOkResponse()
+    @ApiForbiddenResponse({ description: 'Forbidden.' })
+    @ApiBearerAuth('JWT-auth')
+    @Post('swap')
+    async swap(@Req() req: any, @Res() res: Response, @Body() dto: SwapDto): Promise<Response> {
+        const result = await this.transactionService.exchange(dto, req.user.userId);
         return res.status(HttpStatus.OK).json(result)
     }
 }

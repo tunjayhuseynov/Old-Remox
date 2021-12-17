@@ -1,304 +1,459 @@
 import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
-import Web3 from "web3"
-import { SendAltCoinDto, SendCoinDto, SendMultipleTransactionVsPhraseDto, SendStableCoinDto } from './dto';
+import Web3 from 'web3';
+import {
+	MimimumAmountDto,
+	SendAltCoinDto,
+	SendCoinDto,
+	SendMultipleTransactionVsPhraseDto,
+	SendStableCoinDto,
+	SwapDto
+} from './dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Transaction, TokenType } from './transaction.entity';
 import { Repository } from 'typeorm';
-import { Wallet, Contract, ethers } from 'ethers'
+import { Wallet, Contract, ethers } from 'ethers';
 import { Account as UserAccount } from 'src/account/account.entity';
-import { decrypt } from "../utils/crypto"
+import { decrypt } from '../utils/crypto';
 import { OrbitService } from 'src/orbit/orbit.service';
 import { Provider } from '../blockchain/provider';
-import { abi, AltToken, tokenAdress } from '../contractTokenAbi'
+import { abi, AltToken, tokenAdress, TokenNameAddress } from '../contractTokenAbi';
 import fs from 'fs';
 import path from 'path';
 import { IGetBalance } from './interface';
-import { excAbi } from "../abi"
-import { ContractKit as contractkit } from '@celo/contractkit'
-import { toTransactionObject } from '@celo/connect'
+import { CELO, ChainId, Fetcher, Percent, Route, Router, TokenAmount, Trade, TradeType } from '@ubeswap/sdk';
+import { excAbi } from '../abi';
+import { ContractKit as contractkit } from '@celo/contractkit';
+import { toTransactionObject } from '@celo/connect';
 
 @Injectable()
 export class TransactionService {
+	private web3: Web3;
+	private kit: any;
+	private provider: any;
 
-    private web3: Web3;
-    private kit: any;
-    private provider: any;
+	constructor(
+		@InjectRepository(Transaction) private readonly tranRepo: Repository<Transaction>,
+		@InjectRepository(UserAccount) private readonly accountRepo: Repository<UserAccount>,
+		private orbitService: OrbitService
+	) {
+		const providers = new Provider('https://forno.celo.org');
+		this.web3 = providers.web3;
+		this.kit = providers.kit;
+		this.provider = providers.provider;
+	}
 
-    constructor(
-        @InjectRepository(Transaction) private readonly tranRepo: Repository<Transaction>,
-        @InjectRepository(UserAccount) private readonly accountRepo: Repository<UserAccount>,
-        private orbitService: OrbitService
-    ) {
-        const providers = new Provider('https://forno.celo.org')
-        this.web3 = providers.web3;
-        this.kit = providers.kit;
-        this.provider = providers.provider
-    }
+	async accountInfo(accountAddress: string): Promise<IGetBalance> {
+		try {
+			let balances = {};
 
-    async accountInfo(accountAddress: string): Promise<IGetBalance> {
-        try {
-            // const jsonAbi = abi;
-            // const derivationPath = "m/44'/52752'/0'/0" + '/0'
-            // const walletMnemonic = Wallet.fromMnemonic("hire balcony else skirt together assist correct horror swing frame echo firm wealth celery enjoy curious own invite any corn dish chuckle crater convince", derivationPath)
-            // const walletPrivateKey = new Wallet('0xa56e32e41f1b70998e8892505dba5e30c2241c9e221021173d74020acda259a0', this.provider)
-            // console.log("adre"+walletPrivateKey.address)
-            // let wallet = new CeloWallet(walletMnemonic, this.provider)
-            // token_address.address.map((item)=>{
-            //     console.log(item)
-            // })
-            let balances = {};
+			let obj = {};
 
-            let obj = {}
-            for (const item of tokenAdress) {
-                obj = {}
-                const ethers = new Contract(item.address, abi, this.provider)
-                let balance = await ethers.balanceOf(accountAddress)
-                balance = this.kit.web3.utils.toBN(balance);
-                balance = this.kit.web3.utils.fromWei(balance.toString(), 'ether')
-                obj[item.tokenName] = balance
-                balances = Object.assign(balances, obj)
-            }
-            let stabletokenEUR = await this.kit.contracts.getStableToken('cEUR')
-            stabletokenEUR = await stabletokenEUR.balanceOf(accountAddress)
-            stabletokenEUR = this.kit.web3.utils.toBN(stabletokenEUR);
-            let cEUR = this.kit.web3.utils.fromWei(stabletokenEUR.toString(), 'ether')
+			// const multiSig2 = await this.kit.contracts.getMultiSig("0x2D29Fc92EF173912601EBC08DFD63D15925FB77A")
 
-            let goldtoken = await this.kit.contracts.getGoldToken()
-            goldtoken = await goldtoken.balanceOf(accountAddress)
-            goldtoken = this.kit.web3.utils.toBN(goldtoken)
-            let cello = this.kit.web3.utils.fromWei(goldtoken.toString(), 'ether')
+			// console.log(await multiSig2.getOwners())
 
-            let stabletokenUSD = await this.kit.contracts.getStableToken()
-            stabletokenUSD = await stabletokenUSD.balanceOf(accountAddress)
-            stabletokenUSD = this.kit.web3.utils.toBN(stabletokenUSD)
-            let cUsd = this.kit.web3.utils.fromWei(stabletokenUSD.toString(), 'ether')
+			// const multiSig = await this.kit._web3Contracts.getMultiSig("0x2D29Fc92EF173912601EBC08DFD63D15925FB77A")
 
-            return { celoBalance: cello, cUSDBalance: cUsd, cEURBalance: cEUR, ...balances }
-        } catch (e) {
-            throw new HttpException(e.message, HttpStatus.FORBIDDEN);
-        }
+			// const tx = toTransactionObject(
+			//     this.kit.connection,
+			//     multiSig.methods.addOwner("0x1051C82D597334A8C55AF238a8005fC8BC630E74"))
+			// console.log(await tx.txo.call())
 
-    }
+			for (const item of tokenAdress) {
+				obj = {};
+				const ethers = new Contract(item.address, abi, this.provider);
+				let balance = await ethers.balanceOf(accountAddress);
+				balance = this.kit.web3.utils.toBN(balance);
+				balance = this.kit.web3.utils.fromWei(balance.toString(), 'ether');
+				obj[item.tokenName] = balance;
+				balances = Object.assign(balances, obj);
+			}
+			let stabletokenEUR = await this.kit.contracts.getStableToken('cEUR');
+			stabletokenEUR = await stabletokenEUR.balanceOf(accountAddress);
+			stabletokenEUR = this.kit.web3.utils.toBN(stabletokenEUR);
+			let cEUR = this.kit.web3.utils.fromWei(stabletokenEUR.toString(), 'ether');
 
-    async getCoinCurrency() {
-        try {
-            const data = JSON.parse(fs.readFileSync(path.join(__dirname, "..", "..", "currency.txt"), 'utf8'))
-            return { data }
-        } catch (e) {
-            throw new HttpException(e.message, HttpStatus.FORBIDDEN);
-        }
-    }
+			let goldtoken = await this.kit.contracts.getGoldToken();
+			goldtoken = await goldtoken.balanceOf(accountAddress);
+			goldtoken = this.kit.web3.utils.toBN(goldtoken);
+			let celo = this.kit.web3.utils.fromWei(goldtoken.toString(), 'ether');
 
-    // async getTransaction(hash: string) {
-    //     try {
-    //         const explorer = await newLogExplorer(this.kit)
-    //         const block = await newBlockExplorer(this.kit)
-    //         const tx = await explorer.fetchTxReceipt(hash)
-    //         console.log({ tx, logs: tx.logs, topics: tx.logs[0].topics })
-    //         let a = explorer.getKnownLogs(tx)
-    //         console.log(a)
-    //         const logs = explorer.tryParseLog(tx.logs[0])
-    //         console.log({ logs })
+			let stabletokenUSD = await this.kit.contracts.getStableToken();
+			stabletokenUSD = await stabletokenUSD.balanceOf(accountAddress);
+			stabletokenUSD = this.kit.web3.utils.toBN(stabletokenUSD);
+			let cUsd = this.kit.web3.utils.fromWei(stabletokenUSD.toString(), 'ether');
 
-    //         const blockInfo = await block.fetchBlock(9973207)
-    //         // console.log({blockInfo: blockInfo.transactions})
+			return { celoBalance: celo, cUSDBalance: cUsd, cEURBalance: cEUR, ...balances };
+		} catch (e) {
+			throw new HttpException(e.message, HttpStatus.FORBIDDEN);
+		}
+	}
 
-    //         return 'success'
-    //     } catch (e) {
-    //         throw new HttpException(e.message, HttpStatus.FORBIDDEN);
-    //     }
-    // }
+	async getCoinCurrency() {
+		try {
+			const data = JSON.parse(fs.readFileSync(path.join(__dirname, '..', '..', 'currency.txt'), 'utf8'));
+			return { data };
+		} catch (e) {
+			throw new HttpException(e.message, HttpStatus.FORBIDDEN);
+		}
+	}
 
-    async sendCelo(dto: SendCoinDto, accountId: string) {
-        try {
-            await this.orbitService.config()
-            const { value: { iv } } = await this.orbitService.getData(accountId)
-            const accPhrase = decrypt({ iv, content: dto.phrase })
-            const derivationPath = "m/44'/52752'/0'/0" + '/0';
-            const walletMnemonic = Wallet.fromMnemonic(accPhrase, derivationPath);
-            this.kit.connection.addAccount(walletMnemonic.privateKey)
-            let { amount, toAddress, comment } = dto;
+	// async getTransaction(hash: string) {
+	//     try {
+	//         const explorer = await newLogExplorer(this.kit)
+	//         const block = await newBlockExplorer(this.kit)
+	//         const tx = await explorer.fetchTxReceipt(hash)
+	//         console.log({ tx, logs: tx.logs, topics: tx.logs[0].topics })
+	//         let a = explorer.getKnownLogs(tx)
+	//         console.log(a)
+	//         const logs = explorer.tryParseLog(tx.logs[0])
+	//         console.log({ logs })
 
-            const isAddressExist = this.web3.utils.isAddress(toAddress);
-            if (!isAddressExist) throw new HttpException("There is not any wallet belong this address", HttpStatus.BAD_REQUEST);
+	//         const blockInfo = await block.fetchBlock(9973207)
+	//         // console.log({blockInfo: blockInfo.transactions})
 
-            const amountWei = this.kit.web3.utils.toWei(amount, 'ether');
+	//         return 'success'
+	//     } catch (e) {
+	//         throw new HttpException(e.message, HttpStatus.FORBIDDEN);
+	//     }
+	// }
 
-            let goldtoken = await this.kit.contracts.getGoldToken()
-            let celotx = comment
-                ? await goldtoken.transferWithComment(toAddress, amountWei, comment).send({ from: walletMnemonic.address })
-                : await goldtoken.transfer(toAddress, amountWei).send({ from: walletMnemonic.address })
+	async sendCelo(dto: SendCoinDto, accountId: string) {
+		try {
+			await this.orbitService.config();
+			const { value: { iv } } = await this.orbitService.getData(accountId);
+			const accPhrase = decrypt({ iv, content: dto.phrase });
+			const derivationPath = "m/44'/52752'/0'/0" + '/0';
+			const walletMnemonic = Wallet.fromMnemonic(accPhrase, derivationPath);
+			this.kit.connection.addAccount(walletMnemonic.privateKey);
+			let { amount, toAddress, comment } = dto;
 
-            let celoReceipt = await celotx.waitReceipt()
+			const isAddressExist = this.web3.utils.isAddress(toAddress);
+			if (!isAddressExist)
+				throw new HttpException('There is not any wallet belong this address', HttpStatus.BAD_REQUEST);
 
-            return { from: walletMnemonic.address, to: toAddress, value: amount, transactionHash: celoReceipt.transactionHash }
-        } catch (e) {
-            console.log(e)
-            throw new HttpException(e.message, HttpStatus.FORBIDDEN);
-        }
-    }
+			const amountWei = this.kit.web3.utils.toWei(amount, 'ether');
 
-    async sendcUSDOrcEUR(dto: SendStableCoinDto, accountId: string) {//!!!!!!!
-        try {
-            await this.orbitService.config()
-            const { value: { iv } } = await this.orbitService.getData(accountId)
-            const accPhrase = decrypt({ iv, content: dto.phrase })
-            const derivationPath = "m/44'/52752'/0'/0" + '/0';
-            const walletMnemonic = Wallet.fromMnemonic(accPhrase, derivationPath);
-            this.kit.connection.addAccount(walletMnemonic.privateKey)
-            let { amount, toAddress, comment } = dto;
+			let goldtoken = await this.kit.contracts.getGoldToken();
 
-            const isAddressExist = this.web3.utils.isAddress(toAddress);
-            if (!isAddressExist) throw new HttpException("There is not any wallet belong this address", HttpStatus.BAD_REQUEST);
+			let currentBalance = await goldtoken.balanceOf(walletMnemonic.address);
+			currentBalance = this.kit.web3.utils.toBN(currentBalance);
+			let celoBalance = this.kit.web3.utils.fromWei(currentBalance.toString(), 'ether');
 
-            const amountWei = this.kit.web3.utils.toWei(amount, 'ether');
-            let stabletoken = await this.kit.contracts.getStableToken(dto.stableTokenType)
+			if (amountWei >= celoBalance)
+				throw new HttpException('Celo amount exceeds balance', HttpStatus.BAD_REQUEST);
 
-            let satbleTokentx = comment
-                ? await stabletoken.transferWithComment(toAddress, amountWei, comment).send({ from: walletMnemonic.address, feeCurrency: stabletoken.address })
-                : await stabletoken.transfer(toAddress, amountWei).send({ from: walletMnemonic.address, feeCurrency: stabletoken.address })
+			let celotx = comment
+				? await goldtoken
+						.transferWithComment(toAddress, amountWei, comment)
+						.send({ from: walletMnemonic.address })
+				: await goldtoken.transfer(toAddress, amountWei).send({ from: walletMnemonic.address });
 
-            let stReceipt = await satbleTokentx.waitReceipt()
-            return { from: walletMnemonic.address, to: toAddress, value: amount, transactionHash: stReceipt.transactionHash }
-        } catch (e) {
-            throw new HttpException(e.message, HttpStatus.FORBIDDEN);
-        }
-    }
+			let celoReceipt = await celotx.waitReceipt();
 
-    async sendAltCoin(dto: SendAltCoinDto, accountId: string) {
-        try {
-            await this.orbitService.config()
-            const { value: { iv } } = await this.orbitService.getData(accountId)
-            const accPhrase = decrypt({ iv, content: dto.phrase })
-            const derivationPath = "m/44'/52752'/0'/0" + '/0';
-            const walletMnemonic = Wallet.fromMnemonic(accPhrase, derivationPath);
+			return {
+				from: walletMnemonic.address,
+				to: toAddress,
+				value: amount,
+				transactionHash: celoReceipt.transactionHash
+			};
+		} catch (e) {
+			throw new HttpException(e.message, HttpStatus.FORBIDDEN);
+		}
+	}
 
-            let { amount, toAddress } = dto;
+	async sendcUSDOrcEUR(dto: SendStableCoinDto, accountId: string) {
+		//!!!!!!!
+		try {
+			await this.orbitService.config();
+			const { value: { iv } } = await this.orbitService.getData(accountId);
+			const accPhrase = decrypt({ iv, content: dto.phrase });
+			const derivationPath = "m/44'/52752'/0'/0" + '/0';
+			const walletMnemonic = Wallet.fromMnemonic(accPhrase, derivationPath);
+			this.kit.connection.addAccount(walletMnemonic.privateKey);
+			let { amount, toAddress, comment } = dto;
 
-            const isAddressExist = this.web3.utils.isAddress(toAddress);
-            if (!isAddressExist) throw new HttpException("There is not any wallet belong this address", HttpStatus.BAD_REQUEST);
+			const isAddressExist = this.web3.utils.isAddress(toAddress);
+			if (!isAddressExist)
+				throw new HttpException('There is not any wallet belong this address', HttpStatus.BAD_REQUEST);
 
-            const amountWei = this.kit.web3.utils.toWei(amount, 'ether');
-            const token = AltToken[dto.altTokenType]
+			const amountWei = this.kit.web3.utils.toWei(amount, 'ether');
 
-            // const yourContract = new this.kit.web3.eth.Contract(abi, token) const account = this.web3.eth.accounts.privateKeyToAccount(walletMnemonic.privateKey).address;const transaction = yourContract.methods.transfer(toAddress, amountWei);const options = {to: transaction._parent._address,     data: transaction.encodeABI(),     gas: await transaction.estimateGas({ from: account }), }; const signed = await this.web3.eth.accounts.signTransaction(options, walletMnemonic.privateKey); const receipt = await this.web3.eth.sendSignedTransaction(signed.rawTransaction);
+			let stabletoken = await this.kit.contracts.getStableToken(dto.stableTokenType);
 
-            this.kit.connection.addAccount(walletMnemonic.privateKey)
+			let currentBalance = await stabletoken.balanceOf(walletMnemonic.address);
+			currentBalance = this.kit.web3.utils.toBN(currentBalance);
+			currentBalance = this.kit.web3.utils.fromWei(currentBalance.toString(), 'ether');
 
-            let stabletoken = await this.kit.contracts.getErc20(token)
-            let satbleTokentx = await stabletoken.transfer(toAddress, amountWei).send({ from: walletMnemonic.address })
-            let stReceipt = await satbleTokentx.waitReceipt()
-            return { from: walletMnemonic.address, to: toAddress, value: amount, transactionHash: stReceipt.transactionHash }
+			if (amountWei >= currentBalance)
+				throw new HttpException(`${dto.stableTokenType} amount exceeds balance`, HttpStatus.BAD_REQUEST);
 
-        } catch (e) {
-            throw new HttpException(e.message, HttpStatus.FORBIDDEN);
-        }
-    }
+			let satbleTokentx = comment
+				? await stabletoken
+						.transferWithComment(toAddress, amountWei, comment)
+						.send({ from: walletMnemonic.address, feeCurrency: stabletoken.address })
+				: await stabletoken
+						.transfer(toAddress, amountWei)
+						.send({ from: walletMnemonic.address, feeCurrency: stabletoken.address });
 
-    async sendMultipleCelo(dto: SendMultipleTransactionVsPhraseDto, accountId: string) {
-        try {
-            await this.orbitService.config()
-            const { value: { iv } } = await this.orbitService.getData(accountId)
-            const accPhrase = decrypt({ iv, content: dto.phrase })
-            const derivationPath = "m/44'/52752'/0'/0" + '/0';
-            const walletMnemonic = Wallet.fromMnemonic(accPhrase, derivationPath);
+			let stReceipt = await satbleTokentx.waitReceipt();
+			return {
+				from: walletMnemonic.address,
+				to: toAddress,
+				value: amount,
+				transactionHash: stReceipt.transactionHash
+			};
+		} catch (e) {
+			throw new HttpException(e.message, HttpStatus.FORBIDDEN);
+		}
+	}
 
-            let multiTx, index;
-            const amountList: { token: string, amount: number }[] = [];
-            const errors = [];
-            this.kit.connection.addAccount(walletMnemonic.privateKey)
-            let goldtoken = await this.kit.contracts.getGoldToken()
-            const bacth = new this.web3.BatchRequest()
+	async sendAltCoin(dto: SendAltCoinDto, accountId: string) {
+		try {
+			await this.orbitService.config();
+			const { value: { iv } } = await this.orbitService.getData(accountId);
+			const accPhrase = decrypt({ iv, content: dto.phrase });
+			const derivationPath = "m/44'/52752'/0'/0" + '/0';
+			const walletMnemonic = Wallet.fromMnemonic(accPhrase, derivationPath);
 
-            for await (const item of dto.multipleAddresses) {
-                let { amount, toAddress, tokenType } = item;
-                let token = TokenType[tokenType]
-                let amountWei = this.kit.web3.utils.toWei(amount, 'ether');
-                if (token == undefined) {
-                    throw new HttpException("This wallet type isnt exist", HttpStatus.FORBIDDEN)
-                }
+			let { amount, toAddress } = dto;
 
-                if (token == TokenType.celo) {
-                    multiTx = dto.comment
-                        ? await goldtoken.transferWithComment(toAddress, amountWei, dto.comment).send({ from: walletMnemonic.address })
-                        : await goldtoken.transfer(toAddress, amountWei).send({ from: walletMnemonic.address })
-                    // bacth.add(await multiTx.waitReceipt())
-                }
-                else if (token == TokenType.cUSD || token == TokenType.cEUR) {
-                    let stabletoken = await this.kit.contracts.getStableToken(token)
-                    multiTx = dto.comment
-                        ? await stabletoken.transferWithComment(toAddress, amountWei, dto.comment).send({ from: walletMnemonic.address, feeCurrency: stabletoken.address })
-                        : await stabletoken.transfer(toAddress, amountWei).send({ from: walletMnemonic.address, feeCurrency: stabletoken.address })
-                    // bacth.add(await multiTx.waitReceipt())
-                } else {
-                    let altToken = AltToken[token]
-                    let stabletoken = await this.kit.contracts.getErc20(altToken)
-                    multiTx = await stabletoken.transfer(toAddress, amountWei).send({ from: walletMnemonic.address })
-                    // bacth.add(multiTx.waitReceipt())
-                }
-                index = amountList.findIndex(item => item.token == token);
-                index == -1 ? amountList.push({ token, amount: parseFloat(amount) }) : amountList[index].amount += parseFloat(amount)
-            }
+			const isAddressExist = this.web3.utils.isAddress(toAddress);
+			if (!isAddressExist)
+				throw new HttpException('There is not any wallet belong this address', HttpStatus.BAD_REQUEST);
 
-            const { celoBalance, cEURBalance, cUSDBalance, MOBI, MOO, POOF, UBE } = await this.accountInfo(walletMnemonic.address)
-            amountList.map(item => {
-                if (item.token == TokenType.celo && item.amount >= parseFloat(celoBalance)) errors.push("Celo amount exceeds balance")
-                if (item.token == TokenType.cUSD && item.amount >= parseFloat(cUSDBalance)) errors.push("cUSD amount exceeds balance")
-                if (item.token == TokenType.cEUR && item.amount >= parseFloat(cEURBalance)) errors.push("cEUR amount exceeds balance")
-                if (item.token == TokenType.UBE && item.amount >= parseFloat(UBE)) errors.push("UBE amount exceeds balance")
-                if (item.token == TokenType.POOF && item.amount >= parseFloat(POOF)) errors.push("POOF amount exceeds balance")
-                if (item.token == TokenType.MOBI && item.amount >= parseFloat(MOBI)) errors.push("MOBI amount exceeds balance")
-                if (item.token == TokenType.MOO && item.amount >= parseFloat(MOO)) errors.push("MOO amount exceeds balance")
-            })
-            if (errors.length != 0) throw new HttpException(errors.join(), HttpStatus.FORBIDDEN)
+			const amountWei = this.kit.web3.utils.toWei(amount, 'ether');
+			const token = AltToken[dto.altTokenType];
 
-            // bacth.execute()
-            return "success"
-        } catch (e) {
-            throw new HttpException(e.message, HttpStatus.FORBIDDEN)
-        }
-    }
+			// const yourContract = new this.kit.web3.eth.Contract(abi, token) const account = this.web3.eth.accounts.privateKeyToAccount(walletMnemonic.privateKey).address;const transaction = yourContract.methods.transfer(toAddress, amountWei);const options = {to: transaction._parent._address,     data: transaction.encodeABI(),     gas: await transaction.estimateGas({ from: account }), }; const signed = await this.web3.eth.accounts.signTransaction(options, walletMnemonic.privateKey); const receipt = await this.web3.eth.sendSignedTransaction(signed.rawTransaction);
 
-    // async exchange(accountId: string) {
-    //     try {
-    //         const dollar = await Fetcher.fetchTokenData(
-    //             ChainId.MAINNET,
-    //             '0x765DE816845861e75A25fCA122bb6898B8B1282a',
-    //             this.provider
-    //         );
-    //         const avro = await Fetcher.fetchTokenData(
-    //             ChainId.MAINNET,
-    //             '0xD8763CBa276a3738E6DE85b4b3bF5FDed6D6cA73',
-    //             this.provider
-    //         );
+			this.kit.connection.addAccount(walletMnemonic.privateKey);
 
-    //         const pair = new Pair(new TokenAmount(dollar, '10000000000000000'), new TokenAmount(avro, '0'));
+			const ethers = new Contract(token, abi, this.provider);
+			let currentBalance = await ethers.balanceOf(walletMnemonic.address);
+			currentBalance = this.kit.web3.utils.toBN(currentBalance);
+			currentBalance = this.kit.web3.utils.fromWei(currentBalance.toString(), 'ether');
 
-    //         const route = new Route([pair], dollar, avro);
+			if (amountWei >= currentBalance)
+				throw new HttpException(`${dto.altTokenType} amount exceeds balance`, HttpStatus.BAD_REQUEST);
 
-    //         const trade = new Trade(route, new TokenAmount(avro, '1000000'), TradeType.EXACT_OUTPUT);
+			let stabletoken = await this.kit.contracts.getErc20(token);
+			let satbleTokentx = await stabletoken.transfer(toAddress, amountWei).send({ from: walletMnemonic.address });
+			let stReceipt = await satbleTokentx.waitReceipt();
+			return {
+				from: walletMnemonic.address,
+				to: toAddress,
+				value: amount,
+				transactionHash: stReceipt.transactionHash
+			};
+		} catch (e) {
+			throw new HttpException(e.message, HttpStatus.FORBIDDEN);
+		}
+	}
 
-    //         const slippageTolerance = new Percent('50', '10000'); // 50 bips, or 0.50%
+	async sendMultipleCelo(dto: SendMultipleTransactionVsPhraseDto, accountId: string) {
+		try {
+			await this.orbitService.config();
+			const { value: { iv } } = await this.orbitService.getData(accountId);
+			const accPhrase = decrypt({ iv, content: dto.phrase });
+			const derivationPath = "m/44'/52752'/0'/0" + '/0';
+			const walletMnemonic = Wallet.fromMnemonic(accPhrase, derivationPath);
 
-    //         const amountOutMin = trade.minimumAmountOut(slippageTolerance).raw; // needs to be converted to e.g. hex
-    //         const path = [avro.address, dollar.address];
-    //         const to = '0x9CD7aa36B463fC273dC4eD41e31a1A3bD16bD954'; // should be a checksummed recipient address
-    //         const deadline = Math.floor(Date.now() / 1000) + 60 * 20; // 20 minutes from the current Unix time
-    //         const value = trade.inputAmount.raw;
+			let multiTx, index;
+			const amountList: { token: string; amount: number }[] = [];
+			const errors = [];
+			this.kit.connection.addAccount(walletMnemonic.privateKey);
+			let goldtoken = await this.kit.contracts.getGoldToken();
+			const bacth = new this.web3.BatchRequest();
 
-    //         const router = Router.swapCallParameters(trade, {
-    //             allowedSlippage: slippageTolerance,
-    //             ttl: deadline,
-    //             recipient: to
-    //         });
+			for await (const item of dto.multipleAddresses) {
+				let { amount, toAddress, tokenType } = item;
+				let token = TokenType[tokenType];
+				let amountWei = this.kit.web3.utils.toWei(amount, 'ether');
+				if (token == undefined) {
+					throw new HttpException('This wallet type isnt exist', HttpStatus.FORBIDDEN);
+				}
 
-    //         console.log(router)
+				if (token == TokenType.celo) {
+					multiTx = dto.comment
+						? await goldtoken
+								.transferWithComment(toAddress, amountWei, dto.comment)
+								.send({ from: walletMnemonic.address })
+						: await goldtoken.transfer(toAddress, amountWei).send({ from: walletMnemonic.address });
+					// bacth.add(await multiTx.waitReceipt())
+				} else if (token == TokenType.cUSD || token == TokenType.cEUR) {
+					let stabletoken = await this.kit.contracts.getStableToken(token);
+					multiTx = dto.comment
+						? await stabletoken
+								.transferWithComment(toAddress, amountWei, dto.comment)
+								.send({ from: walletMnemonic.address, feeCurrency: stabletoken.address })
+						: await stabletoken
+								.transfer(toAddress, amountWei)
+								.send({ from: walletMnemonic.address, feeCurrency: stabletoken.address });
+					// bacth.add(await multiTx.waitReceipt())
+				} else {
+					let altToken = AltToken[token];
+					let stabletoken = await this.kit.contracts.getErc20(altToken);
+					multiTx = await stabletoken.transfer(toAddress, amountWei).send({ from: walletMnemonic.address });
+					// bacth.add(multiTx.waitReceipt())
+				}
+				index = amountList.findIndex((item) => item.token == token);
+				index == -1
+					? amountList.push({ token, amount: parseFloat(amount) })
+					: (amountList[index].amount += parseFloat(amount));
+			}
 
+			const { celoBalance, cEURBalance, cUSDBalance, MOBI, MOO, POOF, UBE } = await this.accountInfo(
+				walletMnemonic.address
+			);
+			amountList.map((item) => {
+				if (item.token == TokenType.celo && item.amount >= parseFloat(celoBalance))
+					errors.push('Celo amount exceeds balance');
+				if (item.token == TokenType.cUSD && item.amount >= parseFloat(cUSDBalance))
+					errors.push('cUSD amount exceeds balance');
+				if (item.token == TokenType.cEUR && item.amount >= parseFloat(cEURBalance))
+					errors.push('cEUR amount exceeds balance');
+				if (item.token == TokenType.UBE && item.amount >= parseFloat(UBE))
+					errors.push('UBE amount exceeds balance');
+				if (item.token == TokenType.POOF && item.amount >= parseFloat(POOF))
+					errors.push('POOF amount exceeds balance');
+				if (item.token == TokenType.MOBI && item.amount >= parseFloat(MOBI))
+					errors.push('MOBI amount exceeds balance');
+				if (item.token == TokenType.MOO && item.amount >= parseFloat(MOO))
+					errors.push('MOO amount exceeds balance');
+			});
+			if (errors.length != 0) throw new HttpException(errors.join(), HttpStatus.FORBIDDEN);
 
-    //         const contract = new Contract("0xE3D8bd6Aed4F159bc8000a9cD47CffDb95F96121", excAbi, this.provider)
-    //         await contract.callStatic[router.methodName](...router.args, { value: router.value })
-    //     } catch (e) {
-    //         throw new HttpException(e.message, HttpStatus.FORBIDDEN)
-    //     }
-    // }
+			// bacth.execute()
+			return 'success';
+		} catch (e) {
+			throw new HttpException(e.message, HttpStatus.FORBIDDEN);
+		}
+	}
+
+	async exchange(dto: SwapDto, accountId: string) {
+		let token;
+		try {
+			await this.orbitService.config();
+
+			const { value: { iv } } = await this.orbitService.getData(accountId);
+			const accPhrase = decrypt({ iv, content: dto.phrase });
+			const derivationPath = "m/44'/52752'/0'/0" + '/0';
+			const walletMnemonic = Wallet.fromMnemonic(accPhrase, derivationPath);
+			this.kit.connection.addAccount(walletMnemonic.privateKey);
+			this.kit.defaultAccount = walletMnemonic.address;
+
+			let inputAddress = TokenNameAddress[dto.input];
+			const input = await Fetcher.fetchTokenData(ChainId.MAINNET, inputAddress, this.provider);
+
+			let outputAddress = TokenNameAddress[dto.output];
+			const output = await Fetcher.fetchTokenData(ChainId.MAINNET, outputAddress, this.provider);
+
+			if (dto.input == TokenType.celo) token = await this.kit.contracts.getGoldToken();
+			else if (dto.input == TokenType.cUSD || dto.input == TokenType.cEUR)
+				token = await this.kit.contracts.getStableToken(dto.input);
+			else {
+				let altToken = TokenNameAddress[dto.input];
+				token = await this.kit.contracts.getErc20(altToken);
+			}
+
+			let approve = token.approve(
+				'0xE3D8bd6Aed4F159bc8000a9cD47CffDb95F96121',
+				this.kit.web3.utils.toWei(dto.amount, 'ether')
+			);
+			let sendFunc = await approve.send();
+			await sendFunc.waitReceipt();
+
+			const addressesMain = {
+				ubeswapFactory: '0x62d5b84bE28a183aBB507E125B384122D2C25fAE',
+				ubeswapRouter: '0xE3D8bd6Aed4F159bc8000a9cD47CffDb95F96121',
+				ubeswapMoolaRouter: '0x7D28570135A2B1930F331c507F65039D4937f66c'
+			};
+
+			const router = new this.kit.connection.web3.eth.Contract(
+				[
+					{
+						inputs: [
+							{
+								internalType: 'uint256',
+								name: 'amountIn',
+								type: 'uint256'
+							},
+							{
+								internalType: 'uint256',
+								name: 'amountOutMin',
+								type: 'uint256'
+							},
+							{
+								internalType: 'address[]',
+								name: 'path',
+								type: 'address[]'
+							},
+							{
+								internalType: 'address',
+								name: 'to',
+								type: 'address'
+							},
+							{
+								internalType: 'uint256',
+								name: 'deadline',
+								type: 'uint256'
+							}
+						],
+						name: 'swapExactTokensForTokens',
+						outputs: [
+							{
+								internalType: 'uint256[]',
+								name: 'amounts',
+								type: 'uint256[]'
+							}
+						],
+						stateMutability: 'nonpayable',
+						type: 'function'
+					}
+				],
+				addressesMain.ubeswapRouter
+			);
+
+			const pair = await Fetcher.fetchPairData(output, input, this.provider); //
+			const route = new Route([ pair ], input); //
+			const amountIn = ethers.utils.parseUnits(dto.amount, 'ether');
+			const trade = new Trade(route, new TokenAmount(input, amountIn.toString()), TradeType.EXACT_INPUT); //
+			const ubeRouter = Router.swapCallParameters(trade, {
+				allowedSlippage: new Percent('50', '1000'),
+				recipient: walletMnemonic.address,
+				ttl: 100
+			});
+
+			const txx = await router.methods.swapExactTokensForTokens(...ubeRouter.args);
+
+			const sender = await txx.send({ from: walletMnemonic.address });
+			return 'success';
+		} catch (e) {
+			throw new HttpException(e.message, HttpStatus.FORBIDDEN);
+		}
+	}
+
+	async minmumAmountOut(dto: MimimumAmountDto) {
+		try {
+			let inputAddress = TokenNameAddress[dto.input];
+			const input = await Fetcher.fetchTokenData(ChainId.MAINNET, inputAddress, this.provider);
+
+			let outputAddress = TokenNameAddress[dto.output];
+			const output = await Fetcher.fetchTokenData(ChainId.MAINNET, outputAddress, this.provider);
+
+			const pair = await Fetcher.fetchPairData(output, input, this.provider); //
+			const route = new Route([ pair ], input); //
+			const amountIn = ethers.utils.parseUnits(dto.amount, 'ether');
+			const trade = new Trade(route, new TokenAmount(input, amountIn.toString()), TradeType.EXACT_INPUT); //
+
+			const amountOut = trade.minimumAmountOut(new Percent('5', '1000'));
+			let minimumAmountOut = amountOut.raw.toString();
+			minimumAmountOut = this.kit.web3.utils.fromWei(minimumAmountOut, 'ether');
+
+			return { minimumAmountOut };
+		} catch (e) {
+			throw new HttpException(e.message, HttpStatus.FORBIDDEN);
+		}
+	}
 }
