@@ -5,7 +5,9 @@ import Unlock from './reducers/unlock'
 import Currency from './reducers/currencies'
 import Toggle from './reducers/toggles'
 import Transaction from './reducers/transactions'
-import { accountAPI, customerAPI, teamAPI, transactionAPI, teamMemberAPI, BlockScoutApi, swapAPI } from './api'
+import SelectedAcount from './reducers/selectedAccount'
+import Multisig from './reducers/multisig'
+import { accountAPI, customerAPI, teamAPI, transactionAPI, teamMemberAPI, BlockScoutApi, swapAPI, multisigAPI } from './api'
 
 const store = configureStore({
     reducer: {
@@ -14,7 +16,9 @@ const store = configureStore({
         storage: Storage,
         unlock: Unlock,
         toggle: Toggle,
-        transactions: Transaction,
+        transactionsStore: Transaction,
+        selectedAccount: SelectedAcount,
+        multisig: Multisig,
         [accountAPI.reducerPath]: accountAPI.reducer,
         [customerAPI.reducerPath]: customerAPI.reducer,
         [swapAPI.reducerPath]: swapAPI.reducer,
@@ -22,9 +26,10 @@ const store = configureStore({
         [teamMemberAPI.reducerPath]: teamMemberAPI.reducer,
         [transactionAPI.reducerPath]: transactionAPI.reducer,
         [BlockScoutApi.reducerPath]: BlockScoutApi.reducer,
+        [multisigAPI.reducerPath]: multisigAPI.reducer,
     },
     middleware: (getDefaultMiddleware) =>
-        getDefaultMiddleware({ serializableCheck: false }).concat(accountAPI.middleware, customerAPI.middleware, transactionAPI.middleware, teamAPI.middleware, teamMemberAPI.middleware, BlockScoutApi.middleware, swapAPI.middleware),
+        getDefaultMiddleware({ serializableCheck: false }).concat(accountAPI.middleware, customerAPI.middleware, transactionAPI.middleware, teamAPI.middleware, teamMemberAPI.middleware, BlockScoutApi.middleware, swapAPI.middleware, multisigAPI.middleware),
 })
 
 export type RootState = ReturnType<typeof store.getState>

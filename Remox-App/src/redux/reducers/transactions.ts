@@ -3,11 +3,11 @@ import { GetTransactions } from '../../types/sdk/blockscout';
 import { RootState } from '../store';
 
 interface InitialTransaction {
-	transactions: GetTransactions | undefined;
+	transactions: GetTransactions | null;
 }
 
 const initialState: InitialTransaction = {
-	transactions: undefined
+	transactions: null
 };
 
 export const TransactionAPI = createSlice({
@@ -16,10 +16,13 @@ export const TransactionAPI = createSlice({
 	reducers: {
 		setTransactions: (state, action) => {
 			state.transactions = action.payload;
+		},
+		removeTransactions: (state) => {
+			state.transactions = null;
 		}
 	}
 });
 
-export const { setTransactions } = TransactionAPI.actions;
-export const SelectTransactions = (state: RootState) => state.transactions.transactions;
+export const { setTransactions, removeTransactions } = TransactionAPI.actions;
+export const SelectTransactions = (state: RootState) => state.transactionsStore.transactions;
 export default TransactionAPI.reducer;

@@ -7,7 +7,7 @@ import Success from "../../components/success";
 import Error from "../../components/error";
 import { DropDownItem } from "../../types/dropdown";
 import { Member, MultipleTransactionData } from "../../types/sdk";
-import { useGetBalanceQuery, useLazyGetTeamsWithMembersQuery, useSendCeloMutation, useSendStableTokenMutation, useSendMultipleTransactionsMutation, useSendAltTokenMutation } from "../../redux/api";
+import { useGetBalanceQuery, useLazyGetTeamsWithMembersQuery, useSendCeloMutation, useSendStableTokenMutation, useSendMultipleTransactionsMutation, useSendAltTokenMutation, useSubmitTransactionsMutation } from "../../redux/api";
 import { selectStorage } from "../../redux/reducers/storage";
 import TeamInput from "../../components/pay/teaminput";
 import { AltCoins, AltcoinsList, Coins, CoinsName, StableTokens, TransactionFeeTokenName } from "../../types/coins";
@@ -16,21 +16,29 @@ import lodash from "lodash";
 import { IBalanceItem, SelectBalances } from "../../redux/reducers/currencies";
 import { changeError, selectError } from "../../redux/reducers/notificationSlice";
 import Initalization from "../../utility/init";
+import { SelectSelectedAccount } from "../../redux/reducers/selectedAccount";
+import { useRefetchData } from "../../hooks";
 
 
 const MassPay = () => {
 
     const storage = useAppSelector(selectStorage)
+    const selectedAccount = useAppSelector(SelectSelectedAccount)
     const isError = useAppSelector(selectError)
     const balance = useAppSelector(SelectBalances)
     const router = useHistory();
     const dispatch = useAppDispatch()
 
-    const { data, refetch } = useGetBalanceQuery()
+    // const { data, refetch } = useGetBalanceQuery()
+    const [refetch] = useRefetchData(true)
+
     const [sendCelo] = useSendCeloMutation()
     const [sendStableToken] = useSendStableTokenMutation()
     const [sendMultiple] = useSendMultipleTransactionsMutation()
     const [sendAltcoin] = useSendAltTokenMutation()
+
+    const [sendMultisig] = useSubmitTransactionsMutation()
+
 
     const [currentBalances, setCurrentBalances] = useState<IBalanceItem[]>();
     const [selectedBalances, setSelectedBalances] = useState<JSX.Element[]>();
@@ -61,18 +69,18 @@ const MassPay = () => {
 
 
     useEffect(() => {
-        if (data) {
+        if (balance && balance.CELO) {
             setSelectedWallet({ name: "Set all to", address: "" })
-            const coins = Object.values(Coins).map((coin: AltCoins) => ({
-                name: `${parseFloat(data[coin.responseName]).toFixed(3)} ${coin.name}`,
-                type: coin.value,
-                value: coin.value,
-                coinUrl: coin.coinUrl,
-                amount: data[coin.responseName]
+            const coins = Object.values(balance).map((coin: IBalanceItem) => ({
+                name: `${coin.amount.toFixed(3)} ${coin.coins.name}`,
+                type: coin.coins.value.toString(),
+                value: coin.coins.value,
+                coinUrl: coin.coins.coinUrl,
+                amount: coin.amount.toString(),
             }))
             setList(coins)
         }
-    }, [data])
+    }, [balance])
 
     useEffect(() => {
         if (teams && teams.teams.length) {
@@ -83,7 +91,7 @@ const MassPay = () => {
     useEffect(() => {
         if (teams && teams.teams.length && selectedTeam && selectedTeam.address) {
             const team = teams.teams.find(w => w.id === selectedTeam.address)
-            if(team && team.members){
+            if (team && team.members) {
                 resMember.current = team.members.map(w => ({ ...w, selected: false }))
             }
             setMembers(teams.teams.find(w => w.id === selectedTeam.address)!.members)
@@ -109,57 +117,89 @@ const MassPay = () => {
 
         setIsPaying(true)
 
-        try {
-            if (result.length === 1) {
-                if (result[0].tokenType === CoinsName.CELO) {
-                    await sendCelo({
-                        toAddress: result[0].toAddress,
-                        amount: result[0].amount,
-                        phrase: storage!.encryptedPhrase
-                    }).unwrap
 
-                } else if (result[0].tokenType === CoinsName.cUSD || result[0].tokenType === CoinsName.cEUR) {
-                    await sendStableToken({
-                        toAddress: result[0].toAddress,
-                        amount: result[0].amount,
-                        phrase: storage!.encryptedPhrase,
-                        stableTokenType: StableTokens[(result[0].tokenType)]
-                    }).unwrap()
-                } else {
-                    await sendAltcoin({
-                        toAddress: result[0].toAddress,
-                        amount: result[0].amount,
-                        phrase: storage!.encryptedPhrase,
-                        altTokenType: AltcoinsList[(result[0].tokenType as AltcoinsList)]
+        try {
+            if (storage!.accountAddress.toLowerCase() === selectedAccount.toLowerCase()) {
+                if (result.length === 1) {
+                    if (result[0].tokenType === CoinsName.CELO) {
+                        await sendCelo({
+                            toAddress: result[0].toAddress,
+                            amount: result[0].amount,
+                            phrase: storage!.encryptedPhrase
+                        }).unwrap
+
+                    } else if (result[0].tokenType === CoinsName.cUSD || result[0].tokenType === CoinsName.cEUR) {
+                        await sendStableToken({
+                            toAddress: result[0].toAddress,
+                            amount: result[0].amount,
+                            phrase: storage!.encryptedPhrase,
+                            stableTokenType: StableTokens[(result[0].tokenType)]
+                        }).unwrap()
+                    } else {
+                        await sendAltcoin({
+                            toAddress: result[0].toAddress,
+                            amount: result[0].amount,
+                            phrase: storage!.encryptedPhrase,
+                            altTokenType: AltcoinsList[(result[0].tokenType as AltcoinsList)]
+                        }).unwrap()
+                    }
+                }
+                else {
+                    const arr: Array<MultipleTransactionData> = result.map(w => ({
+                        toAddress: w.toAddress,
+                        amount: w.amount,
+                        tokenType: w.tokenType
+                    }))
+
+                    await sendMultiple({
+                        multipleAddresses: arr,
+                        phrase: storage!.encryptedPhrase
                     }).unwrap()
                 }
-            }
-            else {
-                const arr: Array<MultipleTransactionData> = result.map(w => ({
-                    toAddress: w.toAddress,
-                    amount: w.amount,
-                    tokenType: w.tokenType
-                }))
+            } else {
+                if (result.length === 1) {
+                    await sendMultisig({
+                        toAddress: result[0].toAddress,
+                        multisigAddress: selectedAccount,
+                        phrase: storage!.encryptedPhrase,
+                        tokenType: result[0].tokenType,
+                        value: result[0].amount,
+                    }).unwrap()
+                }
+                else {
+                    const arr: Array<MultipleTransactionData> = result.map(w => ({
+                        toAddress: w.toAddress,
+                        amount: w.amount,
+                        tokenType: w.tokenType
+                    }))
 
-                await sendMultiple({
-                    multipleAddresses: arr,
-                    phrase: storage!.encryptedPhrase
-                }).unwrap()
+                    for (let i = 0; i < arr.length; i++) {
+                        await sendMultisig({
+                            toAddress: arr[i].toAddress,
+                            multisigAddress: selectedAccount,
+                            phrase: storage!.encryptedPhrase,
+                            tokenType: arr[i].tokenType,
+                            value: arr[i].amount,
+                        }).unwrap()
+                    }
+                }
             }
             setSuccess(true);
             refetch()
-            Initalization();
+            // Initalization();
+            
 
-        } catch (error : any) {
+        } catch (error: any) {
             console.error(error)
-            dispatch(changeError({activate: true, text: error?.data?.message.slice(0,80)}));
+            dispatch(changeError({ activate: true, text: error?.data?.message.slice(0, 80) }));
         }
+
 
         setIsPaying(false);
     }
 
     useEffect(() => {
-        if (selectedId && selectedId.length && balance) {
+        if (selectedId && selectedId.length && balance && balance.CELO) {
             const result = lodash.groupBy(resMember.current.filter(w => selectedId.includes(w.id)), "currency");
             const currenBalanceArr: IBalanceItem[] = []
             Object.entries(result).forEach(([key, value]) => {
@@ -170,29 +210,29 @@ const MassPay = () => {
                 })
             })
 
-            const bal = Object.entries(result).map(([key,value]) => {
-                if(!balance[Coins[key as TransactionFeeTokenName].name]?.reduxValue) return <></>
-                const amount = value.reduce((a,c)=>a+=parseFloat(c.amount),0)
+            const bal = Object.entries(result).map(([key, value]) => {
+                if (!balance[Coins[key as TransactionFeeTokenName].name]?.reduxValue) return <></>
+                const amount = value.reduce((a, c) => a += parseFloat(c.amount), 0)
                 return <div className="flex flex-col space-y-3">
                     <div>{amount} {Coins[key as TransactionFeeTokenName].name}</div>
                     <div className="text-black opacity-50">{(amount * balance[Coins[key as TransactionFeeTokenName].name]!.reduxValue).toFixed(2)} USD</div>
                 </div>
             })
 
-            const selectedAmount = Object.entries(result).map(([key,value]) => ({coin: key, value: value.reduce((a,c)=>a+=parseFloat(c.amount),0)}))
+            const selectedAmount = Object.entries(result).map(([key, value]) => ({ coin: key, value: value.reduce((a, c) => a += parseFloat(c.amount), 0) }))
 
             const balanceRes = currenBalanceArr?.map(w => {
-                if(!balance[w.coins.name]?.reduxValue) return <></>
+                if (!balance[w.coins.name]?.reduxValue) return <></>
                 return <div className="flex flex-col space-y-3">
-                    <div>{(w.amount - (selectedAmount.find(s=>s.coin === w.coins.name || s.coin === w.coins.feeName)?.value??0)).toFixed(2)} {w.coins.name}</div>
-                    <div className="text-black opacity-50">{((w.amount - (selectedAmount.find(s=>s.coin === w.coins.name || s.coin === w.coins.feeName)?.value??0)) * balance[w.coins.name]!.reduxValue).toFixed(2)} USD</div>
+                    <div>{(w.amount - (selectedAmount.find(s => s.coin === w.coins.name || s.coin === w.coins.feeName)?.value ?? 0)).toFixed(2)} {w.coins.name}</div>
+                    <div className="text-black opacity-50">{((w.amount - (selectedAmount.find(s => s.coin === w.coins.name || s.coin === w.coins.feeName)?.value ?? 0)) * balance[w.coins.name]!.reduxValue).toFixed(2)} USD</div>
                 </div>
             })
 
             setCurrentBalances(currenBalanceArr)
             setSelectedBalances(bal)
             setSelectedBalanceResult(balanceRes)
-        
+
 
         }
     }, [selectedId, balance])
@@ -210,7 +250,7 @@ const MassPay = () => {
                                 <span className="text-left font-semibold">Paying From</span>
                                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-x-3 sm:gap-x-10">
                                     {!(teams && selectedTeam) ? <ClipLoader /> : <Dropdown className="h-full" disableAddressDisplay={true} onSelect={setSelectedTeam} nameActivation={true} selected={selectedTeam} list={teams.teams.map(w => ({ name: w.title, address: w.id }))} />}
-                                    {!(data && selectedWallet) ? <ClipLoader /> : <Dropdown onSelect={setSelectedWallet} nameActivation={true} selected={selectedWallet} list={list} disableAddressDisplay={true} />}
+                                    {!(balance && balance.CELO && selectedWallet) ? <ClipLoader /> : <Dropdown onSelect={setSelectedWallet} nameActivation={true} selected={selectedWallet} list={list} disableAddressDisplay={true} />}
                                 </div>
                             </div>
                             <div className="flex flex-col">
@@ -288,8 +328,8 @@ const MassPay = () => {
                 </div>
             </div>
         </form>
-        {isSuccess && <Success onClose={setSuccess} />}
-        {isError && <Error onClose={(val) => dispatch(changeError({activate: false, text: ''}))} />}
+        {isSuccess && <Success onClose={setSuccess} onAction={()=>{router.goBack()}}/>}
+        {isError && <Error onClose={(val) => dispatch(changeError({ activate: false, text: '' }))} />}
     </div>
 
 }

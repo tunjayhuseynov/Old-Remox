@@ -8,6 +8,7 @@ import { useAppSelector } from '../../../redux/hooks';
 import { selectStorage } from "../../../redux/reducers/storage";
 import { SelectTransactions } from "../../../redux/reducers/transactions";
 import CoinItem from '../../../components/dashboard/main/coinitem';
+import { SelectSelectedAccount } from "../../../redux/reducers/selectedAccount";
 
 interface Balance {
     amount: number,
@@ -19,6 +20,8 @@ interface Balance {
 
 const Statistic = () => {
     const storage = useAppSelector(selectStorage)
+    const selectedAccount = useAppSelector(SelectSelectedAccount)
+
     const transactions = useAppSelector(SelectTransactions)
 
     const [percent, setPercent] = useState<number>()
@@ -67,13 +70,13 @@ const Statistic = () => {
 
     const chart = useMemo(() => {
         if (celoBalance !== undefined && cusdBalance !== undefined && ceurBalance !== undefined && ubeBalance !== undefined && mooBalance !== undefined && mobiBalance !== undefined && poofBalance !== undefined) {
-            const celoDeg = Math.floor(celoBalance.percent * 3.6)
-            const cusdDeg = Math.floor(cusdBalance.percent * 3.6) + celoDeg;
-            const ceurDeg = Math.floor(ceurBalance.percent * 3.6) + cusdDeg;
-            const ubeDeg = Math.floor(ubeBalance.percent * 3.6) + ceurDeg;
-            const mooDeg = Math.floor(mooBalance.percent * 3.6) + ubeDeg;
-            const mobiDeg = Math.floor(mooBalance.percent * 3.6) + mooDeg;
-            const poofDeg = Math.floor(poofBalance.percent * 3.6) + mobiDeg;
+            const celoDeg = Math.ceil(celoBalance.percent * 3.6) 
+            const cusdDeg = Math.ceil(cusdBalance.percent * 3.6) + celoDeg;
+            const ceurDeg = Math.ceil(ceurBalance.percent * 3.6) + cusdDeg;
+            const ubeDeg = Math.ceil(ubeBalance.percent * 3.6) + ceurDeg;
+            const mooDeg = Math.ceil(mooBalance.percent * 3.6) + ubeDeg;
+            const mobiDeg = Math.ceil(mooBalance.percent * 3.6) + mooDeg;
+            const poofDeg = Math.ceil(poofBalance.percent * 3.6) + mobiDeg;
 
             if (!celoDeg && !cusdDeg && !ceurDeg && !ubeDeg && !mooDeg && !mobiDeg && !poofDeg) return `conic-gradient(#FF774E 0deg 360deg)`
 
@@ -88,7 +91,7 @@ const Statistic = () => {
     useEffect(() => {
         if (celoBalance && cusdBalance && ceurBalance && ubeBalance && mooBalance && mobiBalance && poofBalance) {
 
-            const total = celoBalance.amount + cusdBalance.amount + ceurBalance.amount + ubeBalance.amount + mooBalance.amount + poofBalance.amount + mobiBalance.amount;
+            //const total = celoBalance.amount + cusdBalance.amount + ceurBalance.amount + ubeBalance.amount + mooBalance.amount + poofBalance.amount + mobiBalance.amount;
             const currencObj = Object.values(currencies)
             const currencObj2: IBalanceItem[] = Object.values(balanceRedux)
 
@@ -110,6 +113,8 @@ const Statistic = () => {
             setBalance(result.toFixed(2))
             setPercent(per / indexable)
 
+        }else if(celoBalance === undefined){
+            setBalance(undefined)
         }
     }, [celoBalance, cusdBalance, ceurBalance, ubeBalance, mooBalance, mobiBalance, poofBalance])
 
@@ -129,7 +134,7 @@ const Statistic = () => {
                 const coin = Coins[Object.entries(TransactionFeeTokenName).find(w => w[0] === t.tokenSymbol)![1]];
                 const tTime = new Date(parseInt(t.timeStamp) * 1e3)
                 if (tTime.getMonth() === new Date().getMonth()) {
-                    if (t.from.toLowerCase() === storage?.accountAddress.toLowerCase()) {
+                    if (t.from.toLowerCase() === selectedAccount.toLowerCase()) {
                         myout += (parseFloat(Web3.utils.fromWei(t.value, 'ether')) * (currencies[coin.name]?.price ?? 0))
                     } else {
                         myin += (parseFloat(Web3.utils.fromWei(t.value, 'ether')) * (currencies[coin.name]?.price ?? 0))
@@ -165,7 +170,7 @@ const Statistic = () => {
             </div>
             <div className="flex justify-between shadow-custom rounded-xl px-8 py-4">
                 <div className="text-xl sm:text-2xl opacity-80">
-                    {lastIn !== undefined && balance !== undefined ? `+ $${lastIn?.toFixed(2)}` : <ClipLoader />}
+                    {lastIn !== undefined && transactions !== undefined && balance !== undefined ? `+ $${lastIn?.toFixed(2)}` : <ClipLoader />}
                 </div>
             </div>
         </div>
@@ -176,7 +181,7 @@ const Statistic = () => {
             </div>
             <div className="flex justify-between shadow-custom rounded-xl px-8 py-4">
                 <div className="text-greylish opacity-80 text-xl sm:text-2xl">
-                    {lastOut !== undefined && balance !== undefined ? `- $${lastOut?.toFixed(2)}` : <ClipLoader />}
+                    {lastOut !== undefined && transactions !== undefined && balance !== undefined ? `- $${lastOut?.toFixed(2)}` : <ClipLoader />}
                 </div>
             </div>
         </div>
@@ -192,7 +197,7 @@ const Statistic = () => {
             </div>
         </div>
         {
-            allInOne !== undefined ?
+            balance && allInOne !== undefined ?
                 <div className="flex flex-col gap-5 overflow-hidden col-span-2 sm:col-span-1">
                     {allInOne.map((item, index) => {
                         return <CoinItem key={generate()} title={item.coins.name} coin={item.amount.toFixed(2)} usd={((item.reduxValue ?? 0) * item.amount).toFixed(2)} percent={(item.percent || 0).toFixed(1)} rate={item.per_24} img={item.coins.coinUrl} />

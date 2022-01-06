@@ -11,7 +11,7 @@ export interface IStorage {
 }
 
 interface IContainer {
-    user: IStorage | null
+    user: IStorage | null, 
 }
 
 const initialState = (): IContainer => {

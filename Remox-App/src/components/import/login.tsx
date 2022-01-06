@@ -5,6 +5,7 @@ import { useSignInMutation } from '../../redux/api/account';
 import { IStorage, setStorage } from '../../redux/reducers/storage';
 import { useDispatch } from 'react-redux';
 import { setUnlock } from '../../redux/reducers/unlock';
+import { changeAccount } from '../../redux/reducers/selectedAccount';
 
 
 const Login = ({ phrase }: { phrase: string }) => {
@@ -29,6 +30,7 @@ const Login = ({ phrase }: { phrase: string }) => {
                     token: data!.token,
                 };
 
+                dispatch(changeAccount(data!.accountAddress));
                 dispatch(setUnlock(true))
                 dispatch(setStorage(JSON.stringify(obj)))
 

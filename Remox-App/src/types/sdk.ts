@@ -25,3 +25,6 @@ export * from './sdk/TeamMember/getMember'
 export * from './sdk/TeamMember/updatemember'
 
 export * from './sdk/blockscout'
+
+export * from './sdk/Swap'
+export * from './sdk/Multisig'

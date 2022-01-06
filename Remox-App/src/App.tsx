@@ -13,6 +13,7 @@ import { useEffect } from 'react'
 import Unlock from './pages/unlock';
 import Swap from './pages/swap'
 import Import from './pages/import/index';
+import OwnerSetting from './pages/settings/owner'
 import Assets from './pages/dashboard/assets'
 import Teams from './pages/teams/index'
 import Main from './pages/dashboard/main'
@@ -23,6 +24,8 @@ import { useAppSelector } from './redux/hooks';
 import Details from './pages/transactions/details';
 import MassPay from './pages/dashboard/masspay'
 import Initalization from './utility/init'
+import SettingLayout from './pages/settings';
+import MultisigTransaction from './pages/multisig/transaction'
 
 function App(): JSX.Element {
   const storage = useAppSelector(selectStorage)
@@ -44,9 +47,6 @@ function App(): JSX.Element {
 const CustomRouter = ({ unlock, data }: { unlock: boolean, data: IStorage | null }) => {
   const router = useHistory();
   const location = useLocation();
-  // const currencies = useAppSelector(SelectCurrencies)
-  // const transactions = useAppSelector(SelectTransactions)
-  // const balances = useAppSelector(SelectBalances)
 
   useEffect(() => {
     if (router && data && unlock && location && (location.pathname === '/' || location.pathname === '/import')) router.push('/dashboard')
@@ -56,11 +56,6 @@ const CustomRouter = ({ unlock, data }: { unlock: boolean, data: IStorage | null
 
     if (!location.pathname.includes("/dashboard") && !data?.accountAddress) return element
     if (unlock) {
-      // if (currencies.CELO === undefined && balances.CELO === undefined && transactions === undefined) {
-      //   return <div className={'h-full flex items-center justify-center'}>
-      //     <ClipLoader />
-      //   </div>
-      // }
       return element
     }
 
@@ -99,6 +94,7 @@ const AuthRouter = ({ data, unlockChecking }: { data: IStorage | null, unlockChe
 
     <Route path={'/masspayout'} exact render={() => unlockChecking(<MassPay />)} />
     <Route path={'/pay'} exact render={() => unlockChecking(<Pay />)} />
+    <Route path={'/multisig/:id'} exact render={() => unlockChecking(<MultisigTransaction />)} />
     <Route path={'/dashboard'} render={({ match: { path } }) => {
       return <Dashboard>
         <Switch>
@@ -108,6 +104,7 @@ const AuthRouter = ({ data, unlockChecking }: { data: IStorage | null, unlockChe
           <Route path={path + '/transactions'} exact render={() => unlockChecking(<Transactions />)} />
           <Route path={path + '/transactions/:id'} exact render={() => unlockChecking(<Details />)} />
           <Route path={path + '/swap'} exact render={() => unlockChecking(<Swap />)} />
+          <Route path={path + '/settings'} render={() => unlockChecking(<SettingLayout />)} />
         </Switch>
       </Dashboard>
     }} >

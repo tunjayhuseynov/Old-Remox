@@ -9,6 +9,7 @@ interface BaseDropDown {
     className?: string, 
     id?: string,
     value?: CoinsName,
+    onClick?: () => void,
 }
 
 interface DropDownPriceItem extends BaseDropDown {

@@ -4,11 +4,13 @@ export enum TransactionType {
     QuickTransfer = "Quick Transfer",
     IncomingPayment = "Incoming Payment",
     MassPayment = "Mass Payment",
+    Swap = "Swap"
 }
 
 export enum TransactionDirection {
     In,
-    Out
+    Out,
+    Swap
 }
 
 export enum TransactionStatus{

@@ -1,32 +1,41 @@
 import { useCallback, useEffect } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
-import { useLazyGetBalanceQuery, useLazyGetCurrenciesQuery, useLazyGetTransactionsQuery } from '../redux/api'
-import { updateAllCurrencies, updateUserBalance } from '../redux/reducers/currencies'
+import { useLazyGetBalanceQuery, useLazyGetCurrenciesQuery, useLazyGetMultisigBalanceQuery, useLazyGetNotExecutedTransactionsQuery, useLazyGetTransactionsQuery } from '../redux/api'
+import { SelectCurrencies, updateAllCurrencies, updateUserBalance } from '../redux/reducers/currencies'
+import { SelectSelectedAccount } from '../redux/reducers/selectedAccount'
 import { selectStorage } from '../redux/reducers/storage'
-import { setTransactions } from '../redux/reducers/transactions'
+import { SelectTransactions, setTransactions } from '../redux/reducers/transactions'
 import { Coins } from '../types/coins'
+import { GetBalanceResponse, MultisigBalanceResponse } from '../types/sdk'
 
-const useRefetchData = () => {
+const useRefetchData = (disableInterval = false) => {
     const dispatch = useDispatch()
     const storage = useSelector(selectStorage)
-    const [currencyTrigger, { data: currencyData }] = useLazyGetCurrenciesQuery()
-    const [balanceTrigger, { data: balanceData }] = useLazyGetBalanceQuery()
-    const [transactionTrigger, { data: transactionData }] = useLazyGetTransactionsQuery()
+    const selectedAccount = useSelector(SelectSelectedAccount)
+    const transactionStore = useSelector(SelectTransactions)
+    const currencies = useSelector(SelectCurrencies)
 
-    const fetching = () => {
-        currencyTrigger()
-        balanceTrigger()
-        transactionTrigger(storage!.accountAddress)
+    const [currencyTrigger, { data: currencyData, isFetching }] = useLazyGetCurrenciesQuery()
+    const [balanceTrigger, { data: balanceData, isFetching: balanceFetching }] = useLazyGetBalanceQuery()
+    const [transactionTrigger, { data: transactionData, isFetching: transactionFetching }] = useLazyGetTransactionsQuery()
 
-        if (currencyData) {
-            const updatedCurrency = currencyData.data.map(d => ({
+    const [multisigTrigger, { data: multisigBalance, isFetching: multiFetching }] = useLazyGetMultisigBalanceQuery()
+
+
+    useEffect(() => {
+        if (transactionData && transactionData.result.length > 0 && !transactionFetching) {
+            if (transactionStore?.result.length !== transactionData.result.length || (transactionStore.result[0].hash !== transactionData.result[0].hash || transactionStore.result[transactionStore.result.length - 1].hash !== transactionData.result[transactionData.result.length - 1].hash)) {
+                dispatch(setTransactions(transactionData))
+            }
+        } else if (transactionData && transactionData.result.length === 0) dispatch(setTransactions(transactionData))
+    }, [transactionData, transactionFetching])
+
+    useEffect(() => {
+        if (currencyData && currencyData.data && (storage?.accountAddress === selectedAccount && balanceData && !balanceFetching) || (storage?.accountAddress !== selectedAccount && multisigBalance && !multiFetching)) {
+            const updatedCurrency = currencyData!.data.map(d => ({
                 price: d.price,
                 percent_24: d.percent_24
             }))
-
-            dispatch(updateAllCurrencies(
-                updatedCurrency
-            ))
 
             const [Celo, Cusd, Ceur, Ube, Moo, Mobi, Poof] = updatedCurrency;
 
@@ -38,20 +47,41 @@ const useRefetchData = () => {
             const mobi = Mobi
             const poof = Poof
 
-            if (transactionData) {
-                dispatch(setTransactions(transactionData))
-            }
 
-            if (balanceData) {
-                const balance = balanceData;
+
+            if (balanceData || multisigBalance) {
+                let balance;
+                if (storage?.accountAddress === selectedAccount) {
+                    balance = balanceData;
+                } else balance = multisigBalance
+
                 if (balance && celo && cusd && ceur && ube && moo && mobi && poof) {
-                    const pCelo = parseFloat(balance.celoBalance);
-                    const pCusd = parseFloat(balance.cUSDBalance);
-                    const pCeur = parseFloat(balance.cEURBalance);
-                    const pUbe = parseFloat(balance.UBE);
-                    const pMoo = parseFloat(balance.MOO);
-                    const pMobi = parseFloat(balance.MOBI);
-                    const pPoof = parseFloat(balance.POOF);
+                    let pCelo;
+                    let pCusd;
+                    let pCeur;
+                    let pUbe;
+                    let pMoo;
+                    let pMobi;
+                    let pPoof;
+                    if (storage?.accountAddress === selectedAccount) {
+                        balance = balance as GetBalanceResponse;
+                        pCelo = parseFloat(balance.celoBalance);
+                        pCusd = parseFloat(balance.cUSDBalance);
+                        pCeur = parseFloat(balance.cEURBalance);
+                        pUbe = parseFloat(balance.UBE);
+                        pMoo = parseFloat(balance.MOO);
+                        pMobi = parseFloat(balance.MOBI);
+                        pPoof = parseFloat(balance.POOF);
+                    } else {
+                        balance = balance as MultisigBalanceResponse;
+                        pCelo = parseFloat(balance.celo);
+                        pCusd = parseFloat(balance.cUSD);
+                        pCeur = parseFloat(balance.cEUR);
+                        pUbe = parseFloat(balance.UBE);
+                        pMoo = parseFloat(balance.MOO);
+                        pMobi = parseFloat(balance.MOBI);
+                        pPoof = parseFloat(balance.POOF);
+                    }
 
                     const celoPrice = pCelo * (celo.price ?? 0);
                     const cusdPrice = pCusd * (cusd.price ?? 0);
@@ -77,17 +107,53 @@ const useRefetchData = () => {
                 }
             }
         }
+
+    }, [balanceData, balanceFetching, multisigBalance, multiFetching])
+
+    useEffect(() => {
+        if (currencyData && !isFetching) {
+            const updatedCurrency = currencyData.data.map(d => ({
+                price: d.price,
+                percent_24: d.percent_24
+            }))
+
+            if (!currencies.CELO || Object.values(currencies).some((w, i) => {
+                return w.price !== updatedCurrency[i].price
+            })) {
+                dispatch(updateAllCurrencies(
+                    updatedCurrency
+                ))
+            }
+
+
+
+            if (storage?.accountAddress === selectedAccount) {
+                transactionTrigger(storage!.accountAddress)
+                balanceTrigger()
+            } else {
+                transactionTrigger(selectedAccount)
+                multisigTrigger({ address: selectedAccount })
+            }
+
+        }
+    }, [currencyData, isFetching])
+
+    const fetching = () => {
+        currencyTrigger()
     }
 
     useEffect(() => {
-        const timer = setInterval(() => {
-            fetching()
-        }, 10000)
+        let timer: any;
+        if (!disableInterval) {
+            timer = setInterval(() => {
+                fetching()
+            }, 10000)
+        }
 
-        return () => clearInterval(timer)
+        return () => { if (timer) clearInterval(timer) }
     })
 
-    return true;
+    return [fetching];
 }
 
 export default useRefetchData;

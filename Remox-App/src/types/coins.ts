@@ -72,7 +72,8 @@ export const Coins: Coins = {
 		value: CoinsName.CELO,
 		feeName: TransactionFeeTokenName.CELO,
 		lowerName: CoinsNameLower.CELO,
-		responseName: GetBalanceResponseEnum.celoBalance
+		responseName: GetBalanceResponseEnum.celoBalance,
+		contractAddress: "0x471EcE3750Da237f93B8E339c536989b8978a438"
 	},
 	cUSD: {
 		name: CoinsNameVisual.cUSD,
@@ -80,7 +81,8 @@ export const Coins: Coins = {
 		value: CoinsName.cUSD,
 		feeName: TransactionFeeTokenName.cUSD,
 		lowerName: CoinsNameLower.cUSD,
-		responseName: GetBalanceResponseEnum.cUSDBalance
+		responseName: GetBalanceResponseEnum.cUSDBalance,
+		contractAddress: "0x765DE816845861e75A25fCA122bb6898B8B1282a"
 	},
 	cEUR: {
 		name: CoinsNameVisual.cEUR,
@@ -88,7 +90,8 @@ export const Coins: Coins = {
 		value: CoinsName.cEUR,
 		feeName: TransactionFeeTokenName.cEUR,
 		lowerName: CoinsNameLower.cEUR,
-		responseName: GetBalanceResponseEnum.cEURBalance
+		responseName: GetBalanceResponseEnum.cEURBalance,
+		contractAddress: "0xD8763CBa276a3738E6DE85b4b3bF5FDed6D6cA73"
 	},
 	UBE: {
 		name: CoinsNameVisual.UBE,
@@ -96,7 +99,8 @@ export const Coins: Coins = {
 		value: CoinsName.UBE,
 		feeName: TransactionFeeTokenName.UBE,
 		lowerName: CoinsNameLower.UBE,
-		responseName: GetBalanceResponseEnum.UBE
+		responseName: GetBalanceResponseEnum.UBE, 
+		contractAddress: "0x00Be915B9dCf56a3CBE739D9B9c202ca692409EC"
 	},
 	MOO: {
 		name: CoinsNameVisual.MOO,
@@ -104,7 +108,8 @@ export const Coins: Coins = {
 		value: CoinsName.MOO,
 		feeName: TransactionFeeTokenName.MOO,
 		lowerName: CoinsNameLower.MOO,
-		responseName: GetBalanceResponseEnum.MOO
+		responseName: GetBalanceResponseEnum.MOO, 
+		contractAddress: "0x17700282592D6917F6A73D0bF8AcCf4D578c131e"
 	},
 	MOBI: {
 		name: CoinsNameVisual.MOBI,
@@ -112,7 +117,8 @@ export const Coins: Coins = {
 		value: CoinsName.MOBI,
 		feeName: TransactionFeeTokenName.MOBI,
 		lowerName: CoinsNameLower.MOBI,
-		responseName: GetBalanceResponseEnum.MOBI
+		responseName: GetBalanceResponseEnum.MOBI, 
+		contractAddress: "0x73a210637f6F6B7005512677Ba6B3C96bb4AA44B"
 	},
 	POOF: {
 		name: CoinsNameVisual.POOF,
@@ -120,7 +126,8 @@ export const Coins: Coins = {
 		value: CoinsName.POOF,
 		feeName: TransactionFeeTokenName.POOF,
 		lowerName: CoinsNameLower.POOF,
-		responseName: GetBalanceResponseEnum.POOF
+		responseName: GetBalanceResponseEnum.POOF, 
+		contractAddress: "0x00400FcbF0816bebB94654259de7273f4A05c762"
 	}
 };
 
@@ -141,4 +148,5 @@ export interface AltCoins {
 	feeName: TransactionFeeTokenName;
 	lowerName: CoinsNameLower;
 	responseName: GetBalanceResponseEnum;
+	contractAddress: string;
 }

@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useEffect, useMemo } from 'react';
 import { useAppSelector } from '../redux/hooks';
 import { SelectTransactions } from '../redux/reducers/transactions';
 import lodash from 'lodash';
@@ -12,6 +12,8 @@ import { TransactionDirection, TransactionType } from '../types';
 import { SelectCurrencies } from '../redux/reducers/currencies';
 import store, { RootState } from '../redux/store';
 import { useSelector } from 'react-redux';
+import { useGetNotExecutedTransactionsQuery, useLazyGetNotExecutedTransactionsQuery } from '../redux/api';
+import selectedAccount, { SelectSelectedAccount } from '../redux/reducers/selectedAccount';
 
 export interface TransactionHook {
     amount: string;
@@ -25,15 +27,18 @@ export interface TransactionHook {
     hash: string;
     rawDate: string;
     blockNum: string;
+    outputCoin?: string
+    outputAmount?: string
 }
 
 const useTransactionProcess = (): TransactionHook[] | undefined => {
-    const transactions = useSelector((state: RootState) => state.transactions.transactions);
+    const transactions = useSelector(SelectTransactions);
     const currencies = useSelector((state: RootState) => state.currencyandbalance.celoCoins);
-    const storage = useSelector((state: RootState) => state.storage.user);
+    //const storage = useSelector((state: RootState) => state.storage.user);
+    const selectedAccount = useSelector(SelectSelectedAccount);
 
     return useMemo(() => {
-        if (transactions && currencies && storage) {
+        if (transactions) {
 
             const res = lodash.groupBy(transactions.result, lodash.iteratee('blockNumber'))
             let newObject: { [name: string]: Transactions[] } = {}
@@ -44,27 +49,37 @@ const useTransactionProcess = (): TransactionHook[] | undefined => {
 
             const transactionData = newObject;
 
-            return Object.values(transactionData).reverse().map((transaction, index) => {
-                let amount, coin, coinName, direction, date, amountUSD, surplus, type, hash, rawDate, blockNum;
-                if (transaction[0].from.toLowerCase() !== storage?.accountAddress.toLowerCase()) {
-                    transaction = transaction.filter(w => w.to.toLowerCase() === storage?.accountAddress.toLowerCase())
+            const result = Object.values(transactionData).reverse().filter(w=>w && w.length > 0).map((transaction, index) => {
+                let amount, coin, coinName, direction, date, amountUSD, surplus, type, hash, rawDate, blockNum, outputCoin, outputAmount;
+                if (transaction[0].from.toLowerCase() !== selectedAccount.toLowerCase()) {
+                    transaction = transaction.filter(w => w.to.toLowerCase() === selectedAccount.toLowerCase())
                 }
-                rawDate = transaction[0].timeStamp;
-                blockNum = transaction[0].blockNumber;
+                if(transaction.length == 0){
+                    return null;
+                }
+
+                rawDate = transaction[0]?.timeStamp;
+                blockNum = transaction[0]?.blockNumber;
                 if (transaction.length === 1) {
                     const tx = transaction[0]
                     hash = tx.blockNumber
                     amount = parseFloat(Web3.utils.fromWei(tx.value, 'ether')).toFixed(2)
                     coin = Coins[Object.entries(TransactionFeeTokenName).find(w => w[0] === tx.tokenSymbol)![1]];
                     coinName = coin.name;
-                    direction = tx.from.trim().toLowerCase() === storage?.accountAddress.trim().toLowerCase() ? TransactionDirection.Out : TransactionDirection.In
+                    direction = tx.input.startsWith("0x38ed1739") ? TransactionDirection.Swap : tx.from.trim().toLowerCase() === selectedAccount.trim().toLowerCase() ? TransactionDirection.Out : TransactionDirection.In
                     date = dateFormat(new Date(parseInt(tx.timeStamp) * 1e3), "mediumDate")
-                    amountUSD = (currencies[coin.name]?.price ?? 0) * parseFloat(parseFloat(Web3.utils.fromWei(tx.value, 'ether')).toFixed(4))
+                    if(direction == TransactionDirection.Swap) {
+                        outputCoin = Object.values(Coins).find((w: AltCoins) => w.contractAddress.toLowerCase().includes(tx.input.substring(tx.input.length - 40).toLowerCase()))?.name;
+                        outputAmount = Web3.utils.fromWei(Web3.utils.toBN(tx.input.substring(74,74+64)), 'ether');
+                        outputAmount = parseFloat(outputAmount).toFixed(4);
+                        
+                    }
+                    amountUSD = direction !== TransactionDirection.Swap ? (currencies[coin.name]?.price ?? 0) * parseFloat(parseFloat(Web3.utils.fromWei(tx.value, 'ether')).toFixed(4)) : -1
                     surplus = direction === TransactionDirection.In ? '+' : '-'
-                    type = direction === TransactionDirection.In ? TransactionType.IncomingPayment : TransactionType.QuickTransfer
+                    type = TransactionDirection.Swap !== direction ? direction === TransactionDirection.In ? TransactionType.IncomingPayment : TransactionType.QuickTransfer : TransactionType.Swap
                 } else {
                     const tx = transaction;
-                    const isTo = [...new Set(transaction.map(w => w.to))].length === 1 && transaction[0].from.toLowerCase() !== storage?.accountAddress.toLowerCase();
+                    const isTo = [...new Set(transaction.map(w => w.to))].length === 1 && transaction[0].from.toLowerCase() !== selectedAccount.toLowerCase();
                     hash = tx[0].blockNumber
                     amount = parseFloat(Web3.utils.fromWei(tx.reduce((a, c) => a + parseFloat(c.value), 0).toString(), 'ether')).toFixed(2)
                     coinName = tx.reduce((a, item, index, arr) => {
@@ -87,9 +102,11 @@ const useTransactionProcess = (): TransactionHook[] | undefined => {
                     surplus = isTo ? '+' : '-'
                     type = isTo ? TransactionType.MassPayment : TransactionType.MassPayout
                 }
-                return { amount, coin, coinName, direction, date, amountUSD, surplus, type, hash, rawDate, blockNum }
+                return { amount, coin, coinName, direction, date, amountUSD, surplus, type, hash, rawDate, blockNum, outputCoin, outputAmount }
             })
+
+            return (result.filter(w => w !== null) as TransactionHook[])
         };
-    }, [transactions, currencies, storage])
+    }, [transactions])
 }
 export default useTransactionProcess;

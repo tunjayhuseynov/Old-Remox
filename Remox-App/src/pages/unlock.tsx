@@ -7,6 +7,7 @@ import { selectStorage, setStorage } from '../redux/reducers/storage';
 import { useUnlockMutation } from '../redux/api';
 import { selectUnlock, setUnlock } from '../redux/reducers/unlock';
 import { useAppDispatch, useAppSelector } from '../redux/hooks';
+import { changeAccount } from '../redux/reducers/selectedAccount';
 
 const Unlock = () => {
     const unlockState = useAppSelector(selectUnlock)
@@ -34,6 +35,7 @@ const Unlock = () => {
                     address: storage.accountAddress
                 }).unwrap()
 
+                dispatch(changeAccount(storage.accountAddress));
                 dispatch(setStorage(JSON.stringify({ ...storage, token: data!.token })))
 
                 dispatch(setUnlock(true))

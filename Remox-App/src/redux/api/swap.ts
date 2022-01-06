@@ -1,8 +1,10 @@
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react'
+import { GetMinimumAmount, GetMinimumAmountResponse, GetSwap, GetSwapResponse } from '../../types/sdk';
 import { BaseUrl } from '../../utility/const'
 import { RootState } from '../store';
 
 export const swapAPI = createApi({
+    keepUnusedDataFor: 0,
     reducerPath: 'swapApi',
     baseQuery: fetchBaseQuery({
         baseUrl: BaseUrl,
@@ -15,14 +17,14 @@ export const swapAPI = createApi({
         },
     }),
     endpoints: (builder) => ({
-        getConvertableTokenAmount: builder.mutation<{minimumAmountOut: string}, {input: string, output: string, amount: string}>({
+        getConvertableTokenAmount: builder.mutation<GetMinimumAmountResponse, GetMinimumAmount>({
             query: (data) => ({
                 url: '/transaction/minimumAmountOut',
                 method: 'POST',
                 body: data
             }),
         }),
-        swapCoins: builder.mutation<void, {input: string, output: string, amount: string, phrase: string}>({
+        swapCoins: builder.mutation<GetSwapResponse, GetSwap>({
             query: (data) =>({
                 url: '/transaction/swap',
                 method: 'POST',

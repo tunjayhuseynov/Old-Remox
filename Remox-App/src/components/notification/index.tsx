@@ -54,7 +54,7 @@ const NotificationCointainer = () => {
             <div ref={divRef} className="translate-x-[75%] sm:translate-x-0 z-40 absolute shadow-custom min-w-[325px] min-h-[200px] right-0 bg-white mt-7 rounded-xl">
                 <div className="flex flex-col min-h-[325px] sm:min-h-[auto] justify-center sm:justify-between sm:items-stretch items-center">
                     {list && list.slice(0, 4).map(item =>
-                        <NotificationItem key={generate()} status={Status.OK} title={item.type} body={`${item.surplus} ${item.amountUSD.toFixed(4)} $`} link={`/dashboard/transactions/${item.blockNum}`} />
+                        <NotificationItem key={generate()} status={Status.OK} title={item.type} body={item.amountUSD !== -1 ? `${item.surplus} ${item.amountUSD.toFixed(4)} $`:''} link={`/dashboard/transactions/${item.blockNum}`} />
                     )}
                     {(!list || !list.length) && <div>No notification yet. We'll notify you</div>}
                 </div>

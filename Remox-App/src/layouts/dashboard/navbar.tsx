@@ -9,13 +9,24 @@ import { Squash as Hamburger } from 'hamburger-react'
 import { selectToggle, setMenu } from '../../redux/reducers/toggles';
 import NotificationCointainer from '../../components/notification'
 import useRefetchData from '../../hooks/useRefetchData';
+import { useModalSideExit } from '../../hooks';
+import { SelectSelectedAccount } from '../../redux/reducers/selectedAccount';
+import { deleteBalance } from '../../redux/reducers/currencies';
+import { removeTransactions } from '../../redux/reducers/transactions';
 
 
 const Navbar = () => {
     const storage = useAppSelector(selectStorage)
     const menuBar = useAppSelector(selectToggle)
     const dispatch = useAppDispatch()
-    useRefetchData()
+    const [refetch] = useRefetchData()
+    const selectedAccount = useAppSelector(SelectSelectedAccount)
+
+    useEffect(() => {
+        dispatch(removeTransactions())
+        dispatch(deleteBalance())
+        refetch()
+    }, [selectedAccount])
 
     return <div className="grid grid-cols-3 md:grid-cols-5 gap-12">
         <div className="md:hidden pl-4">
@@ -33,7 +44,7 @@ const Navbar = () => {
             </div>
         </div>
         <div className="actions hidden md:flex items-center justify-evenly md:col-span-2">
-            {storage ? <Visitcard name="Remox" address={storage.accountAddress} /> : <ClipLoader />}
+            {storage ? <Visitcard name={selectedAccount !== storage.accountAddress ? 'MultiSig' : "Wallet"} address={selectedAccount} /> : <ClipLoader />}
             <NavbarDropdown />
             <div className="relative">
                 <NotificationCointainer />
@@ -43,7 +54,7 @@ const Navbar = () => {
 }
 
 export const Visitcard = ({ name, address }: { name: string, address: string }) => <div className="px-5 py-1 flex flex-col bg-gray-50 rounded-xl cursor-pointer" onClick={() => navigator.clipboard.writeText(address.trim())}>
-    <h3 className="text-xl">{name}</h3>
+    <h3 className="text-lg">{name}</h3>
     <p className="text-xs" >{address.split('').reduce((a, c, i, arr) => {
         return i < 10 || (arr.length - i) < 4 ? a + c : a.split('.').length - 1 < 6 ? a + '.' : a
     }, '')}</p>
@@ -53,18 +64,8 @@ const Li = ({ children, link }: { children: any, link: string }) => <li classNam
 
 export const NavbarDropdown = () => {
     const [isOpen, setOpen] = useState(false)
-    const divRef = useRef<HTMLDivElement>(null)
-    const click = useCallback((e) => {
-        if (isOpen && divRef.current && !divRef.current.contains(e.target)) {
-            setOpen(false)
-        }
-    }, [isOpen])
+    const divRef = useModalSideExit(isOpen, setOpen)
 
-    useEffect(() => {
-        window.addEventListener('click', click)
-
-        return () => window.removeEventListener('click', click)
-    }, [click, divRef])
 
     return <div className="relative">
         <button onClick={() => setOpen(!isOpen)} className="bg-primary text-white px-6 py-3 rounded-xl flex items-center gap-x-2">
@@ -73,7 +74,7 @@ export const NavbarDropdown = () => {
                 <IoIosArrowDown className='transition' style={isOpen ? { transform: "rotate(180deg)" } : undefined} />
             </div>
         </button>
-        {isOpen && <div ref={divRef} className="absolute w-[150%] rounded-2xl sm:-left-1/4  -bottom-1 translate-y-full shadow-xl">
+        {isOpen && <div ref={divRef} className="absolute w-[150%] rounded-2xl sm:-left-1/4  -bottom-1 translate-y-full shadow-xl z-50">
             <ul>
                 <Li link={'/pay'}><PaySVG /> Pay Someone</Li>
                 <Li link="/masspayout"><MassPayoutSVG />Mass Payout</Li>

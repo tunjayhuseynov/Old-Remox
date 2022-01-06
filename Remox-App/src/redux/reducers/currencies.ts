@@ -68,8 +68,8 @@ export const CurrencySlice = createSlice({
 	initialState: State,
 	reducers: {
 		updateAllCurrencies: (state: ICurrency, action) => {
-			if(!action.payload) return
-			const [ celo, cusd, ceur, ube, moo, mobi, poof ]: ICurrencyInternal[] = action.payload;
+			if (!action.payload) return
+			const [celo, cusd, ceur, ube, moo, mobi, poof]: ICurrencyInternal[] = action.payload;
 			state.celoCoins = {
 				CELO: { percent_24: celo.percent_24, price: celo.price },
 				cUSD: { percent_24: cusd.percent_24, price: cusd.price },
@@ -81,8 +81,8 @@ export const CurrencySlice = createSlice({
 			};
 		},
 		updateBalance: (state: ICurrency, action) => {
-			if(!action.payload) return
-			const [ celo, cusd, ceur, ube, moo, mobi, poof ]: ICurrencyInternal[] = action.payload;
+			if (!action.payload) return
+			const [celo, cusd, ceur, ube, moo, mobi, poof]: ICurrencyInternal[] = action.payload;
 			state.celoCoins = {
 				CELO: { ...state.celoCoins.CELO, current_balance: celo.current_balance },
 				cUSD: { ...state.celoCoins.cUSD, current_balance: cusd.current_balance },
@@ -93,9 +93,29 @@ export const CurrencySlice = createSlice({
 				POOF: { current_balance: poof.current_balance }
 			};
 		},
+		deleteBalance: (state: ICurrency) => {
+			state.celoCoins = {
+				CELO: undefined,
+				cUSD: undefined,
+				cEUR: undefined,
+				UBE: undefined,
+				MOO: undefined,
+				MOBI: undefined,
+				POOF: undefined
+			}
+			state.balances = {
+				CELO: undefined,
+				cUSD: undefined,
+				cEUR: undefined,
+				UBE: undefined,
+				MOO: undefined,
+				MOBI: undefined,
+				POOF: undefined
+			}
+		},
 		updateUserBalance: (state: ICurrency, action) => {
-			if(!action.payload) return
-			const [ celo, cusd, ceur, ube, moo, mobi, poof ]: IBalanceItem[] = action.payload;
+			if (!action.payload) return
+			const [celo, cusd, ceur, ube, moo, mobi, poof]: IBalanceItem[] = action.payload;
 			state.balances = {
 				CELO: {
 					amount: celo.amount,
@@ -151,7 +171,7 @@ export const CurrencySlice = createSlice({
 	}
 });
 
-export const { updateAllCurrencies, updateUserBalance } = CurrencySlice.actions;
+export const { updateAllCurrencies, updateUserBalance, deleteBalance } = CurrencySlice.actions;
 
 export const SelectCurrencies = (state: RootState): ICoinMembers => state.currencyandbalance.celoCoins;
 export const SelectBalances = (state: RootState): IBalanceMembers => state.currencyandbalance.balances;

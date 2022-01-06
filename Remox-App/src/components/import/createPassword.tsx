@@ -7,6 +7,7 @@ import { useCreatePasswordMutation } from "../../redux/api/account";
 import { IStorage, setStorage } from "../../redux/reducers/storage";
 import { useAppDispatch } from "../../redux/hooks";
 import { setUnlock } from "../../redux/reducers/unlock";
+import { changeAccount } from "../../redux/reducers/selectedAccount";
 
 const CreatePassword = ({ phrase }: { phrase: string }) => {
     const [createPassword, { isLoading }] = useCreatePasswordMutation();
@@ -31,9 +32,9 @@ const CreatePassword = ({ phrase }: { phrase: string }) => {
                 token: data!.token,
             };
 
-            
-            dispatch(setStorage(JSON.stringify(obj)))
+            dispatch(changeAccount(data!.accountAddress));
             dispatch(setUnlock(true))
+            dispatch(setStorage(JSON.stringify(obj)))
 
             // router.push('/dashboard')
         } catch (error) {

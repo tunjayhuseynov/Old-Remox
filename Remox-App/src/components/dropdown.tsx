@@ -5,16 +5,17 @@ import { DropDownItem } from '../types/dropdown'
 import { MouseEventHandler } from 'react'
 import { CoinsURL } from '../types/coins'
 import { ClipLoader } from 'react-spinners'
+import { useModalSideExit } from '../hooks'
 
 const Li = forwardRef<HTMLLIElement, { children: Array<any> | any, onClick: MouseEventHandler, className: string }>(({ children, onClick, className }, ref) => <li ref={ref} onClick={onClick} className={`${className} text-left border px-3 py-2 bg-white hover:bg-gray-200 cursor-pointer`}>{children}</li>)
 
 const Viewer = ({ displayName, name, address, coinUrl, className, disableAddressDisplay }: { displayName?: string, name: string, address?: string, coinUrl?: CoinsURL, className?: string, disableAddressDisplay?: boolean }) => <div className="flex flex-col">
     <div className="flex flex-col">
-        {displayName && <div className="pl-2 items-center text-sm text-greylish opacity-80">
+        {displayName && <div className="items-center text-sm text-greylish opacity-80">
             {displayName}
         </div>}
         <div className="text-left flex space-x-2 items-center">
-            <div><img src={coinUrl} className={coinUrl ? `w-[20px] h-[20px]` : ''} alt="" /></div>
+            {coinUrl && <div><img src={coinUrl} className={coinUrl ? `w-[20px] h-[20px]` : ''} alt="" /></div>}
             <div className={`${className ?? ''} font-normal truncate`} title={name}>{name}</div>
         </div>
     </div>
@@ -23,10 +24,11 @@ const Viewer = ({ displayName, name, address, coinUrl, className, disableAddress
     }, '')}</div>}
 </div>
 
-const Dropdown = ({ selected, list, nameActivation = false, onSelect, className, loader = false, disableAddressDisplay = false, parentClass = '', childClass = '', displayName }: { disableAddressDisplay?: boolean, parentClass?: string, className?: string, selected: DropDownItem, list: Array<DropDownItem>, nameActivation?: boolean, onSelect?: Dispatch<DropDownItem>, loader?: boolean, childClass?: string, displayName?: string }) => {
+const Dropdown = ({ selected, list, nameActivation = false, onSelect, className, loader = false, disableAddressDisplay = false, parentClass = '', childClass = '', displayName, onChange }: { disableAddressDisplay?: boolean, parentClass?: string, className?: string, selected: DropDownItem, list: Array<DropDownItem>, nameActivation?: boolean, onSelect?: Dispatch<DropDownItem>, onChange?: Function, loader?: boolean, childClass?: string, displayName?: string }) => {
     const [isOpen, setOpen] = useState(false)
     const liRef = useRef<HTMLLIElement>()
     const [liHeight, setLiHeight] = useState(0)
+    const customRef = useModalSideExit(isOpen, setOpen)
 
     useEffect(() => {
         if (liRef.current && liHeight === 0) {
@@ -44,9 +46,9 @@ const Dropdown = ({ selected, list, nameActivation = false, onSelect, className,
                     <IoIosArrowDown className='transition' style={isOpen ? { transform: "rotate(180deg)" } : undefined} />
                 </div>}
             </div>
-            {isOpen && <div className="absolute left-0 bottom-0 translate-y-full z-10 w-full overflow-hidden">
+            {isOpen && <div ref={customRef} className="absolute left-0 bottom-0 translate-y-full z-10 w-full overflow-hidden">
                 <ul id="ala" className="flex flex-col overflow-y-auto " style={list.length > 5 ?
-                    { height: window.outerWidth > 768?`${liHeight * 5}px`:`${liHeight * 3}px` }
+                    { height: window.outerWidth > 768 ? `${liHeight * 5}px` : `${liHeight * 3}px` }
                     :
                     { height: 'auto' }
                 }>
@@ -59,12 +61,21 @@ const Dropdown = ({ selected, list, nameActivation = false, onSelect, className,
                             return w?.id !== selected?.id
                         }
 
-                    })?.map((w, i) => {
+                    })?.map((w: DropDownItem, i) => {
                         const obj: { ref?: any } = {}
                         if (i === 0) {
                             obj.ref = liRef
                         }
-                        return <Li {...obj} key={generate()} className={childClass} onClick={() => { onSelect!(w); setOpen(false) }}>
+                        return <Li {...obj} key={generate()} className={childClass} onClick={() => {
+                            if (w.onClick) {
+                                w.onClick()
+                                setOpen(false)
+                                return
+                            }
+                            onSelect!(w);
+                            setOpen(false);
+                            onChange?.(w, selected);
+                        }}>
                             {Viewer({ name: w?.name, address: w?.address ?? w?.amount, coinUrl: w?.coinUrl, className: w?.className, disableAddressDisplay })}
                         </Li>
                     }

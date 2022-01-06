@@ -8,7 +8,7 @@ class CSV {
 
             const res = await csv(url)
             if (res) {
-                if (res.columns[0].toLowerCase().includes("name;address;amount;coin")) {
+                if (res.columns[0].toLowerCase().includes("name;address;amount;coin;amount2;coin2")) {
                     const result: string[][] = []
                     for (let index = 0; index < res.length; index++) {
                         const data = Object.values(res[index])[0]?.split(';')

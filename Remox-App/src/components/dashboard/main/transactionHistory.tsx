@@ -13,7 +13,7 @@ const TransactionHistory = ({ transactions }: { transactions: TransactionHook[] 
             <div><Link to="/dashboard/transactions" className="text-blue-400">View All</Link></div>
         </div>
         <div className="grid grid-cols-1">
-            {transactions && transactions.slice(0, 4).map(({ hash, amount, coinName, type, direction, date, surplus, amountUSD }) => <TransactionItem key={generate()} hash={hash} amountCoin={`${amount} ${coinName}`} type={type} direction={direction} date={date} amountUSD={`${surplus}${amountUSD.toFixed(3)}$`} status={TransactionStatus.Completed} />)}
+            {transactions && transactions.slice(0, 4).map(({ hash, amount, coinName, type, direction, date, surplus, amountUSD }) => <TransactionItem key={generate()} hash={hash} amountCoin={`${amount} ${coinName}`} type={type} direction={direction} date={date} amountUSD={amountUSD !== -1 ? `${surplus}${amountUSD.toFixed(3)}$` : ''} status={TransactionStatus.Completed} />)}
         </div>
     </div>
 
