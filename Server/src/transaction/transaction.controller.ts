@@ -1,7 +1,7 @@
 import { Controller, Post, Get, Body, Res, HttpStatus, UseGuards, Req, Param } from '@nestjs/common';
 import { TransactionService } from './transaction.service';
 import { ApiBody, ApiTags, ApiOkResponse, ApiForbiddenResponse, ApiBearerAuth } from '@nestjs/swagger';
-import { MimimumAmountDto, ParamDto, SendAltCoinDto, SendCoinDto, SendMultipleTransactionVsPhraseDto, SendStableCoinDto, SwapDto } from './dto'
+import { MinmumAmountDto, ParamDto, SendAltCoinDto, SendCoinDto, SendMultipleTransactionVsPhraseDto, SendStableCoinDto, SwapDto } from './dto'
 import { IGetBalance } from './interface';
 import { Response } from 'express'
 import { AuthGuard } from '@nestjs/passport';
@@ -27,12 +27,12 @@ export class TransactionController {
     }
 
     @UseGuards(AuthGuard('jwt'))
-    @ApiBody({ type: MimimumAmountDto })
+    @ApiBody({ type: MinmumAmountDto })
     @ApiOkResponse()
     @ApiForbiddenResponse({ description: 'Forbidden.' })
     @ApiBearerAuth('JWT-auth')
     @Post('minimumAmountOut')
-    async minimumAmountOut(@Req() req: any, @Res() res: Response, @Body() dto: MimimumAmountDto): Promise<Response> {
+    async minimumAmountOut(@Req() req: any, @Res() res: Response, @Body() dto: MinmumAmountDto): Promise<Response> {
         const result = await this.transactionService.minmumAmountOut(dto);
         return res.status(HttpStatus.OK).json(result)
     }
@@ -81,7 +81,7 @@ export class TransactionController {
     }
 
     @UseGuards(AuthGuard('jwt'))
-    @ApiBody({ type: SwapDto })
+    @ApiBody({ type: MinmumAmountDto })
     @ApiOkResponse()
     @ApiForbiddenResponse({ description: 'Forbidden.' })
     @ApiBearerAuth('JWT-auth')

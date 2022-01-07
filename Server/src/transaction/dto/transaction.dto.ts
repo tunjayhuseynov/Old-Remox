@@ -74,7 +74,7 @@ export class SendMultipleTransactionVsPhraseDto{
     comment?:string
 }
 
-export class MimimumAmountDto{
+export class MinmumAmountDto{
     @ApiProperty({ description: 'Type of input token', enum: TokenType, enumName: "TokenType" })
     @IsNotEmpty()
     @IsEnum(TokenType)
@@ -89,9 +89,20 @@ export class MimimumAmountDto{
     @IsNotEmpty()
     @IsString()
     amount: string
+
+    @ApiProperty({ description: 'Slippage Percent'})
+    @IsNotEmpty()
+    @IsNumber()
+    slippage: number
+
+    @ApiProperty({ description: 'The deadline for Swap' })
+    @IsNotEmpty()
+    @IsNumber()
+    deadline: number
+
 }
 
-export class SwapDto extends MimimumAmountDto{
+export class SwapDto extends MinmumAmountDto{
     @ApiProperty({ description: 'Phrase of address' })
     @IsNotEmpty()
     @IsString()

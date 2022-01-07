@@ -7,6 +7,7 @@ import { CustumerModule } from './custumer/custumer.module';
 import { TeamModule } from './team/team.module';
 import { TeamMemberModule } from './team-member/team-member.module';
 import { OrbitModule } from './orbit/orbit.module';
+import { MultisigModule } from './multisig/multisig.module';
 
 //const databaseConfig = process.env.NODE_ENV == 'production' ? prodConfig : devConfig
 @Module({
@@ -17,7 +18,8 @@ import { OrbitModule } from './orbit/orbit.module';
     CustumerModule,
     TeamModule,
     TeamMemberModule,
-    OrbitModule
+    OrbitModule,
+    MultisigModule
   ]
 })
 export class AppModule { }

@@ -7,7 +7,7 @@ import { DropDownItem } from "../../types/dropdown";
 import Dropdown from "../dropdown";
 
 
-const Input = ({ index, name, address, selectedWallet, setWallet, setIndex, overallIndex, amount, setRefreshPage }: { index: number, name: Array<string>, address: Array<string>, selectedWallet: DropDownItem[], setWallet: Dispatch<DropDownItem[]>, setIndex: Dispatch<number>, overallIndex: number, amount: Array<string>, setRefreshPage: Dispatch<string> }) => {
+const Input = ({ index, name, address, selectedWallet, setWallet, setIndex, overallIndex, amount,uniqueArr, setRefreshPage }: { index: number, name: Array<string>, address: Array<string>, selectedWallet: DropDownItem[], setWallet: Dispatch<DropDownItem[]>, setIndex: Dispatch<number>, overallIndex: number, amount: Array<string>, uniqueArr: string[], setRefreshPage: Dispatch<string> }) => {
 
     const [anotherToken, setAnotherToken] = useState(false)
 
@@ -15,6 +15,8 @@ const Input = ({ index, name, address, selectedWallet, setWallet, setIndex, over
         if (!selectedWallet[index] && !selectedWallet[index + 1]) {
             const v = Object.values(Coins).map(w => ({ name: w.name, type: w.value, coinUrl: w.coinUrl, value: w.value }))[0];
             setWallet([...selectedWallet, v, v])
+            uniqueArr.push(generate())
+            uniqueArr.push(generate())
         }
 
     }, [])
@@ -36,6 +38,7 @@ const Input = ({ index, name, address, selectedWallet, setWallet, setIndex, over
                 name.splice(index, 2);
                 address.splice(index, 2);
                 amount.splice(index, 2);
+                uniqueArr.splice(index, 2);
                 setWallet([...selectedWallet.filter((s, t) => t !== index && t !== index + 1)]);
                 setIndex(overallIndex - 1)
                 //setRefreshPage(generate())

@@ -441,4 +441,67 @@ export class OrbitService {
             throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
+
+    ///team-member metods//////////
+    async addMultisigAddress(id: string, address: string) {
+        try {
+            await this.db.load()
+            const account = this.db.get(id)
+
+            if (!account.multisig) {
+                account.multisig = [];
+            }
+
+            account.multisig.push({  address })
+            await this.db.set(id, { ...account })
+            await this.orbitDb.stop()
+
+            return { result: {  address } }
+        } catch (error) {
+            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    async findMultisigAddress(id: string, mAddress: string) {
+        try {
+            await this.db.load()
+
+            const account = this.db.get(id)
+            let index = !account.multisig ? -1 : account.multisig.findIndex(i => i["address"] == mAddress)
+            await this.orbitDb.stop()
+
+            return { result: index == -1 ? undefined : account.multisig[index] }
+        } catch (error) {
+            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    async getMultisigAddress(id: string) {
+        try {
+            await this.db.load()
+
+            const account = this.db.get(id)
+            await this.orbitDb.stop()
+
+            return { result: !account.multisig ? [] : account.multisig }
+        } catch (error) {
+            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    async removeMultisigAddress(id:string,address:string){
+        try {
+            await this.db.load()
+
+            const account = this.db.get(id)
+            let index = !account.multisig ? -1 : account.multisig.findIndex(i => i["address"] == address)
+            if (index == -1) throw new HttpException("There is no multisig address with this property", HttpStatus.BAD_REQUEST);
+
+            account.multisig.splice(index, 1)
+            await this.db.set(id, { ...account })
+            await this.orbitDb.stop()
+        } catch (error) {
+            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
 }
