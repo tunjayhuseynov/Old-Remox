@@ -9,6 +9,7 @@ import { useEffect, useState } from "react"
 import { AltCoins, Coins } from "../../types/coins"
 import { changeError, selectError } from "../../redux/reducers/notificationSlice"
 import Error from "../../components/error"
+import { generate } from "shortid"
 
 const MultisigTransaction = () => {
     const history = useHistory()
@@ -91,7 +92,7 @@ const MultisigTransaction = () => {
             </div>
             <div className="flex flex-wrap items-center justify-center gap-y-5">
                 {data?.map((w, i, arr) =>
-                    <div className="flex flex-col   gap-4 items-center justify-center w-[120px]" title={w}>
+                    <div key={generate()} className="flex flex-col   gap-4 items-center justify-center w-[120px]" title={w}>
                         <div className={`w-[50px] shadow-custom h-[50px] relative ${w.toLowerCase() === storage!.accountAddress.toLowerCase() ? "bg-[#3EBE11]" : ""} ${i !== 0 ? "before:-translate-x-full before:absolute before:top-1/2 before:w-full before:h-[2px] before:bg-black" : ""} ${i !== arr.length - 1 ? "after:translate-x-full after:absolute after:top-1/2 after:w-full after:h-[2px] after:bg-black " : ""} rounded-full ${transactionData?.txResult.confirmations.includes(w) ? "bg-[#0055FF]" : "bg-[#E90D0D]"}`}></div>
                         <div className="truncate max-w-[120px] font-semibold">
                             {w.toLowerCase() !== storage!.accountAddress.toLowerCase() ? w.split('').reduce((a, c, i, arr) => {

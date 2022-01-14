@@ -28,7 +28,7 @@ const Initalization = () => {
                 price: d.price,
                 percent_24: d.percent_24
             }))
-
+            updatedCurrency?.push({price: 0, percent_24: 0})
             store.dispatch(updateAllCurrencies(
                 updatedCurrency
             ))
@@ -36,8 +36,11 @@ const Initalization = () => {
 
 
             if (!updatedCurrency) return
-            const [Celo, Cusd, Ceur, Ube, Moo, Mobi, Poof] = updatedCurrency;
-
+            let [Celo, Cusd, Ceur, Ube, Moo, Mobi, Poof, cReal] = updatedCurrency;
+            cReal = {
+                price: 0,
+                percent_24: 0
+            }
             const celo = Celo
             const cusd = Cusd
             const ceur = Ceur
@@ -45,6 +48,8 @@ const Initalization = () => {
             const moo = Moo
             const mobi = Mobi
             const poof = Poof
+            const creal = cReal
+
 
             const balanceResult = store.dispatch(
                 transactionAPI.endpoints.getBalance.initiate()
@@ -63,7 +68,7 @@ const Initalization = () => {
 
             balanceResult.then((balanceResponse) => {
                 const balance = balanceResponse.data;
-                if (balance && celo && cusd && ceur && ube && moo && mobi && poof) {
+                if (balance && celo && cusd && ceur && ube && moo && mobi && poof && cReal) {
                     const pCelo = parseFloat(balance.celoBalance);
                     const pCusd = parseFloat(balance.cUSDBalance);
                     const pCeur = parseFloat(balance.cEURBalance);
@@ -71,6 +76,7 @@ const Initalization = () => {
                     const pMoo = parseFloat(balance.MOO);
                     const pMobi = parseFloat(balance.MOBI);
                     const pPoof = parseFloat(balance.POOF);
+                    const pReal = parseFloat(balance.cREAL);
 
                     const celoPrice = pCelo * (celo.price ?? 0);
                     const cusdPrice = pCusd * (cusd.price ?? 0);
@@ -79,17 +85,20 @@ const Initalization = () => {
                     const mooPrice = pMoo * (moo.price ?? 0);
                     const mobiPrice = pMobi * (mobi.price ?? 0);
                     const poofPrice = pPoof * (poof.price ?? 0);
+                    const realPrice = pReal * (creal.price ?? 0);
 
-                    const total = celoPrice + cusdPrice + mooPrice + + ceurPrice + ubePrice + mobiPrice + poofPrice;
+
+                    const total = celoPrice + cusdPrice + mooPrice + + ceurPrice + ubePrice + mobiPrice + poofPrice + realPrice;
 
                     const updatedBalance = [
-                        { amount: pCelo, per_24: Celo.percent_24, percent: (celoPrice * 100) / total, coins: Coins.celo, reduxValue: celo.price },
-                        { amount: pCusd, per_24: Cusd.percent_24, percent: (cusdPrice * 100) / total, coins: Coins.cUSD, reduxValue: cusd.price },
-                        { amount: pCeur, per_24: Ceur.percent_24, percent: (ceurPrice * 100) / total, coins: Coins.cEUR, reduxValue: ceur.price },
-                        { amount: pUbe, per_24: Ube.percent_24, percent: (ubePrice * 100) / total, coins: Coins.UBE, reduxValue: ube.price },
-                        { amount: pMoo, per_24: Moo.percent_24, percent: (mooPrice * 100) / total, coins: Coins.MOO, reduxValue: moo.price },
-                        { amount: pMobi, per_24: Mobi.percent_24, percent: (mobiPrice * 100) / total, coins: Coins.MOBI, reduxValue: mobi.price },
-                        { amount: pPoof, per_24: Poof.percent_24, percent: (poofPrice * 100) / total, coins: Coins.POOF, reduxValue: poof.price }
+                        { amount: pCelo, per_24: Celo.percent_24, percent: (celoPrice * 100) / total, coins: Coins.celo, tokenPrice: celo.price },
+                        { amount: pCusd, per_24: Cusd.percent_24, percent: (cusdPrice * 100) / total, coins: Coins.cUSD, tokenPrice: cusd.price },
+                        { amount: pCeur, per_24: Ceur.percent_24, percent: (ceurPrice * 100) / total, coins: Coins.cEUR, tokenPrice: ceur.price },
+                        { amount: pUbe, per_24: Ube.percent_24, percent: (ubePrice * 100) / total, coins: Coins.UBE, tokenPrice: ube.price },
+                        { amount: pMoo, per_24: Moo.percent_24, percent: (mooPrice * 100) / total, coins: Coins.MOO, tokenPrice: moo.price },
+                        { amount: pMobi, per_24: Mobi.percent_24, percent: (mobiPrice * 100) / total, coins: Coins.MOBI, tokenPrice: mobi.price },
+                        { amount: pPoof, per_24: Poof.percent_24, percent: (poofPrice * 100) / total, coins: Coins.POOF, tokenPrice: poof.price },
+                        { amount: pReal, per_24: cReal.percent_24, percent: (realPrice * 100) / total, coins: Coins.cREAL, tokenPrice: creal.price },
                     ]
 
                     store.dispatch(updateUserBalance(updatedBalance))

@@ -92,8 +92,8 @@ export class MinmumAmountDto{
 
     @ApiProperty({ description: 'Slippage Percent'})
     @IsNotEmpty()
-    @IsNumber()
-    slippage: number
+    @IsString()
+    slippage: string
 
     @ApiProperty({ description: 'The deadline for Swap' })
     @IsNotEmpty()

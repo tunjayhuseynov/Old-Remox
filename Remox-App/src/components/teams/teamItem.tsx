@@ -23,7 +23,7 @@ const TeamItem = (props: Member & { teamName: string }) => {
     }
 
     return <>
-        <div className="pl-[2px]">
+        <div className="pl-[2px] items-start">
             <div className="hover:cursor-pointer flex items-center space-x-1" onClick={() => setModalVisible(true)}>
                 <Avatar name={props.name} />
                 <div>
@@ -31,19 +31,32 @@ const TeamItem = (props: Member & { teamName: string }) => {
                 </div>
             </div>
         </div>
-        <div className="pl-[2px] hidden sm:flex items-center">
+        <div className="pl-[2px] hidden sm:flex items-start">
             {props.teamName}
         </div>
-        <div className=" pl-[2px] flex items-center justify-start gap-2">
-            <div>
-                <img src={Coins[props.currency].coinUrl} width="20" height="20" alt="" />
+        <div className="flex flex-col space-y-4">
+            <div className=" pl-[2px] flex items-center justify-start gap-1">
+                <div>{props.amount}</div>
+                {props.usdBase ? <div>USD as {Coins[props.currency].name}</div> :
+                    <div>
+                        {Coins[props.currency].name}
+                    </div>}
+                <div>
+                    <img src={Coins[props.currency].coinUrl} width="20" height="20" alt="" className="rounded-full" />
+                </div>
             </div>
-            <div>{props.amount}</div>
-            <div>
-                {Coins[props.currency].name}
-            </div>
+            {props.secondaryCurrency && <div className="pl-[2px] flex items-center justify-start gap-1">
+                <div>{props.secondaryAmount}</div>
+                {props.secondaryUsdBase ? <div>USD as {Coins[props.secondaryCurrency].name}</div> :
+                    <div>
+                        {Coins[props.secondaryCurrency].name}
+                    </div>}
+                <div>
+                    <img src={Coins[props.secondaryCurrency].coinUrl} width="20" height="20" alt="" className="rounded-full" />
+                </div>
+            </div>}
         </div>
-        <div className="col-span-2 sm:col-span-1 pt-3 sm:pt-0 pl-[2px] self-center truncate">
+        <div className="col-span-2 sm:col-span-1 pt-3 sm:pt-0 pl-[2px] self-start truncate">
             {props.address}
         </div>
         {modalVisible && <Modal onDisable={setModalVisible}>

@@ -6,6 +6,7 @@ export interface GetBalanceResponse {
 	MOO: string;
 	MOBI: string;
 	POOF: string;
+	cREAL: string;
 }
 
 export enum GetBalanceResponseEnum {
@@ -16,4 +17,5 @@ export enum GetBalanceResponseEnum {
 	MOO = "MOO",
 	MOBI = "MOBI",
 	POOF = "POOF",
+	cREAL = "cREAL",
 }

@@ -37,8 +37,11 @@ const useRefetchData = (disableInterval = false) => {
                 percent_24: d.percent_24
             }))
 
-            const [Celo, Cusd, Ceur, Ube, Moo, Mobi, Poof] = updatedCurrency;
-
+            let [Celo, Cusd, Ceur, Ube, Moo, Mobi, Poof, cReal] = updatedCurrency;
+            // cReal = {
+            //     price: 0,
+            //     percent_24: 0
+            // }
             const celo = Celo
             const cusd = Cusd
             const ceur = Ceur
@@ -46,6 +49,7 @@ const useRefetchData = (disableInterval = false) => {
             const moo = Moo
             const mobi = Mobi
             const poof = Poof
+            const creal = cReal
 
 
 
@@ -55,7 +59,7 @@ const useRefetchData = (disableInterval = false) => {
                     balance = balanceData;
                 } else balance = multisigBalance
 
-                if (balance && celo && cusd && ceur && ube && moo && mobi && poof) {
+                if (balance && celo && cusd && ceur && ube && moo && mobi && poof && creal) {
                     let pCelo;
                     let pCusd;
                     let pCeur;
@@ -63,6 +67,7 @@ const useRefetchData = (disableInterval = false) => {
                     let pMoo;
                     let pMobi;
                     let pPoof;
+                    let pReal;
                     if (storage?.accountAddress === selectedAccount) {
                         balance = balance as GetBalanceResponse;
                         pCelo = parseFloat(balance.celoBalance);
@@ -72,6 +77,7 @@ const useRefetchData = (disableInterval = false) => {
                         pMoo = parseFloat(balance.MOO);
                         pMobi = parseFloat(balance.MOBI);
                         pPoof = parseFloat(balance.POOF);
+                        pReal = parseFloat(balance.cREAL);
                     } else {
                         balance = balance as MultisigBalanceResponse;
                         pCelo = parseFloat(balance.celo);
@@ -81,6 +87,7 @@ const useRefetchData = (disableInterval = false) => {
                         pMoo = parseFloat(balance.MOO);
                         pMobi = parseFloat(balance.MOBI);
                         pPoof = parseFloat(balance.POOF);
+                        pReal = parseFloat(balance.cREAL);
                     }
 
                     const celoPrice = pCelo * (celo.price ?? 0);
@@ -90,17 +97,19 @@ const useRefetchData = (disableInterval = false) => {
                     const mooPrice = pMoo * (moo.price ?? 0);
                     const mobiPrice = pMobi * (mobi.price ?? 0);
                     const poofPrice = pPoof * (poof.price ?? 0);
+                    const cRealPrice = pReal * (creal.price ?? 0);
 
-                    const total = celoPrice + cusdPrice + mooPrice + + ceurPrice + ubePrice + mobiPrice + poofPrice;
+                    const total = celoPrice + cusdPrice + mooPrice + + ceurPrice + ubePrice + mobiPrice + poofPrice + cRealPrice;
 
                     const updatedBalance = [
-                        { amount: pCelo, per_24: Celo.percent_24, percent: (celoPrice * 100) / total, coins: Coins.celo, reduxValue: celo.price },
-                        { amount: pCusd, per_24: Cusd.percent_24, percent: (cusdPrice * 100) / total, coins: Coins.cUSD, reduxValue: cusd.price },
-                        { amount: pCeur, per_24: Ceur.percent_24, percent: (ceurPrice * 100) / total, coins: Coins.cEUR, reduxValue: ceur.price },
-                        { amount: pUbe, per_24: Ube.percent_24, percent: (ubePrice * 100) / total, coins: Coins.UBE, reduxValue: ube.price },
-                        { amount: pMoo, per_24: Moo.percent_24, percent: (mooPrice * 100) / total, coins: Coins.MOO, reduxValue: moo.price },
-                        { amount: pMobi, per_24: Mobi.percent_24, percent: (mobiPrice * 100) / total, coins: Coins.MOBI, reduxValue: mobi.price },
-                        { amount: pPoof, per_24: Poof.percent_24, percent: (poofPrice * 100) / total, coins: Coins.POOF, reduxValue: poof.price }
+                        { amount: pCelo, per_24: Celo.percent_24, percent: (celoPrice * 100) / total, coins: Coins.celo, tokenPrice: +celo.price },
+                        { amount: pCusd, per_24: Cusd.percent_24, percent: (cusdPrice * 100) / total, coins: Coins.cUSD, tokenPrice: +cusd.price },
+                        { amount: pCeur, per_24: Ceur.percent_24, percent: (ceurPrice * 100) / total, coins: Coins.cEUR, tokenPrice: +ceur.price },
+                        { amount: pUbe, per_24: Ube.percent_24, percent: (ubePrice * 100) / total, coins: Coins.UBE, tokenPrice: +ube.price },
+                        { amount: pMoo, per_24: Moo.percent_24, percent: (mooPrice * 100) / total, coins: Coins.MOO, tokenPrice: +moo.price },
+                        { amount: pMobi, per_24: Mobi.percent_24, percent: (mobiPrice * 100) / total, coins: Coins.MOBI, tokenPrice: +mobi.price },
+                        { amount: pPoof, per_24: Poof.percent_24, percent: (poofPrice * 100) / total, coins: Coins.POOF, tokenPrice: +poof.price },
+                        { amount: pReal, per_24: cReal.percent_24, percent: (cRealPrice * 100) / total, coins: Coins.cREAL, tokenPrice: +creal.price }
                     ]
 
                     dispatch(updateUserBalance(updatedBalance))
@@ -116,7 +125,7 @@ const useRefetchData = (disableInterval = false) => {
                 price: d.price,
                 percent_24: d.percent_24
             }))
-
+            updatedCurrency.push({price: 0, percent_24: 0})
             if (!currencies.CELO || Object.values(currencies).some((w, i) => {
                 return w.price !== updatedCurrency[i].price
             })) {
@@ -124,8 +133,6 @@ const useRefetchData = (disableInterval = false) => {
                     updatedCurrency
                 ))
             }
-
-
 
             if (storage?.accountAddress === selectedAccount) {
                 transactionTrigger(storage!.accountAddress)

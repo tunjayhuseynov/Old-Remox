@@ -1,4 +1,4 @@
-import Navbar, { NavbarDropdown, Visitcard } from '../../layouts/dashboard/navbar'
+import Navbar, { NavbarDropdown } from '../../layouts/dashboard/navbar'
 import Sidebar from '../../layouts/dashboard/sidebar';
 import MobileMenu from '../../layouts/dashboard/mobileMenu'
 import Siderbarlist from '../../components/dashboard/sidebarlist'
@@ -9,6 +9,7 @@ import { IoMdNotificationsOutline } from 'react-icons/io';
 import { selectStorage } from '../../redux/reducers/storage';
 import { ClipLoader } from 'react-spinners';
 import NotificationCointainer from '../../components/notification';
+import Visitcard from '../../components/dashboard/visitcard';
 
 const Dashboard = ({ children }: { children?: JSX.Element | JSX.Element[] }) => {
     const toggle = useAppSelector(selectToggle)

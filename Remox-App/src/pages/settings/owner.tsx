@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import shortid from 'shortid'
+import shortid, { generate } from 'shortid'
 import { AddOwner, RemoveOwner, ReplaceOwner } from '../../components'
 import Avatar from '../../components/avatar'
 import Modal from '../../components/modal'
@@ -49,7 +49,7 @@ const OwnerSetting = () => {
         <div className="shadow-custom px-12 py-4 -mx-10 rounded-xl">
             <div className="flex flex-col space-y-5">
                 {data?.map((e, i) => <div key={shortid()} className="grid grid-cols-[55%,10%,5%,30%] items-center">
-                    <div className="flex items-center space-x-2">
+                    <div key={generate()} className="flex items-center space-x-2">
                         <div>
                             <Avatar className="bg-opacity-10 font-bold text-xs" name="Ow" />
                         </div>

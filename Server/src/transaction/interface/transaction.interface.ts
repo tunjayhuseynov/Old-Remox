@@ -22,6 +22,9 @@ export class IGetBalance{
 
     @ApiProperty()
     POOF?:string;
+
+    @ApiProperty()
+    cREAL?:string;
 }
 
 export class IGetTransactionReceipt{

@@ -2,7 +2,7 @@ export interface GetMinimumAmount {
 	input: string;
 	output: string;
 	amount: string;
-	slippage: number;
+	slippage: string;
 	deadline: number;
 }
 

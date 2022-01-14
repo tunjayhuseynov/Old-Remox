@@ -14,7 +14,7 @@ export interface IBalanceItem {
 	per_24: number;
 	percent: number;
 	coins: AltCoins;
-	reduxValue: number;
+	tokenPrice: number;
 }
 
 interface IBalanceMembers {
@@ -25,6 +25,7 @@ interface IBalanceMembers {
 	MOO: IBalanceItem | undefined;
 	MOBI: IBalanceItem | undefined;
 	POOF: IBalanceItem | undefined;
+	cREAL: IBalanceItem | undefined;
 }
 
 interface ICurrency {
@@ -40,6 +41,7 @@ export interface ICoinMembers {
 	MOO: ICurrencyInternal | undefined;
 	MOBI: ICurrencyInternal | undefined;
 	POOF: ICurrencyInternal | undefined;
+	cREAL: ICurrencyInternal | undefined;
 }
 
 const State: ICurrency = {
@@ -50,7 +52,8 @@ const State: ICurrency = {
 		UBE: undefined,
 		MOO: undefined,
 		MOBI: undefined,
-		POOF: undefined
+		POOF: undefined,
+		cREAL: undefined,
 	},
 	balances: {
 		CELO: undefined,
@@ -59,7 +62,8 @@ const State: ICurrency = {
 		UBE: undefined,
 		MOO: undefined,
 		MOBI: undefined,
-		POOF: undefined
+		POOF: undefined,
+		cREAL: undefined,
 	}
 };
 
@@ -69,7 +73,7 @@ export const CurrencySlice = createSlice({
 	reducers: {
 		updateAllCurrencies: (state: ICurrency, action) => {
 			if (!action.payload) return
-			const [celo, cusd, ceur, ube, moo, mobi, poof]: ICurrencyInternal[] = action.payload;
+			const [celo, cusd, ceur, ube, moo, mobi, poof, creal]: ICurrencyInternal[] = action.payload;
 			state.celoCoins = {
 				CELO: { percent_24: celo.percent_24, price: celo.price },
 				cUSD: { percent_24: cusd.percent_24, price: cusd.price },
@@ -77,20 +81,22 @@ export const CurrencySlice = createSlice({
 				UBE: { percent_24: ube.percent_24, price: ube.price },
 				MOO: { percent_24: moo.percent_24, price: moo.price },
 				MOBI: { percent_24: mobi.percent_24, price: mobi.price },
-				POOF: { percent_24: poof.percent_24, price: poof.price }
+				POOF: { percent_24: poof.percent_24, price: poof.price },
+				cREAL: { percent_24: creal.percent_24, price: creal.price },
 			};
 		},
 		updateBalance: (state: ICurrency, action) => {
 			if (!action.payload) return
-			const [celo, cusd, ceur, ube, moo, mobi, poof]: ICurrencyInternal[] = action.payload;
+			const [celo, cusd, ceur, ube, moo, mobi, poof, creal]: ICurrencyInternal[] = action.payload;
 			state.celoCoins = {
 				CELO: { ...state.celoCoins.CELO, current_balance: celo.current_balance },
 				cUSD: { ...state.celoCoins.cUSD, current_balance: cusd.current_balance },
 				cEUR: { ...state.celoCoins.cEUR, current_balance: ceur.current_balance },
 				UBE: { ...state.celoCoins.UBE, current_balance: ube.current_balance },
 				MOO: { ...state.celoCoins.MOO, current_balance: moo.current_balance },
-				MOBI: { current_balance: mobi.current_balance },
-				POOF: { current_balance: poof.current_balance }
+				MOBI: { ...state.celoCoins.MOBI, current_balance: mobi.current_balance },
+				POOF: { ...state.celoCoins.POOF, current_balance: poof.current_balance },
+				cREAL: { ...state.celoCoins.cREAL, current_balance: creal.current_balance },
 			};
 		},
 		deleteBalance: (state: ICurrency) => {
@@ -101,7 +107,8 @@ export const CurrencySlice = createSlice({
 				UBE: undefined,
 				MOO: undefined,
 				MOBI: undefined,
-				POOF: undefined
+				POOF: undefined,
+				cREAL: undefined,
 			}
 			state.balances = {
 				CELO: undefined,
@@ -110,62 +117,70 @@ export const CurrencySlice = createSlice({
 				UBE: undefined,
 				MOO: undefined,
 				MOBI: undefined,
-				POOF: undefined
+				POOF: undefined,
+				cREAL: undefined,
 			}
 		},
 		updateUserBalance: (state: ICurrency, action) => {
 			if (!action.payload) return
-			const [celo, cusd, ceur, ube, moo, mobi, poof]: IBalanceItem[] = action.payload;
+			const [celo, cusd, ceur, ube, moo, mobi, poof, creal]: IBalanceItem[] = action.payload;
 			state.balances = {
 				CELO: {
 					amount: celo.amount,
 					per_24: celo.per_24,
 					percent: celo.percent,
 					coins: celo.coins,
-					reduxValue: celo.reduxValue
+					tokenPrice: celo.tokenPrice
 				},
 				cUSD: {
 					amount: cusd.amount,
 					per_24: cusd.per_24,
 					percent: cusd.percent,
 					coins: cusd.coins,
-					reduxValue: cusd.reduxValue
+					tokenPrice: cusd.tokenPrice
 				},
 				cEUR: {
 					amount: ceur.amount,
 					per_24: ceur.per_24,
 					percent: ceur.percent,
 					coins: ceur.coins,
-					reduxValue: ceur.reduxValue
+					tokenPrice: ceur.tokenPrice
 				},
 				UBE: {
 					amount: ube.amount,
 					per_24: ube.per_24,
 					percent: ube.percent,
 					coins: ube.coins,
-					reduxValue: ube.reduxValue
+					tokenPrice: ube.tokenPrice
 				},
 				MOO: {
 					amount: moo.amount,
 					per_24: moo.per_24,
 					percent: moo.percent,
 					coins: moo.coins,
-					reduxValue: moo.reduxValue
+					tokenPrice: moo.tokenPrice
 				},
 				MOBI: {
 					amount: mobi.amount,
 					per_24: mobi.per_24,
 					percent: mobi.percent,
 					coins: mobi.coins,
-					reduxValue: mobi.reduxValue
+					tokenPrice: mobi.tokenPrice
 				},
 				POOF: {
 					amount: poof.amount,
 					per_24: poof.per_24,
 					percent: poof.percent,
 					coins: poof.coins,
-					reduxValue: poof.reduxValue
-				}
+					tokenPrice: poof.tokenPrice
+				},
+				cREAL: {
+					amount: creal.amount,
+					per_24: creal.per_24,
+					percent: creal.percent,
+					coins: creal.coins,
+					tokenPrice: creal.tokenPrice
+				},
 			};
 		}
 	}

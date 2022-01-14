@@ -5,8 +5,10 @@ import { useLazyGetMemberQuery, useLazyGetTeamsQuery, useUpdateMemberMutation } 
 import { changeSuccess } from "../../../redux/reducers/notificationSlice";
 import { Coins, CoinsURL } from "../../../types/coins";
 import { DropDownItem } from "../../../types/dropdown";
-import { Member } from "../../../types/sdk";
+import { Interval, Member } from "../../../types/sdk";
 import Dropdown from "../../dropdown";
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
 
 
 const EditMember = (props: Member & { onCurrentModal: Dispatch<boolean> }) => {
@@ -19,11 +21,29 @@ const EditMember = (props: Member & { onCurrentModal: Dispatch<boolean> }) => {
     const [updateMember, { isLoading: updateLoading }] = useUpdateMemberMutation()
 
     const [selectedTeam, setSelectedTeam] = useState<DropDownItem>({ name: "No Team", coinUrl: CoinsURL.None })
-    const [selectedWallet, setSelectedWallet] = useState<DropDownItem>({ name: '', type: Coins[props.currency].value, value: Coins[props.currency].value, id: Coins[props.currency].value, coinUrl: Coins[props.currency].coinUrl });
+    const [secondActive, setSecondActive] = useState(false)
 
+    const [startDate, setStartDate] = useState<Date>(new Date());
+
+
+    const [selectedFrequency, setSelectedFrequency] = useState<DropDownItem>({ name: "Monthly", type: Interval.monthly })
+    const [selectedWallet, setSelectedWallet] = useState<DropDownItem>({ name: Coins[props.currency].name, type: Coins[props.currency].value, value: Coins[props.currency].value, id: Coins[props.currency].value, coinUrl: Coins[props.currency].coinUrl });
+    const [selectedWallet2, setSelectedWallet2] = useState<DropDownItem>();
+
+    const [selectedType, setSelectedType] = useState(props.usdBase)
     useEffect(() => {
         triggerTeam({ take: Number.MAX_SAFE_INTEGER })
         getMembers(props.id)
+        setSecondActive(!(!props.secondaryAmount))
+        if (props.interval) {
+            setSelectedFrequency(props.interval === Interval.monthly ? { name: "Monthly", type: Interval.monthly } : { name: "Weekly", type: Interval.weakly })
+        }
+        if (props.paymantDate) {
+            setStartDate(new Date(props.paymantDate))
+        }
+        if (props.secondaryCurrency) {
+            setSelectedWallet2({ name: Coins[props.secondaryCurrency].name, type: Coins[props.secondaryCurrency].value, value: Coins[props.secondaryCurrency].value, id: Coins[props.secondaryCurrency].value, coinUrl: Coins[props.secondaryCurrency].coinUrl })
+        }
     }, [])
 
     useEffect(() => {
@@ -34,7 +54,7 @@ const EditMember = (props: Member & { onCurrentModal: Dispatch<boolean> }) => {
 
     const Submit = async (e: SyntheticEvent<HTMLFormElement>) => {
         e.preventDefault();
-        const { memberName, amount, address } = e.target as HTMLFormElement;
+        const { memberName, amount, address, amount2 } = e.target as HTMLFormElement;
 
         if (memberName && amount && address && selectedWallet && selectedTeam) {
             if (!selectedWallet.value) {
@@ -48,14 +68,28 @@ const EditMember = (props: Member & { onCurrentModal: Dispatch<boolean> }) => {
             const memberNameValue = (memberName as HTMLInputElement).value
             const amountValue = (amount as HTMLInputElement).value
             const addressValue = (address as HTMLInputElement).value
+            const amountValue2 = (amount2 as HTMLInputElement)?.value
 
-            const member: Member = {
+            let member: Member = {
                 id: props.id,
                 name: memberNameValue,
                 address: addressValue,
                 amount: amountValue,
                 currency: selectedWallet.value,
-                teamId: selectedTeam.id
+                teamId: selectedTeam.id,
+                usdBase: selectedType,
+
+                interval: selectedFrequency!.type as Interval,
+                paymantDate: startDate!.toISOString(),
+            }
+
+            if (amountValue2 && selectedWallet2 && selectedWallet2.value) {
+                member = {
+                    ...member,
+                    secondaryAmount: amountValue2.trim(),
+                    secondaryCurrency: selectedWallet2.value,
+                    secondaryUsdBase: selectedType,
+                }
             }
 
             try {
@@ -89,23 +123,55 @@ const EditMember = (props: Member & { onCurrentModal: Dispatch<boolean> }) => {
                             </div>
                         </div>
                     </div>
-                    <div className="flex flex-col space-y-3">
-                        <div className="font-bold">Pay Amount</div>
-                        <div>
-                            <div className="flex space-x-2 items-center  w-3/4 border border-black rounded-md border-opacity-50">
-                                <div>
-                                    {!selectedWallet ? <ClipLoader /> : <Dropdown onSelect={setSelectedWallet} className="border-none" nameActivation={true} selected={selectedWallet} list={Object.values(Coins).map(w => ({ name: "", type: w.value, value: w.value, coinUrl: w.coinUrl, id: w.value }))} />}
-                                </div>
-                                <div>
-                                    <input name="amount" type="number" defaultValue={member.member!.amount} className="w-full outline-none pr-3" required step={'any'}/>
-                                </div>
+                    <div className="flex flex-col space-y-3 col-span-2">
+                        <div className="font-bold">Wallet Address</div>
+                        <div className="flex space-x-2 items-center w-full">
+                            <input name="address" type="text" defaultValue={member.member!.address} className="w-full  border border-black border-opacity-50 outline-none rounded-md px-3 py-2" required />
+                        </div>
+                    </div>
+                    <div className="col-span-2 flex flex-col space-y-4">
+                        <div className="flex space-x-24">
+                            <div className="flex space-x-2 items-center">
+                                <input type="radio" className="w-4 h-4 accent-[#ff501a] cursor-pointer" name="paymentType" value="token" onChange={(e) => setSelectedType(false)} checked={!selectedType} />
+                                <label className="font-semibold text-sm">
+                                    Token Amounts
+                                </label>
+                            </div>
+                            <div className="flex space-x-2 items-center">
+                                <input type="radio" className="w-4 h-4 accent-[#ff501a] cursor-pointer" name="paymentType" value="fiat" onChange={(e) => setSelectedType(true)} checked={selectedType} />
+                                <label className="font-semibold text-sm">
+                                    USD-based Amounts
+                                </label>
                             </div>
                         </div>
                     </div>
-                    <div className="flex flex-col space-y-3">
-                        <div className="font-bold">Wallet Address</div>
-                        <div className="flex space-x-2 items-center w-3/4">
-                            <input name="address" type="text" defaultValue={member.member!.address} className="w-full text-xs border border-black border-opacity-50 outline-none rounded-md px-3 py-2" required />
+                    <div className="col-span-2 flex flex-col space-y-4 w-2/3">
+                        <div className={`border text-black py-1 rounded-md grid ${selectedType ? "grid-cols-[40%,15%,45%]" : "grid-cols-[50%,50%]"}`}>
+                            <input type="number" defaultValue={member.member!.amount} name="amount" className="outline-none unvisibleArrow pl-2" placeholder="Amount" required step={'any'} min={0} />
+                            {selectedType && <span className="text-xs self-center opacity-70">USD as</span>}
+                            {!selectedWallet ? <ClipLoader /> : <Dropdown className="border-transparent text-sm" onSelect={setSelectedWallet} nameActivation={true} selected={selectedWallet} list={Object.values(Coins)} />}
+
+                        </div>
+                    </div>
+                    {secondActive && selectedWallet2 ?
+                        <div className="col-span-2 flex flex-col space-y-4 w-2/3">
+                            <div className={`border text-black py-1 rounded-md grid ${selectedType ? "grid-cols-[40%,15%,45%]" : "grid-cols-[50%,50%]"}`}>
+                                <input type="number" defaultValue={member.member!.secondaryAmount} name="amount2" className="outline-none unvisibleArrow pl-2" placeholder="Amount" required step={'any'} min={0} />
+                                {selectedType && <span className="text-xs self-center opacity-70">USD as</span>}
+                                {!selectedWallet ? <ClipLoader /> : <Dropdown className="border-transparent text-sm" onSelect={setSelectedWallet2} nameActivation={true} selected={selectedWallet2} list={Object.values(Coins)} />}
+
+                            </div>
+                        </div> : <div className="text-primary cursor-pointer" onClick={() => setSecondActive(true)}>+ Add another token</div>}
+                    <div className="col-span-2 flex flex-col space-y-4 w-1/2">
+                        <div className="font-bold">Payment Frequency</div>
+                        <div>
+                            <Dropdown onSelect={setSelectedFrequency} loader={isLoading} selected={selectedFrequency} list={[{ name: "Monthly", type: Interval.monthly }, { name: "Weekly", type: Interval.weakly }]} nameActivation={true} className="border-2 rounded-md" />
+                        </div>
+                    </div>
+                    <div className="col-span-2 flex flex-col space-y-4 w-1/2">
+                        <div className="font-bold">Payment Date</div>
+                        <div className="border-2 p-2 rounded-md">
+                            <DatePicker selected={startDate} minDate={new Date()} onChange={(date) => date ? setStartDate(date) : null} />
                         </div>
                     </div>
                 </div>
@@ -117,7 +183,8 @@ const EditMember = (props: Member & { onCurrentModal: Dispatch<boolean> }) => {
                             </button>
                         </div>
                     </div>
-                </div> </form>
+                </div>
+            </form>
                 : <div className="flex justify-center"> <ClipLoader /></div>}
         </div>
     </>

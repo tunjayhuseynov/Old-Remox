@@ -54,15 +54,17 @@ const Details = () => {
             if (list[params.id][0].from.toLowerCase() !== selectedAccount.toLowerCase()) {
                 const maTx = list[params.id].find(w => w.to.toLowerCase() === selectedAccount.toLowerCase())
                 if (maTx) {
-                    const coin = Coins[Object.entries(TransactionFeeTokenName).find(w => w[0] === maTx.tokenSymbol)![1]]
-                    setTotalAmount(lodash.round((currencies[coin.name]?.price ?? 0) * Number(Web3.utils.fromWei(maTx.value, 'ether')), 6))
+                    let feeToken = Object.entries(TransactionFeeTokenName).find(w => w[0] === maTx.tokenSymbol)?.[1];
+                    const coin = feeToken ? Coins[feeToken] : Coins.cUSD
+                    setTotalAmount(lodash.round((feeToken ? (currencies[coin.name]?.price ?? 0) : 0) * Number(Web3.utils.fromWei(maTx.value, 'ether')), 6))
 
                     setTransactionFee(Number(Web3.utils.fromWei((Number(maTx.gasUsed) * Number(maTx.gasPrice)).toString(), 'ether')))
                 }
             } else {
                 const total = lodash.round(list[params.id].reduce((a, c) => {
-                    const coin = Coins[Object.entries(TransactionFeeTokenName).find(w => w[0] === c.tokenSymbol)![1]]
-                    a += (currencies[coin.name]?.price ?? 0) * Number(Web3.utils.fromWei(c.value, 'ether'))
+                    let feeToken = Object.entries(TransactionFeeTokenName).find(w => w[0] === c.tokenSymbol)?.[1];
+                    const coin = feeToken ? Coins[feeToken] : Coins.cUSD
+                    a += (feeToken ? (currencies[coin.name]?.price ?? 0) : 0) * Number(Web3.utils.fromWei(c.value, 'ether'))
                     return a;
                 }, 0), 6)
                 setTotalAmount(total)
@@ -98,7 +100,7 @@ const Details = () => {
                     {TransactionDetailInput("Total Amount", `${totalAmount} USD`)}
                     {TransactionDetailInput("Transaction Fee", `${transactionFee}`)}
                     {TransactionDetailInput("Created Date & Time", `${dateFormat(new Date(Number(list[params.id][0].timeStamp) * 1e3), 'dd/mm/yyyy hh:MM:ss')}`)}
-                    {TransactionDetailInput("Status", "Completed")}
+                    {TransactionDetailInput("Status", <div className="flex items-center gap-x-2"><div className="bg-green-400 h-[10px] w-[10px] rounded-full"></div>Completed</div>)}
                     {list[params.id].length === 1 || [...new Set(list[params.id].map(w => w.to))].length === 1 ?
                         TransactionDetailInput("Wallet Address",
                             (list[params.id][0].from.toLowerCase() !== selectedAccount.toLowerCase() ? list[params.id][0].from : list[params.id][0].to).split('').reduce((a, c, i, arr) => {

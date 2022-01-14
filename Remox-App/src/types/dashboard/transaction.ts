@@ -14,7 +14,7 @@ export enum TransactionDirection {
 }
 
 export enum TransactionStatus{
-    Completed, 
-    Pending, 
-    Rejected
+    Completed = "Completed", 
+    Pending = "Pending", 
+    Rejected = "Rejected",
 }

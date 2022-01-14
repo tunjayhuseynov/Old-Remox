@@ -10,6 +10,7 @@ async function bootstrap() {
   // app.set("data","new data") you can get this data in req.app.get('data)
   const app = await NestFactory.create(AppModule);
   currencySaver()
+
   app.setGlobalPrefix("api")
   app.enableCors();
   app.useGlobalPipes(

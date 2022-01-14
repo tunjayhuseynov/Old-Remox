@@ -13,7 +13,8 @@ import { useModalSideExit } from '../../hooks';
 import { SelectSelectedAccount } from '../../redux/reducers/selectedAccount';
 import { deleteBalance } from '../../redux/reducers/currencies';
 import { removeTransactions } from '../../redux/reducers/transactions';
-
+import { AddressReducer } from '../../utility'
+import Visitcard from '../../components/dashboard/visitcard';
 
 const Navbar = () => {
     const storage = useAppSelector(selectStorage)
@@ -53,12 +54,7 @@ const Navbar = () => {
     </div>
 }
 
-export const Visitcard = ({ name, address }: { name: string, address: string }) => <div className="px-5 py-1 flex flex-col bg-gray-50 rounded-xl cursor-pointer" onClick={() => navigator.clipboard.writeText(address.trim())}>
-    <h3 className="text-lg">{name}</h3>
-    <p className="text-xs" >{address.split('').reduce((a, c, i, arr) => {
-        return i < 10 || (arr.length - i) < 4 ? a + c : a.split('.').length - 1 < 6 ? a + '.' : a
-    }, '')}</p>
-</div>
+
 
 const Li = ({ children, link }: { children: any, link: string }) => <li className="text-left border px-3 py-2 bg-white hover:text-primary hover:border-b-primary cursor-pointer first:rounded-t-xl last:rounded-b-xl"><Link to={link} className='flex gap-2'>{children}</Link></li>
 

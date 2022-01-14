@@ -8,6 +8,7 @@ export enum CoinsURL {
 	MOO = '/icons/moola.png',
 	MOBI = '/icons/mobius.png',
 	POOF = '/icons/poof.png',
+	cREAL= "/icons/creal.png",
 	None = ''
 }
 
@@ -18,7 +19,8 @@ export enum CoinsName {
 	UBE = 'UBE',
 	MOO = 'MOO',
 	MOBI = 'MOBI',
-	POOF = 'POOF'
+	POOF = 'POOF',
+	cREAL= 'cREAL',
 }
 
 export enum CoinsNameVisual {
@@ -28,7 +30,8 @@ export enum CoinsNameVisual {
 	UBE = 'UBE',
 	MOO = 'MOO',
 	MOBI = 'MOBI',
-	POOF = 'POOF'
+	POOF = 'POOF',
+	cREAL= 'cREAL',
 }
 
 export enum TransactionFeeTokenName {
@@ -38,7 +41,8 @@ export enum TransactionFeeTokenName {
 	UBE = 'UBE',
 	MOO = 'MOO',
 	MOBI = 'MOBI',
-	POOF = 'POOF'
+	POOF = 'POOF',
+	cREAL= 'cREAL',
 }
 
 export enum StableTokens {
@@ -50,7 +54,8 @@ export enum AltcoinsList {
 	UBE = 'UBE',
 	MOO = 'MOO',
 	MOBI = 'MOBI',
-	POOF = 'POOF'
+	POOF = 'POOF',
+	cREAL= 'cREAL',
 }
 
 export enum CoinsNameLower {
@@ -60,7 +65,8 @@ export enum CoinsNameLower {
 	UBE = 'UBE',
 	MOO = 'MOO',
 	MOBI = 'MOBI',
-	POOF = 'POOF'
+	POOF = 'POOF',
+	cREAL= 'cREAL',
 }
 
 export enum CoinsResponse {}
@@ -128,6 +134,15 @@ export const Coins: Coins = {
 		lowerName: CoinsNameLower.POOF,
 		responseName: GetBalanceResponseEnum.POOF, 
 		contractAddress: "0x00400FcbF0816bebB94654259de7273f4A05c762"
+	},
+	cREAL: {	
+		name: CoinsNameVisual.cREAL,
+		coinUrl: CoinsURL.cREAL,
+		value: CoinsName.cREAL,
+		feeName: TransactionFeeTokenName.cREAL,
+		lowerName: CoinsNameLower.cREAL,
+		responseName: GetBalanceResponseEnum.cREAL, 
+		contractAddress: "0xe8537a3d056DA446677B9E9d6c5dB704EaAb4787"
 	}
 };
 
@@ -139,6 +154,7 @@ export interface Coins {
 	MOO: AltCoins;
 	MOBI: AltCoins;
 	POOF: AltCoins;
+	cREAL: AltCoins;
 }
 
 export interface AltCoins {

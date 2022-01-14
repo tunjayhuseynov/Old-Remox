@@ -8,7 +8,7 @@ import Error from "../../components/error";
 import { DropDownItem } from "../../types/dropdown";
 import { MultipleTransactionData } from "../../types/sdk";
 import CSV from '../../utility/CSV'
-import { useGetBalanceQuery, useSendCeloMutation, useSendStableTokenMutation, useSendMultipleTransactionsMutation, useSendAltTokenMutation, useSubmitTransactionsMutation } from "../../redux/api";
+import { useGetBalanceQuery, useSendCeloMutation, useSendStableTokenMutation, useSendMultipleTransactionsMutation, useSendAltTokenMutation, useSubmitTransactionsMutation, useGetConvertableTokenAmountMutation } from "../../redux/api";
 import { useSelector } from "react-redux";
 import { selectStorage } from "../../redux/reducers/storage";
 import Input from "../../components/pay/payinput";
@@ -27,6 +27,8 @@ const Pay = () => {
     const isError = useSelector(selectError)
     const dispatch = useAppDispatch()
     const router = useHistory();
+
+    //const [tokenAmount] = useGetConvertableTokenAmountMutation()
 
     const balance = useSelector(SelectBalances)
 
@@ -50,7 +52,8 @@ const Pay = () => {
     const [selectedType, setSelectedType] = useState(false)
 
 
-    const uniqueRef = useRef<string[]>([])
+    const [amountState, setAmountState] = useState<number[]>([])
+    const uniqueRef = useRef<string[]>([generate(), generate()])
     const nameRef = useRef<Array<string>>([])
     const addressRef = useRef<Array<string>>([])
     const [wallets, setWallets] = useState<DropDownItem[]>([])
@@ -70,6 +73,7 @@ const Pay = () => {
         addressRef.current = []
         amountRef.current = []
         uniqueRef.current = []
+        //setAmountState([])
         //setWallets([]);
     }
 
@@ -84,6 +88,7 @@ const Pay = () => {
             reset()
             let ind = 0;
             const wllt: any[] = []
+            const amm: number[] = []
             for (let index = 0; index < list.length; index++) {
                 const [name, address, amount, coin, amount2, coin2] = list[index].slice(0, 6)
 
@@ -92,14 +97,17 @@ const Pay = () => {
                 nameRef.current.push((name || ""));
                 addressRef.current.push((address || ""));
                 amountRef.current.push((amount || ""));
+                amm.push(parseFloat(amount || "0"))
                 nameRef.current.push((name || ""));
                 addressRef.current.push((address || ""));
                 amountRef.current.push((amount2 || ""));
+                amm.push(parseFloat(amount2 || "0"))
 
                 const a = { ...Coins[coin as TransactionFeeTokenName], type: Coins[coin as TransactionFeeTokenName].value };
                 const b = { ...Coins[coin2 as TransactionFeeTokenName], type: Coins[coin2 as TransactionFeeTokenName].value };
                 const wallet = [a, b];
                 wllt.push(...wallet)
+                setAmountState(amm)
 
             }
             setIndex((index === 1 ? 0 : index) + list.length)
@@ -137,9 +145,14 @@ const Pay = () => {
 
             for (let index = 0; index < addressList.length; index++) {
                 if (addressList[index] && amountList[index] && wallets[index].type) {
+                    let amount = amountList[index];
+                    if(selectedType){
+                        let value = (balance[wallets[index].name as keyof typeof balance]?.tokenPrice ?? 1)
+                        amount = (parseFloat(amount) / value).toFixed(4)
+                    }
                     result.push({
                         toAddress: addressList[index],
-                        amount: amountList[index],
+                        amount: amount,
                         tokenType: wallets[index].type!,
                     })
                 }
@@ -232,7 +245,7 @@ const Pay = () => {
                         <div className="text-xl font-semibold">Pay Someone</div>
                     </div>
                     <div className="shadow-xl border sm:flex flex-col gap-3 gap-y-10 sm:gap-10 py-10">
-                        <div className="sm:flex flex-col pl-3 sm:pl-12 sm:pr-[25%] gap-3 gap-y-10  sm:gap-10">
+                        <div className="sm:flex flex-col pl-3 sm:pl-12 sm:pr-[20%] gap-3 gap-y-10  sm:gap-10">
                             <div className="flex flex-col space-y-5">
                                 <span className="text-left text-sm font-semibold">Payment Type</span>
                                 <div className="flex space-x-24">
@@ -253,15 +266,22 @@ const Pay = () => {
                             <div className="flex flex-col">
                                 <div className="flex space-x-5 sm:space-x-0 sm:justify-between py-4 items-center">
                                     <span className="text-left font-semibold text-sm">Paying To</span>
-                 
+
                                     <input ref={fileInput} type="file" className="hidden" onChange={(e) => e.target.files!.length > 0 ? CSV.Import(e.target.files![0]).then(e => setCsvImport(e)).catch(e => console.error(e)) : null} />
                                 </div>
-                                <div className="grid grid-cols-4 sm:grid-cols-[25%,45%,25%,5%] gap-5">
-                                    {wallets.length > 0 && Array(index).fill(" ").map((e, i) => <Input key={uniqueRef.current[i * 2]} setIndex={setIndex} overallIndex={index} uniqueArr={uniqueRef.current} index={i * 2} name={nameRef.current} address={addressRef.current} amount={amountRef.current} selectedWallet={wallets} setWallet={setWallets} setRefreshPage={setRefreshPage} />)}
+                                <div className="grid grid-cols-4 sm:grid-cols-[25%,40%,30%,5%] gap-5">
+                                    {wallets.length > 0 && Array(index).fill(" ").map((e, i) => {
+                                        if (!uniqueRef.current[i * 2]) {
+                                            uniqueRef.current[i * 2] = generate()
+                                            uniqueRef.current[i * 2 + 1] = generate()
+                                        }
+
+                                        return <Input key={uniqueRef.current[i * 2]} amountState={amountState} setAmount={setAmountState} setIndex={setIndex} overallIndex={index} uniqueArr={uniqueRef.current} index={i * 2} name={nameRef.current} address={addressRef.current} amount={amountRef.current} selectedWallet={wallets} setWallet={setWallets} setRefreshPage={setRefreshPage} isBasedOnDollar={selectedType} />
+                                    })}
                                 </div>
                             </div>
-                            <div className="py-5 sm:py-0">
-                                <div className="grid grid-cols-2 gap-x-5 sm:grid-cols-4">
+                            <div className="py-5 sm:py-0 grid grid-cols-[65%,35%] gap-16">
+                                <div className="grid grid-cols-2 gap-x-5 sm:grid-cols-3">
                                     <button type="button" className="px-3 py-1 sm:px-6 sm:py-3 min-w-[200px] border-2 border-primary text-primary rounded-xl" onClick={() => {
                                         setIndex(index + 1)
                                     }}>
@@ -273,6 +293,11 @@ const Pay = () => {
                                         Import CSV
                                     </button>
                                 </div>
+                                <span className="self-center text-lg opacity-60">Total: ${amountState.reduce((a, e, i) => {
+                                    if (!wallets[i].type) return a;
+                                    if (selectedType) return a + e;
+                                    return a + e * (balance[wallets[i].name as keyof typeof balance]?.tokenPrice ?? 1);
+                                }, 0).toFixed(2)}</span>
                             </div>
                             <div className="flex flex-col">
                                 <span className="text-left">Description (Optional)</span>

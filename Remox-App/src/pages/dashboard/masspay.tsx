@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect, SyntheticEvent } from "react";
 import Dropdown from "../../components/dropdown";
 import { generate } from 'shortid'
-import { useHistory } from 'react-router-dom'
+import { useHistory, useLocation } from 'react-router-dom'
 import ClipLoader from "react-spinners/ClipLoader";
 import Success from "../../components/success";
 import Error from "../../components/error";
@@ -22,6 +22,9 @@ import { useRefetchData } from "../../hooks";
 
 const MassPay = () => {
 
+    const { state } : {state: {memberList?: Member[]}} = useLocation()
+    const memberList = state?.memberList
+    
     const storage = useAppSelector(selectStorage)
     const selectedAccount = useAppSelector(SelectSelectedAccount)
     const isError = useAppSelector(selectError)
@@ -40,12 +43,6 @@ const MassPay = () => {
     const [sendMultisig] = useSubmitTransactionsMutation()
 
 
-    const [currentBalances, setCurrentBalances] = useState<IBalanceItem[]>();
-    const [selectedBalances, setSelectedBalances] = useState<JSX.Element[]>();
-    const [selectedBalanceResult, setSelectedBalanceResult] = useState<JSX.Element[]>();
-
-
-
     const [getTeams, { data: teams, isLoading: teamLoading }] = useLazyGetTeamsWithMembersQuery()
 
 
@@ -54,10 +51,11 @@ const MassPay = () => {
 
 
     const [selectedWallet, setSelectedWallet] = useState<DropDownItem>();
-    const [selectedTeam, setSelectedTeam] = useState<DropDownItem>();
+    const [selectedTeam, setSelectedTeam] = useState<DropDownItem | undefined>(memberList ? { name: "Custom", address: "0" } : undefined);
 
-    const resMember = useRef<Array<Member & { selected: boolean }>>([])
-    const [members, setMembers] = useState<Member[]>();
+    // const resMember = useRef<Array<Member & { selected: boolean }>>([])
+    const [resMember, setResMember] = useState<Array<Member & { selected: boolean }>>(memberList ? memberList.map(w => ({ ...w, selected: false })) : [])
+    const [members, setMembers] = useState<Member[] | undefined>(memberList);
     const [selectedId, setSelectedId] = useState<string[]>([]);
 
     const [list, setList] = useState<Array<DropDownItem>>([]);
@@ -65,6 +63,7 @@ const MassPay = () => {
 
     useEffect(() => {
         getTeams({ take: Number.MAX_SAFE_INTEGER })
+        refetch()
     }, [])
 
 
@@ -83,16 +82,16 @@ const MassPay = () => {
     }, [balance])
 
     useEffect(() => {
-        if (teams && teams.teams.length) {
+        if (teams && teams.teams.length && !memberList) {
             setSelectedTeam({ name: teams.teams[0].title, address: teams.teams[0].id })
         }
     }, [teams])
 
     useEffect(() => {
-        if (teams && teams.teams.length && selectedTeam && selectedTeam.address) {
+        if (teams && teams.teams.length && selectedTeam && selectedTeam.address && selectedTeam.name.toLowerCase() !== "custom") {
             const team = teams.teams.find(w => w.id === selectedTeam.address)
             if (team && team.members) {
-                resMember.current = team.members.map(w => ({ ...w, selected: false }))
+                setResMember(team.members.map(w => ({ ...w, selected: false })))
             }
             setMembers(teams.teams.find(w => w.id === selectedTeam.address)!.members)
         }
@@ -103,20 +102,39 @@ const MassPay = () => {
 
         const result: Array<MultipleTransactionData> = []
 
-        const mems = resMember.current.filter(w => selectedId.includes(w.id))
+        const mems = resMember.filter(w => selectedId.includes(w.id))
 
         if (mems.length) {
             for (let index = 0; index < mems.length; index++) {
+                let amount;
+                if (mems[index].usdBase) {
+                    amount = (parseFloat(mems[index].amount) * (balance[mems[index].currency as keyof typeof balance]?.tokenPrice ?? 1)).toString()
+                } else {
+                    amount = mems[index].amount
+                }
                 result.push({
                     toAddress: mems[index].address,
-                    amount: mems[index].amount,
+                    amount,
                     tokenType: mems[index].currency
                 })
+
+                let secAmount = mems[index].secondaryAmount, secCurrency = mems[index].secondaryCurrency;
+
+                if (secAmount && secCurrency) {
+                    if (mems[index].secondaryAmount) {
+                        secAmount = (parseFloat(secAmount) * (balance[mems[index].secondaryCurrency as keyof typeof balance]?.tokenPrice ?? 1)).toString()
+                    }
+
+                    result.push({
+                        toAddress: mems[index].address,
+                        amount: secAmount,
+                        tokenType: secCurrency
+                    })
+                }
             }
         }
 
         setIsPaying(true)
-
 
         try {
             if (storage!.accountAddress.toLowerCase() === selectedAccount.toLowerCase()) {
@@ -187,7 +205,7 @@ const MassPay = () => {
             setSuccess(true);
             refetch()
             // Initalization();
-            
+
 
         } catch (error: any) {
             console.error(error)
@@ -198,59 +216,21 @@ const MassPay = () => {
         setIsPaying(false);
     }
 
-    useEffect(() => {
-        if (selectedId && selectedId.length && balance && balance.CELO) {
-            const result = lodash.groupBy(resMember.current.filter(w => selectedId.includes(w.id)), "currency");
-            const currenBalanceArr: IBalanceItem[] = []
-            Object.entries(result).forEach(([key, value]) => {
-                Object.entries(balance).forEach(([key2, value2]) => {
-                    if (key.toLowerCase() === key2.toLowerCase() && value2 !== undefined) {
-                        currenBalanceArr.push(value2)
-                    }
-                })
-            })
-
-            const bal = Object.entries(result).map(([key, value]) => {
-                if (!balance[Coins[key as TransactionFeeTokenName].name]?.reduxValue) return <></>
-                const amount = value.reduce((a, c) => a += parseFloat(c.amount), 0)
-                return <div className="flex flex-col space-y-3">
-                    <div>{amount} {Coins[key as TransactionFeeTokenName].name}</div>
-                    <div className="text-black opacity-50">{(amount * balance[Coins[key as TransactionFeeTokenName].name]!.reduxValue).toFixed(2)} USD</div>
-                </div>
-            })
-
-            const selectedAmount = Object.entries(result).map(([key, value]) => ({ coin: key, value: value.reduce((a, c) => a += parseFloat(c.amount), 0) }))
-
-            const balanceRes = currenBalanceArr?.map(w => {
-                if (!balance[w.coins.name]?.reduxValue) return <></>
-                return <div className="flex flex-col space-y-3">
-                    <div>{(w.amount - (selectedAmount.find(s => s.coin === w.coins.name || s.coin === w.coins.feeName)?.value ?? 0)).toFixed(2)} {w.coins.name}</div>
-                    <div className="text-black opacity-50">{((w.amount - (selectedAmount.find(s => s.coin === w.coins.name || s.coin === w.coins.feeName)?.value ?? 0)) * balance[w.coins.name]!.reduxValue).toFixed(2)} USD</div>
-                </div>
-            })
-
-            setCurrentBalances(currenBalanceArr)
-            setSelectedBalances(bal)
-            setSelectedBalanceResult(balanceRes)
-
-
-        }
-    }, [selectedId, balance])
 
     return <div>
         <form onSubmit={Submit}>
             <div className="flex flex-col items-center justify-center min-h-screen">
                 <div className="w-[95%] sm:w-[85vw] min-h-[75vh]">
                     <div className="w-full">
-                        <div>Mass Payout</div>
+                        <div className="pl-14 text-xl font-semibold">Mass Payout</div>
                     </div>
-                    <div className=" h-auto shadow-xl border flex flex-col gap-10 py-10">
+                    <div className=" h-auto shadow-xl rounded-xl border flex flex-col gap-10 py-10">
                         {!teamLoading && teams && teams.teams.length === 0 ? <div className="flex justify-center">No Team Yet. Please, first, create a team</div> : <><div className="flex flex-col px-4 sm:pl-12 sm:pr-[25%] gap-10">
                             <div className="flex flex-col space-y-3">
-                                <span className="text-left font-semibold">Paying From</span>
+                                <span className="text-left text-sm font-semibold">Paying From</span>
                                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-x-3 sm:gap-x-10">
                                     {!(teams && selectedTeam) ? <ClipLoader /> : <Dropdown className="h-full" disableAddressDisplay={true} onSelect={setSelectedTeam} nameActivation={true} selected={selectedTeam} list={teams.teams.map(w => ({ name: w.title, address: w.id }))} />}
-                                    {!(balance && balance.CELO && selectedWallet) ? <ClipLoader /> : <Dropdown onSelect={setSelectedWallet} nameActivation={true} selected={selectedWallet} list={list} disableAddressDisplay={true} />}
+                                    {/* {!(balance && balance.CELO && selectedWallet) ? <ClipLoader /> : <Dropdown onSelect={setSelectedWallet} nameActivation={true} selected={selectedWallet} list={list} disableAddressDisplay={true} />} */}
                                 </div>
                             </div>
                             <div className="flex flex-col">
@@ -258,7 +238,7 @@ const MassPay = () => {
                                     <span className="text-left font-semibold">Team Details</span>
                                     <div className="flex space-x-2 items-center">
                                         <input type="checkbox" className="relative cursor-pointer w-[20px] h-[20px] checked:before:absolute checked:before:w-full checked:before:h-full checked:before:bg-primary checked:before:block" onChange={(e) => {
-                                            if (e.target.checked) setSelectedId(resMember.current.map(w => w.id))
+                                            if (e.target.checked) setSelectedId(resMember.map(w => w.id))
                                             else setSelectedId([])
                                         }} />
                                         <button type="button">
@@ -271,45 +251,8 @@ const MassPay = () => {
                                     <div className="hidden sm:block font-semibold">Address</div>
                                     <div className="hidden sm:block font-semibold">Disbursement</div>
                                     <div className="hidden sm:block"></div>
-                                    {teams && resMember && selectedTeam && selectedTeam.address && members && members.length > 0 ? resMember.current.map((w, i) => <TeamInput generalWallet={selectedWallet!} setGeneralWallet={setSelectedWallet} selectedId={selectedId} setSelectedId={setSelectedId} key={generate()} index={i} {...w} members={resMember} />) : 'No Member Yet'}
+                                    {teams && resMember && members && members.length > 0 ? resMember.map((w, i) => <TeamInput generalWallet={selectedWallet!} setGeneralWallet={setSelectedWallet} selectedId={selectedId} setSelectedId={setSelectedId} key={w.id} index={i} {...w} members={resMember} setMembers={setResMember} />) : 'No Member Yet'}
                                 </div>
-                            </div>
-                            <div className="grid grid-cols-2 sm:grid-cols-4 gap-y-3 px-1 sm:px-5">
-                                <div className="sm:text-xs font-semibold text-sm opacity-60">Current Balance</div>
-                                <div className="sm:text-xs font-semibold text-sm opacity-60">Current Amount To Send</div>
-                                <div className="sm:text-xs hidden sm:block font-semibold text-sm opacity-60">Selected People</div>
-                                <div className="sm:text-xs hidden sm:block font-semibold text-sm opacity-60">Balance After Transaction</div>
-                                {selectedId.length === 0 && <div className="col-span-2 sm:col-span-4 text-center pt-5">No Selected Member Yet</div>}
-                                {selectedId.length > 0 && currentBalances && selectedBalances && selectedBalances.length > 0 && currentBalances.length > 0 &&
-                                    <>
-                                        <div className={'flex flex-col space-y-5'}>
-                                            {
-                                                currentBalances.map((w) => {
-                                                    return <div className="flex flex-col space-y-3">
-                                                        <div>
-                                                            {w.amount.toFixed(2)} {w.coins.name}
-                                                        </div>
-                                                        <div className="text-black opacity-50">
-                                                            {(w.amount * w.reduxValue).toFixed(2)} USD
-                                                        </div>
-                                                    </div>
-                                                })
-                                            }
-                                        </div>
-                                        <div className="flex flex-col space-y-5">
-                                            {
-                                                selectedBalances
-                                            }
-                                        </div>
-                                        <div className="sm:hidden font-semibold text-sm opacity-60">Selected People</div>
-                                        <div className="sm:hidden font-semibold text-sm opacity-60">Balance After Transaction</div>
-                                        <div className="text-black opacity-50 text-sm">
-                                            {selectedId.length} people
-                                        </div>
-                                        <div className={'flex flex-col space-y-5'}>
-                                            {selectedBalanceResult}
-                                        </div>
-                                    </>}
                             </div>
                             <div className="flex flex-col">
                                 <span className="text-left">Description (Optional)</span>
@@ -328,7 +271,7 @@ const MassPay = () => {
                 </div>
             </div>
         </form>
-        {isSuccess && <Success onClose={setSuccess} onAction={()=>{router.goBack()}}/>}
+        {isSuccess && <Success onClose={setSuccess} onAction={() => { router.goBack() }} />}
         {isError && <Error onClose={(val) => dispatch(changeError({ activate: false, text: '' }))} />}
     </div>
 

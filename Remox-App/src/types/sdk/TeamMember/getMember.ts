@@ -1,4 +1,5 @@
 import { CoinsName } from "../../coins";
+import { Interval } from "./addMember";
 
 export interface GetMember{
     take?: number;
@@ -10,9 +11,15 @@ export interface Member {
     id: string,
     name: string,
     address: string,
-    amount: string,
     currency: CoinsName,
-    teamId: string,
+    amount: string,
+    teamId: string, 
+    paymantDate: string,
+    interval: Interval,
+    usdBase: boolean,
+    secondaryCurrency?: CoinsName,
+    secondaryAmount?: string,
+    secondaryUsdBase?: boolean,
 }
 
 export interface GetMemberResponse{

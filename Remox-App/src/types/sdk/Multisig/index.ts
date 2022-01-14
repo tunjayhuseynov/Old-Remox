@@ -87,5 +87,6 @@ export interface MultisigBalanceResponse{
     UBE: string,
     MOO: string,
     MOBI: string,
-    POOF: string
+    POOF: string,
+    cREAL: string
 }

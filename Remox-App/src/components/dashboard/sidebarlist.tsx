@@ -11,7 +11,7 @@ const Sidebarlist = () => {
     return <>
         <ul>
             <NavLink to="/dashboard" exact={true} activeClassName='text-primary'><Li><DashboardSVG />Dashboard</Li></NavLink>
-            <Link to="/masspayout"><Li><PayrollSVG />Payroll</Li></Link>
+            <NavLink to="/dashboard/payroll" activeClassName='text-primary'><Li><PayrollSVG />Payroll</Li></NavLink>
             <NavLink to="/dashboard/transactions" activeClassName='text-primary'><Li><TransactionsSVG />Transactions</Li></NavLink>
             <NavLink to="/dashboard/swap" activeClassName='text-primary'><Li><SwapSVG />Swap</Li></NavLink>
             <NavLink to="/dashboard/assets" activeClassName='text-primary'><Li><AssetsSVG />Assets</Li></NavLink>

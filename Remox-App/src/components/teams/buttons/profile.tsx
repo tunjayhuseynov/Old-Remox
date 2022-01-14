@@ -34,15 +34,23 @@ const Profile = (props: Member & { teamName: string, onDeleteModal: Dispatch<boo
                 </div>
                 <div className="flex flex-col space-y-3">
                     <div className="font-bold">Pay Amount</div>
-                    <div>
+                    <div className="flex flex-col space-y-3">
                         <div className="flex space-x-2 items-center">
                             <div>
                                 {props.amount}
                             </div>
                             <div>
-                                <img width="20" height="20" src={Coins[props.currency].coinUrl} alt=""/>
+                                <img width="20" height="20" src={Coins[props.currency].coinUrl} alt="" className="rounded-full" />
                             </div>
                         </div>
+                        {props.secondaryCurrency && <div className="flex space-x-2 items-center">
+                            <div>
+                                {props.secondaryAmount}
+                            </div>
+                            <div>
+                                <img width="20" height="20" src={Coins[props.secondaryCurrency].coinUrl} alt="" className="rounded-full" />
+                            </div>
+                        </div>}
                     </div>
                 </div>
                 <div className="flex flex-col space-y-3">

@@ -26,6 +26,7 @@ import MassPay from './pages/dashboard/masspay'
 import Initalization from './utility/init'
 import SettingLayout from './pages/settings';
 import MultisigTransaction from './pages/multisig/transaction'
+import Payroll from './pages/payroll'
 
 function App(): JSX.Element {
   const storage = useAppSelector(selectStorage)
@@ -86,7 +87,7 @@ const AuthRouter = ({ data, unlockChecking }: { data: IStorage | null, unlockChe
       return
     }
 
-    Initalization()
+    //Initalization()
 
   }, [data, router])
 
@@ -100,6 +101,7 @@ const AuthRouter = ({ data, unlockChecking }: { data: IStorage | null, unlockChe
         <Switch>
           <Route path={path + '/'} exact render={() => unlockChecking(<Main />)} />
           <Route path={path + '/assets'} exact render={() => unlockChecking(<Assets />)} />
+          <Route path={path + '/payroll'} exact render={() => unlockChecking(<Payroll />)} />
           <Route path={path + '/teams'} exact render={() => unlockChecking(<Teams />)} />
           <Route path={path + '/transactions'} exact render={() => unlockChecking(<Transactions />)} />
           <Route path={path + '/transactions/:id'} exact render={() => unlockChecking(<Details />)} />

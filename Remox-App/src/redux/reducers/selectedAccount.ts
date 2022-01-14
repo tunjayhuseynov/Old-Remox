@@ -1,15 +1,27 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 import type { RootState } from '../store'
+import { IStorage } from './storage'
 
-const initialState : {address: string} = {
-    address: ""
+
+interface IContainer {
+    address: string, 
+}
+
+const init = (): IContainer => {
+    const val = localStorage.getItem("user")
+
+    if (val) {
+        const data: IStorage = JSON.parse(val)
+        return { address: data.accountAddress }
+    }
+    return { address: '' };
 }
 
 export const SelectedAccountSlice = createSlice({
-    name: 'notification',
-    initialState,
+    name: 'selectedAccount',
+    initialState: init(),
     reducers: {
-        changeAccount: (state, action: PayloadAction<string>) => {
+        changeAccount: (state: IContainer, action: PayloadAction<string>) => {
             state.address = action.payload
         },
  

@@ -58,7 +58,7 @@ const Swap = () => {
                     input: token1.value,
                     output: token2.value,
                     amount: token1Amount.toString(),
-                    slippage: slippageArr.find(item => item.selected)!.value,
+                    slippage: slippageArr.find(item => item.selected)!.value.toString(),
                     deadline: Math.floor(deadline * 60)
                 }).unwrap()
                 setAppAmount(data.minimumAmountOut)
@@ -80,7 +80,7 @@ const Swap = () => {
                         output: token2.value,
                         amount: token1Amount.toString(),
                         phrase: storage!.encryptedPhrase,
-                        slippage: slippageArr.find(item => item.selected)!.value,
+                        slippage: slippageArr.find(item => item.selected)!.value.toString(),
                         deadline: Math.floor(deadline * 60) 
                     }).unwrap()
                     dispatch(changeSuccess(true))

@@ -6,6 +6,7 @@ import { AddCustumerDto } from '../custumer/dto';
 import { v4 as uuidv4 } from 'uuid';
 import path from 'path'
 import { CreateTeamMemberDto, UpdateTeamMemberDto } from '../team-member/dto';
+import { TokenType } from "../transaction/transaction.entity";
 require('dotenv').config({ path: path.join(__dirname, "..", "..", ".env") });
 const IPFS = require('ipfs')
 const OrbitDB = require('orbit-db')
@@ -312,8 +313,14 @@ export class OrbitService {
             if (!account.teams[index].members) {
                 account.teams[index].members = [];
             }
+            if (dto.secondaryAmount == undefined) {
+                delete dto.secondaryAmount
+                delete dto.secondaryCurrency
+                delete dto.secondaryUsdBase
+            }
 
             delete dto.teamId
+
             account.teams[index].members.push({ id: memberId, ...dto })
             await this.db.set(id, { ...account })
             await this.orbitDb.stop()
@@ -340,7 +347,7 @@ export class OrbitService {
         }
     }
 
-    async getMember(id:string,memberId:string){
+    async getMember(id: string, memberId: string) {
         let memberIndex: number = -1
         let teamIndex: number = -1;
         try {
@@ -361,7 +368,7 @@ export class OrbitService {
             member['teamId'] = account.teams[teamIndex].id
             await this.orbitDb.stop()
 
-            return {...member}
+            return { ...member }
         } catch (error) {
             throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
         }
@@ -372,7 +379,7 @@ export class OrbitService {
         let teamIndex: number = -1;
         Object.keys(dto).forEach(key => dto[key] === undefined && delete dto[key])
         const updates = Object.keys(dto);
-        const allowedUpdates = ["address", "name", "currency", "amount"];
+        const allowedUpdates = ["address", "name", "currency","paymantDate","interval", "amount", "usdBase", "secondaryCurrency", "secondaryAmount", "secondaryUsdBase"];
         const checkedUpdates = updates.filter(items => allowedUpdates.includes(items));
         try {
             if (updates.length == 0) throw new HttpException("Please fill any form", HttpStatus.NOT_FOUND)
@@ -392,9 +399,9 @@ export class OrbitService {
             if (memberIndex == -1) throw new HttpException("There is not member with this property", HttpStatus.BAD_REQUEST);
             let newMember = account.teams[teamIndex].members[memberIndex]
 
-            checkedUpdates.forEach(item => newMember[item] = escaper(dto[item]))
+            checkedUpdates.forEach(item => newMember[item] = dto[item] == false || dto[item] == true ? dto[item] : escaper(dto[item]))
 
-            if (dto.teamId && dto.teamId!=account.teams[teamIndex].id) {
+            if (dto.teamId && dto.teamId != account.teams[teamIndex].id) {
                 let index = account.teams.findIndex(i => i.id == dto.teamId)
                 if (index == -1) throw new HttpException("There is not any team with this property", HttpStatus.BAD_REQUEST);
 
@@ -452,11 +459,11 @@ export class OrbitService {
                 account.multisig = [];
             }
 
-            account.multisig.push({  address })
+            account.multisig.push({ address })
             await this.db.set(id, { ...account })
             await this.orbitDb.stop()
 
-            return { result: {  address } }
+            return { result: { address } }
         } catch (error) {
             throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
         }
@@ -489,7 +496,7 @@ export class OrbitService {
         }
     }
 
-    async removeMultisigAddress(id:string,address:string){
+    async removeMultisigAddress(id: string, address: string) {
         try {
             await this.db.load()
 

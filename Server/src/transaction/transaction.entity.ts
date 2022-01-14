@@ -8,7 +8,8 @@ export enum TokenType {
     UBE = 'UBE',
     MOO = 'MOO',
     MOBI = 'MOBI',
-    POOF = 'POOF'
+    POOF = 'POOF',
+    cREAL = 'cREAL',
 }
 
 export enum StableTokenType {
@@ -20,7 +21,8 @@ export enum AltTokenType{
     UBE = 'UBE',
     MOO = 'MOO',
     MOBI = 'MOBI',
-    POOF = 'POOF'
+    POOF = 'POOF',
+    cREAL = 'cREAL'
 }
 
 @Entity({ name: "transactions" })

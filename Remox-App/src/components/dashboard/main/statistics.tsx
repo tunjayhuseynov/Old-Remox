@@ -15,7 +15,7 @@ interface Balance {
     per_24?: number,
     percent: number,
     coins: AltCoins,
-    reduxValue: number | undefined
+    tokenPrice: number | undefined
 }
 
 const Statistic = () => {
@@ -42,6 +42,7 @@ const Statistic = () => {
     const moo = (useAppSelector(SelectCurrencies)).MOO
     const mobi = (useAppSelector(SelectCurrencies)).MOBI
     const poof = (useAppSelector(SelectCurrencies)).POOF
+    const creal = (useAppSelector(SelectCurrencies)).cREAL
 
     const balanceRedux = useAppSelector(SelectBalances)
     const celoBalance = (useAppSelector(SelectBalances)).CELO
@@ -51,11 +52,12 @@ const Statistic = () => {
     const mooBalance = (useAppSelector(SelectBalances)).MOO
     const mobiBalance = (useAppSelector(SelectBalances)).MOBI
     const poofBalance = (useAppSelector(SelectBalances)).POOF
+    const crealBalance = (useAppSelector(SelectBalances)).cREAL
 
 
 
     const all = useMemo(() => {
-        if (celoBalance !== undefined && cusdBalance !== undefined && ceurBalance !== undefined && ubeBalance !== undefined && mooBalance !== undefined && mobiBalance !== undefined && poofBalance !== undefined) {
+        if (celoBalance !== undefined && crealBalance !== undefined && cusdBalance !== undefined && ceurBalance !== undefined && ubeBalance !== undefined && mooBalance !== undefined && mobiBalance !== undefined && poofBalance !== undefined) {
             return {
                 celo: celoBalance,
                 cUSD: cusdBalance,
@@ -63,13 +65,14 @@ const Statistic = () => {
                 UBE: ubeBalance,
                 MOO: mooBalance,
                 MOBI: mobiBalance,
-                POOF: poofBalance
+                POOF: poofBalance,
+                cREAL: crealBalance
             }
         }
     }, [celoBalance, cusdBalance, ceurBalance, ubeBalance, mooBalance, mobiBalance, poofBalance])
 
     const chart = useMemo(() => {
-        if (celoBalance !== undefined && cusdBalance !== undefined && ceurBalance !== undefined && ubeBalance !== undefined && mooBalance !== undefined && mobiBalance !== undefined && poofBalance !== undefined) {
+        if (celoBalance !== undefined && crealBalance !== undefined && cusdBalance !== undefined && ceurBalance !== undefined && ubeBalance !== undefined && mooBalance !== undefined && mobiBalance !== undefined && poofBalance !== undefined) {
             const celoDeg = Math.ceil(celoBalance.percent * 3.6) 
             const cusdDeg = Math.ceil(cusdBalance.percent * 3.6) + celoDeg;
             const ceurDeg = Math.ceil(ceurBalance.percent * 3.6) + cusdDeg;
@@ -77,19 +80,20 @@ const Statistic = () => {
             const mooDeg = Math.ceil(mooBalance.percent * 3.6) + ubeDeg;
             const mobiDeg = Math.ceil(mooBalance.percent * 3.6) + mooDeg;
             const poofDeg = Math.ceil(poofBalance.percent * 3.6) + mobiDeg;
+            const crealDeg = Math.ceil(crealBalance.percent * 3.6) + poofDeg;
 
-            if (!celoDeg && !cusdDeg && !ceurDeg && !ubeDeg && !mooDeg && !mobiDeg && !poofDeg) return `conic-gradient(#FF774E 0deg 360deg)`
+            if (!celoDeg && !cusdDeg && !ceurDeg && !ubeDeg && !mooDeg && !mobiDeg && !poofDeg && !crealDeg) return `conic-gradient(#FF774E 0deg 360deg)`
 
-            return `conic-gradient(#fbce5c 0deg ${celoDeg}deg, #46cd85 ${celoDeg}deg ${cusdDeg}deg, #040404 ${cusdDeg}deg ${ceurDeg}deg, #6D619A ${ceurDeg}deg ${ubeDeg}deg, #3288ec ${ubeDeg}deg ${mooDeg}deg, #e984a0 ${mooDeg}deg ${mobiDeg}deg, #7D72FC ${mobiDeg}deg ${poofDeg}deg)`
+            return `conic-gradient(#fbce5c 0deg ${celoDeg}deg, #46cd85 ${celoDeg}deg ${cusdDeg}deg, #040404 ${cusdDeg}deg ${ceurDeg}deg, #6D619A ${ceurDeg}deg ${ubeDeg}deg, #3288ec ${ubeDeg}deg ${mooDeg}deg, #e984a0 ${mooDeg}deg ${mobiDeg}deg, #7D72FC ${mobiDeg}deg ${poofDeg}deg, #e904a3 ${poofDeg}deg ${crealDeg}deg)`
         }
         return `conic-gradient(#FF774E 0deg 360deg)`
-    }, [celoBalance, cusdBalance, ceurBalance, ubeBalance, mooBalance, mobiBalance, poofBalance, celo, cusd, ceur, ube, moo, mobi, poof])
+    }, [celoBalance, cusdBalance, ceurBalance, ubeBalance, mooBalance, mobiBalance, poofBalance, celo, cusd, ceur, ube, moo, mobi, poof, creal])
 
 
 
 
     useEffect(() => {
-        if (celoBalance && cusdBalance && ceurBalance && ubeBalance && mooBalance && mobiBalance && poofBalance) {
+        if (celoBalance && cusdBalance && ceurBalance && ubeBalance && mooBalance && mobiBalance && poofBalance && crealBalance) {
 
             //const total = celoBalance.amount + cusdBalance.amount + ceurBalance.amount + ubeBalance.amount + mooBalance.amount + poofBalance.amount + mobiBalance.amount;
             const currencObj = Object.values(currencies)
@@ -105,10 +109,10 @@ const Statistic = () => {
             }, 0)
 
             const result: number =
-                (celoBalance.amount * celoBalance.reduxValue) + (cusdBalance.amount * cusdBalance.reduxValue) +
-                (ceurBalance.amount * ceurBalance.reduxValue) + (ubeBalance.amount * ubeBalance.reduxValue) +
-                (mooBalance.amount * mooBalance.reduxValue) + (mobiBalance.amount * mobiBalance.reduxValue) +
-                (poofBalance.amount * poofBalance.reduxValue)
+                (celoBalance.amount * celoBalance.tokenPrice) + (cusdBalance.amount * cusdBalance.tokenPrice) +
+                (ceurBalance.amount * ceurBalance.tokenPrice) + (ubeBalance.amount * ubeBalance.tokenPrice) +
+                (mooBalance.amount * mooBalance.tokenPrice) + (mobiBalance.amount * mobiBalance.tokenPrice) +
+                (poofBalance.amount * poofBalance.tokenPrice) + (crealBalance.amount * crealBalance.tokenPrice)
 
             setBalance(result.toFixed(2))
             setPercent(per / indexable)
@@ -122,7 +126,7 @@ const Statistic = () => {
 
     useEffect(() => {
         if (all) {
-            setAllInOne(Object.values(all).sort((a, b) => (b.amount * b.reduxValue).toLocaleString().localeCompare((a.amount * a.reduxValue).toLocaleString())).slice(0, 4))
+            setAllInOne(Object.values(all).sort((a, b) => (b.amount * b.tokenPrice).toLocaleString().localeCompare((a.amount * a.tokenPrice).toLocaleString())).slice(0, 4))
         }
     }, [all])
 
@@ -131,13 +135,15 @@ const Statistic = () => {
             let myin = 0;
             let myout = 0;
             transactions.result.forEach(t => {
-                const coin = Coins[Object.entries(TransactionFeeTokenName).find(w => w[0] === t.tokenSymbol)![1]];
+                let feeToken = Object.entries(TransactionFeeTokenName).find(w => w[0] === t.tokenSymbol)?.[1]
+                const coin = feeToken ? Coins[feeToken] : Coins.cUSD;
                 const tTime = new Date(parseInt(t.timeStamp) * 1e3)
                 if (tTime.getMonth() === new Date().getMonth()) {
+                    const calc = (parseFloat(Web3.utils.fromWei(t.value, 'ether')) * (feeToken ? (currencies[coin.name]?.price ?? 0) : 0))
                     if (t.from.toLowerCase() === selectedAccount.toLowerCase()) {
-                        myout += (parseFloat(Web3.utils.fromWei(t.value, 'ether')) * (currencies[coin.name]?.price ?? 0))
+                        myout += calc
                     } else {
-                        myin += (parseFloat(Web3.utils.fromWei(t.value, 'ether')) * (currencies[coin.name]?.price ?? 0))
+                        myin += calc
                     }
                 }
             })
@@ -200,7 +206,7 @@ const Statistic = () => {
             balance && allInOne !== undefined ?
                 <div className="flex flex-col gap-5 overflow-hidden col-span-2 sm:col-span-1">
                     {allInOne.map((item, index) => {
-                        return <CoinItem key={generate()} title={item.coins.name} coin={item.amount.toFixed(2)} usd={((item.reduxValue ?? 0) * item.amount).toFixed(2)} percent={(item.percent || 0).toFixed(1)} rate={item.per_24} img={item.coins.coinUrl} />
+                        return <CoinItem key={generate()} title={item.coins.name} coin={item.amount.toFixed(2)} usd={((item.tokenPrice ?? 0) * item.amount).toFixed(2)} percent={(item.percent || 0).toFixed(1)} rate={item.per_24} img={item.coins.coinUrl} />
                     })}
                 </div> : <ClipLoader />
         }</>

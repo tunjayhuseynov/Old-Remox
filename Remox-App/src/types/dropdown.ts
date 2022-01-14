@@ -14,7 +14,7 @@ interface BaseDropDown {
 
 interface DropDownPriceItem extends BaseDropDown {
     type: string,
-    amount: string,
+    amount?: string,
     address?: string,
     coinUrl?: CoinsURL
 }

@@ -37,7 +37,7 @@ const Dropdown = ({ selected, list, nameActivation = false, onSelect, className,
     })
 
     return (
-        <div className={`relative ${parentClass}`}>
+        <div className={`relative ${parentClass} `}>
             <div onClick={() => list?.length > 0 ? setOpen(!isOpen) : null} className={`flex ${className || ''} ${loader ? 'justify-center' : 'justify-between'} items-center border rounded-xl ${isOpen && 'rounded-b-none'} py-2 px-3 cursor-pointer`}>
                 {!loader ? <div className="truncate">
                     {Viewer({ name: selected.name, address: selected?.address ?? selected?.amount, coinUrl: selected?.coinUrl, className: selected?.className, disableAddressDisplay: disableAddressDisplay, displayName })}

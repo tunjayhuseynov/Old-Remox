@@ -2,7 +2,7 @@ import { Fragment, useEffect, useState, useRef } from 'react';
 import TeamContainer from '../../components/teams/teamContainer'
 import Modal from '../../components/modal'
 import AddTeams from '../../components/teams/buttons/addTeam'
-import AddMember from '../../components/teams/buttons/addMember'
+import AddMemberModal from '../../components/teams/buttons/addMember'
 import { ClipLoader } from 'react-spinners';
 import { TeamInfoWithMembers } from '../../types/sdk/Team/GetTeamsWithMembers';
 import { generate } from 'shortid';
@@ -66,9 +66,9 @@ const Teams = () => {
                 <button className="bg-primary px-6 py-2 rounded-xl text-white text-xs sm:text-base" onClick={() => setAddTeamModal(true)}>Add Team</button>
                 <button className="bg-primary px-6 py-2 rounded-xl text-white text-xs sm:text-base" onClick={() => setAddMemberModal(true)}>Add Person</button>
             </div>
-            <button className="px-5 py-2 bg-greylish bg-opacity-5 rounded-xl">
+            {/* <button className="px-5 py-2 bg-greylish bg-opacity-5 rounded-xl">
                 Export
-            </button>
+            </button> */}
         </div>
         <div className="w-full shadow-custom px-5 pt-4 pb-6 rounded-xl">
             <div id="header" className="hidden sm:grid grid-cols-[30%,30%,1fr] lg:grid-cols-[20%,20%,20%,1fr] border-b border-black sm:pb-5 px-5" >
@@ -101,7 +101,7 @@ const Teams = () => {
             </Modal>}
         {addMemberModal &&
             <Modal onDisable={setAddMemberModal}>
-                <AddMember onDisable={setAddMemberModal} />
+                <AddMemberModal onDisable={setAddMemberModal} />
             </Modal>}
         {isSuccess && <Success onClose={(val: boolean) => dispatch(changeSuccess(val))} text="Successfully" />}
         {isError && <Error onClose={(val: boolean) => dispatch(changeError({activate: val}))} />}

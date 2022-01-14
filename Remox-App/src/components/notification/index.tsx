@@ -1,13 +1,14 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { Fragment, useCallback, useEffect, useRef, useState } from "react";
 import { IoMdNotificationsOutline } from "react-icons/io";
 import { Link } from "react-router-dom";
 import { generate } from "shortid";
-import useTransactionProcess from "../../hooks/useTransactionProcess";
+import useTransactionProcess, { TransactionHook } from "../../hooks/useTransactionProcess";
 import { useSetTimeMutation } from "../../redux/api";
 import { useAppDispatch, useAppSelector } from "../../redux/hooks";
 import { changeNotificationSeen } from "../../redux/reducers/notificationSlice";
 import { RootState } from "../../redux/store";
-import { TransactionType } from "../../types";
+import { TransactionDirection, TransactionStatus, TransactionType } from "../../types";
+import Accordion from "../dashboard/accordion";
 
 
 enum Status {
@@ -17,7 +18,7 @@ enum Status {
 }
 
 const NotificationCointainer = () => {
-    const list = useTransactionProcess()
+    const [list] = useTransactionProcess()
     const dispatch = useAppDispatch()
     const seenTime = useAppSelector((state: RootState) => state.notification.notificationSeen)
     const [openNotify, setNotify] = useState(false)
@@ -45,18 +46,35 @@ const NotificationCointainer = () => {
         return () => window.removeEventListener('click', click)
     }, [click, divRef])
 
+    let index = 0
+
     return <>
         <IoMdNotificationsOutline className="text-2xl cursor-pointer" onClick={() => setNotify(!openNotify)} />
-        {list && new Date(seenTime) < new Date(parseInt((list ? list[0]?.rawDate : "0")) * 1e3) && <div className="absolute w-[10px] h-[10px] bg-primary rounded-full -top-1 -right-1">
-
-        </div>}
         {openNotify &&
             <div ref={divRef} className="translate-x-[75%] sm:translate-x-0 z-40 absolute shadow-custom min-w-[325px] min-h-[200px] right-0 bg-white mt-7 rounded-xl">
                 <div className="flex flex-col min-h-[325px] sm:min-h-[auto] justify-center sm:justify-between sm:items-stretch items-center">
-                    {list && list.slice(0, 4).map(item =>
-                        <NotificationItem key={generate()} status={Status.OK} title={item.type} body={item.amountUSD !== -1 ? `${item.surplus} ${item.amountUSD.toFixed(4)} $`:''} link={`/dashboard/transactions/${item.blockNum}`} />
-                    )}
-                    {(!list || !list.length) && <div>No notification yet. We'll notify you</div>}
+                    {
+                        list && Object.entries(list).map(([date, transactionObj]) => {
+                            if (!transactionObj["recieved"] || !transactionObj["sent"]) return null
+                            const recievedTransactions = transactionObj.recieved;
+                            const sentTransactions = transactionObj.sent;
+                            return <Fragment key={date}>
+                                {index < 3 && recievedTransactions.length > 0 && ++index &&
+                                    recievedTransactions.map(({ amountUSD, surplus, blockNumber }) => {
+                                        return <NotificationItem key={generate()} status={Status.OK} title={TransactionType.IncomingPayment} body={amountUSD[0] !== -1 ? `${surplus} ${amountUSD.reduce((a, e) => a + e).toFixed(4)} $` : ''} link={`/dashboard/transactions/${blockNumber}`} />
+
+                                    })
+                                }
+                                {index < 3 && sentTransactions.length > 0 && ++index &&
+                                    sentTransactions.map(({ amountUSD, surplus, blockNumber }) => {
+                                        return <NotificationItem key={generate()} status={Status.OK} title={TransactionType.IncomingPayment} body={amountUSD[0] !== -1 ? `${surplus} ${amountUSD.reduce((a, e) => a + e).toFixed(4)} $` : ''} link={`/dashboard/transactions/${blockNumber}`} />
+
+                                    })
+                                }
+                            </Fragment>
+                        })
+                    }
+                    {(!list || !Object.values(list).length) && <div>No notification yet. We'll notify you</div>}
                 </div>
             </div>
         }
@@ -76,7 +94,7 @@ const NotificationItem = ({ status, title, body, link }: { status: Status, title
         </div>
         <div className="flex flex-col">
             <div>{title}</div>
-            <div>{body}</div>
+            <div className="opacity-50">{body}</div>
         </div>
         <Link to={link}>
             <div className={'text-primary'}>
