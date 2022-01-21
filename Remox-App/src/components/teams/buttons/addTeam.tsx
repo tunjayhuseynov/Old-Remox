@@ -4,6 +4,7 @@ import { ClipLoader } from "react-spinners";
 import { useAppDispatch } from "../../../redux/hooks"
 import { changeSuccess } from '../../../redux/reducers/notificationSlice'
 import { useCreateTeamMutation } from "../../../redux/api";
+import Button from "../../button";
 
 const AddTeams = ({ onDisable }: { onDisable: React.Dispatch<boolean>}) => {
 
@@ -17,7 +18,7 @@ const AddTeams = ({ onDisable }: { onDisable: React.Dispatch<boolean>}) => {
             try {
                 await createTeam({ title: teamName.current.value.trim() }).unwrap();
 
-                dispatch(changeSuccess(true))
+                dispatch(changeSuccess({activate: true, text: "Successfully created"}))
                 onDisable(false)
             } catch (error) {
                 console.error(error)
@@ -40,9 +41,9 @@ const AddTeams = ({ onDisable }: { onDisable: React.Dispatch<boolean>}) => {
             </div>
         </div> */}
         <div className="flex justify-center">
-            <button onClick={create} className="px-14 py-2 text-white rounded-xl bg-primary font-light" disabled={isLoading}>
-                {isLoading ? <ClipLoader /> : "Add Team"}
-            </button>
+            <Button onClick={create} isLoading={isLoading} className="px-14 py-2 font-light">
+                Add Team
+            </Button>
         </div>
 
     </div>

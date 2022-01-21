@@ -1,5 +1,5 @@
 import dateFormat from "dateformat";
-import { Fragment, useEffect, useState } from "react";
+import { Fragment, useCallback, useEffect, useMemo, useState } from "react";
 import { ClipLoader } from "react-spinners";
 import { generate } from "shortid";
 import Web3 from "web3";
@@ -32,15 +32,61 @@ const Transactions = () => {
 
     const [multiSkip, setMultiSkip] = useState(0)
 
+    const [transactionVisual, setVisual] = useState<JSX.Element | JSX.Element[]>()
+
     useEffect(() => {
         if (isMultisig) {
             const interval = setInterval(() => {
                 refetch(true, 0, (multisigData?.length || 20))
-            }, 30000)
+            }, 60000)
             return () => clearInterval(interval)
         }
     }, [selectedAccount, multisigData])
 
+    useEffect(() => {
+        if (list) {
+            setTimeout(()=>{
+                TransactionGenerator.then((e) => {
+                    setVisual(e)
+                })
+            }, 500)
+        }
+    }, [list])
+
+    const TransactionGenerator = useMemo(() => new Promise<JSX.Element[]>((resolve, reject) => {
+        if (!list) return <></>
+        const result = Object.entries(list).map(([block, transactionObj]) => {
+            const recievedTransactions = transactionObj.recieved;
+            const sentTransactions = transactionObj.sent;
+            const swaps = transactionObj.swaps;
+
+            return <Fragment key={block}>
+                {recievedTransactions.length > 0 && <Accordion grid={"grid-cols-[25%,45%,30%] sm:grid-cols-[27%,33%,25%,15%]"} direction={TransactionDirection.In} date={transactionObj.date} dataCount={recievedTransactions.length} status={TransactionStatus.Completed}>
+                    <div>
+                        {recievedTransactions.map(({ amount, address, coinName, blockNumber, date, coin, hashs }) => {
+                            return <TransactionItem key={blockNumber + hashs.join(',')} blockNumber={blockNumber} address={address} amountCoin={amount} coinName={coinName} date={date} coin={coin} status={TransactionStatus.Completed} />
+                        })}
+                    </div>
+                </Accordion>}
+                {sentTransactions.length > 0 && <Accordion grid={"grid-cols-[25%,45%,30%] sm:grid-cols-[27%,33%,15%,15%]"} direction={TransactionDirection.Out} date={transactionObj.date} dataCount={sentTransactions.length} status={TransactionStatus.Completed}>
+                    <div>
+                        {sentTransactions.map(({ amount, coinName, blockNumber, address, date, coin, hashs }) => {
+                            return <TransactionItem key={blockNumber + hashs.join(',')} blockNumber={blockNumber} address={address} date={date} amountCoin={amount} coinName={coinName} coin={coin} status={TransactionStatus.Completed} />
+                        })}
+                    </div>
+                </Accordion>}
+                {swaps.length > 0 && <Accordion grid={"grid-cols-[25%,45%,30%] sm:grid-cols-[27%,33%,15%,15%]"} direction={TransactionDirection.Swap} date={transactionObj.date} dataCount={swaps.length} status={TransactionStatus.Completed}>
+                    <div>
+                        {swaps.map(({ amount, coinName, blockNum, to, date, coin, hash, direction, swap }) => {
+                            return <TransactionItem key={blockNum + hash} address={to} swap={swap} blockNumber={blockNum} direction={direction} date={date} amountCoin={[amount.toFixed(2)]} coinName={[coinName]} coin={[coin]} status={TransactionStatus.Completed} />
+                        })}
+                    </div>
+                </Accordion>}
+            </Fragment>
+        })
+
+        resolve(result)
+    }), [])
 
     return <>
         <div>
@@ -73,85 +119,52 @@ const Transactions = () => {
                         </CSVLink>}
                     </div></>}
                 </div>
-                {!isMultisig && <> <div>
-                    {list ? Object.entries(list).map(([date, transactionObj]) => {
-                        const recievedTransactions = transactionObj.recieved;
-                        const sentTransactions = transactionObj.sent;
-                        return <Fragment key={date}>
-                            {recievedTransactions.length > 0 && <Accordion grid={"grid-cols-[25%,45%,30%] sm:grid-cols-[27%,33%,25%,15%]"} direction={TransactionDirection.In} date={date} dataCount={recievedTransactions.length} status={TransactionStatus.Completed}>
-                                <div>
-                                    {recievedTransactions.map(({ amount, address, coinName, blockNumber, date, coin }) => {
-                                        return <TransactionItem key={generate()} hash={blockNumber} address={address} amountCoin={amount} coinName={coinName} date={date} coin={coin} status={TransactionStatus.Completed} />
-                                    })}
-                                </div>
-                            </Accordion>}
-                            {sentTransactions.length > 0  && <Accordion grid={"grid-cols-[25%,45%,30%] sm:grid-cols-[27%,33%,15%,15%]"} direction={TransactionDirection.Out} date={date} dataCount={sentTransactions.length} status={TransactionStatus.Completed}>
-                                <div>
-                                    {sentTransactions.map(({ amount, coinName, blockNumber, address, date, coin }) => {
-                                        return <TransactionItem key={generate()} hash={blockNumber} address={address} date={date} amountCoin={amount} coinName={coinName} coin={coin} status={TransactionStatus.Completed} />
-                                    })}
-                                </div>
-                            </Accordion>}
-                        </Fragment>
-                    }) : <div className="text-center"><ClipLoader /></div>}
-                </div>
-                    {/* {transactions && list && take < transactions.result.length && take < Object.values(list).length && <div className="flex justify-center pt-4">
-                        <button className="text-primary px-5 py-3 rounded-xl border border-primary" onClick={() => {
-                            if (transactions.result.length - take < 4) {
-                                setTake(transactions.result.length - (transactions.result.length - take))
-                            } else {
-                                setTake(take + 4 < transactions.result.length ? take + 4 : transactions.result.length)
-                            }
-                        }}>
-                            Load More
-                        </button>
-                    </div>} */}
-                </>}
                 {
                     isMultisig && <div>
                         {multisigData ?
                             multisigData.length > 0 ? <>
-                                {multisigData.filter(w => w.method).map((w, i) => <div key={generate()} className="pl-5 grid grid-cols-[45%,25%,15%,15%] min-h-[75px] py-6 border-b border-black items-center">
-                                    <div>
-                                        {w.executed ? <div className="text-white bg-green-500 border-2 border-green-500 rounded-xl px-3 py-1 text-center text-xs w-[125px]">Submitted</div> : null}
-                                        {w.executed ? null : w.confirmations.includes(storage!.accountAddress) ? <div className="text-white bg-primary border-2 border-primary rounded-xl px-3 py-1 text-center text-xs w-[125px]">Confirmed</div> : <div className="border-2 text-center border-primary  px-3 py-1 rounded-xl text-xs w-[125px]">Not confirmed yet</div>}
-                                    </div>
-                                    <div className="flex flex-col space-y-1">
-                                        <div>
-                                            <div className="border-b border-black inline">
-                                                {w.method!.split('').reduce((acc, w, i) => {
-                                                    if (i === 0) return acc + w.toUpperCase()
-                                                    if (w !== w.toLowerCase() && i > 0) return acc + " " + w
-                                                    return acc + w;
-                                                }, '')}
+                                {multisigData.filter(w => w.method && !w.executed).map((w, i) => {
+
+                                    const method = w.method!.split('').reduce((acc, w, i) => {
+                                        if (i === 0) return acc + w.toUpperCase()
+                                        if (w !== w.toLowerCase() && i > 0) return acc + " " + w
+                                        return acc + w;
+                                    }, '')
+
+                                    return <Accordion key={(w.id?.toString() ?? Math.random().toString()) + w.data} grid={"grid-cols-[25%,45%,30%] sm:grid-cols-[27%,33%,25%,15%]"} dataCount={1} method={method} status={w.executed ? TransactionStatus.Completed : TransactionStatus.Pending}>
+                                        <div className="pl-5 grid grid-cols-[27%,33%,25%,15%] min-h-[75px] py-6 items-center">
+                                            <div>
+                                                {w.executed ? <div className="text-white bg-green-500 border-2 border-green-500 rounded-xl px-3 py-1 text-center text-xs w-[125px]">Submitted</div> : null}
+                                                {w.executed ? null : w.confirmations.includes(storage!.accountAddress) ? <div className="text-white bg-primary border-2 border-primary rounded-xl px-3 py-1 text-center text-xs max-w-[175px]">You've Confirmed</div> : <div className="border-2 text-center border-primary  px-3 py-1 rounded-xl text-xs max-w-[175px]">You've not confirmed yet</div>}
+                                            </div>
+                                            <div className="flex flex-col space-y-1">
+                                                {/* <div>
+                                                    <div className="border-b border-black inline">
+                                                        {method}
+                                                    </div>
+                                                </div> */}
+                                                {w.owner ? <div className="truncate pr-10  text-base">{w.method?.toLowerCase().includes('transfer') ? 'To' : 'Owner'}: {w.owner}</div> : null}
+                                                {w.valueOfTransfer ? <div className="truncate pr-10  text-base">Value: {w.valueOfTransfer} {(Object.values(Coins).find((s: AltCoins) => s.contractAddress.toLowerCase() === w.destination.toLowerCase()) as AltCoins)?.name}</div> : null}
+                                                {w.newOwner ? <div className="truncate pr-10  text-base">New Owner: {w.newOwner}</div> : null}
+                                                {w.requiredCount ? <div className="truncate pr-10  text-base">New Signature Threshold: {+w.requiredCount}</div> : null}
+                                            </div>
+                                            <div className="font-semibold ">
+                                                {w.confirmations.length} <span className="font-medium">out of</span> {w.method?.toLowerCase().includes("transfer") ? signData?.executinTransactions : signData?.changingMultiSigProperties}
+                                            </div>
+                                            <div className="flex justify-end cursor-pointer items-start md:pr-0 ">
+                                                <Link to={`/multisig/${w.id}`}><div className={`text-primary px-6 max-h-[80px] border-2 border-primary rounded-xl py-2 hover:bg-primary hover:text-white`}>View Details</div></Link>
                                             </div>
                                         </div>
-                                        {w.owner ? <div className="truncate pr-10 text-xs">{w.method?.toLowerCase().includes('transfer') ? 'To' : 'Owner'}: {w.owner}</div> : null}
-                                        {w.valueOfTransfer ? <div className="truncate pr-10 text-xs">Value: {w.valueOfTransfer} {(Object.values(Coins).find((s: AltCoins) => s.contractAddress.toLowerCase() === w.destination.toLowerCase()) as AltCoins)?.name}</div> : null}
-                                        {w.newOwner ? <div className="truncate pr-10 text-xs">New Owner: {w.newOwner}</div> : null}
-                                        {w.requiredCount ? <div className="truncate pr-10 text-xs">New Signature Threshold: {+w.requiredCount}</div> : null}
-                                    </div>
-                                    <div className="font-semibold ">
-                                        {w.confirmations.length} <span className="font-medium">out of</span> {w.method?.toLowerCase().includes("transfer") ? signData?.executinTransactions : signData?.changingMultiSigProperties}
-                                    </div>
-                                    <div className="flex flex-col justify-center cursor-pointer text-blue-400 items-end pr-5 md:pr-0 lg:pr-5">
-                                        <Link to={`/multisig/${w.id}`}>View</Link>
-                                    </div>
-                                </div>)}
+                                    </Accordion>
+                                })}
 
                             </> : <div className="flex flex-col justify-center">
                                 <div className="text-center py-3"><ClipLoader /></div>
                                 <div className="text-center text-xs text-gray-500">It can take longer</div>
                             </div> : <div className="text-center py-3">No Transaction Yet</div>}
-
-                        {multisigData && multisigData.length > 0 && (!multisigData.some(s => s.id === 1)) && <div className="flex justify-center py-4"> <button className="text-primary px-5 py-3 rounded-xl border border-primary" onClick={() => {
-                            setMultiSkip((multisigData?.length ?? 0))
-                            fetchTxs(true, (multisigData?.length ?? 0))
-                        }}>
-                            {isTransactionLoading ? <div> <ClipLoader /> </div> : "Load More"}
-                        </button></div>}
                     </div>
                 }
+                {((isMultisig && multisigData && multisigData.length > 0) || !isMultisig) && list && transactionVisual ? transactionVisual : isMultisig ? null : <div className="text-center py-2"><ClipLoader /></div>}
             </div>
         </div>
     </>

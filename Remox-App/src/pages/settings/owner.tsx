@@ -1,7 +1,9 @@
 import { useState } from 'react'
+import { MdEdit } from 'react-icons/md'
 import shortid, { generate } from 'shortid'
 import { AddOwner, RemoveOwner, ReplaceOwner } from '../../components'
 import Avatar from '../../components/avatar'
+import Button from '../../components/button'
 import Modal from '../../components/modal'
 import ChangeTreshold from '../../components/settings/owner/changeThreshold'
 import useMultisig from '../../hooks/useMultisig'
@@ -15,7 +17,7 @@ const OwnerSetting = () => {
     const [removeModal, setRemoveModal] = useState(false)
 
     const [selectedOwner, setSelectedOwner] = useState("")
-    const [removable, setRemovable] = useState({name: "", address: ""})
+    const [removable, setRemovable] = useState({ name: "", address: "" })
 
     if (!data) return <div className="text-center">Please, select a MultiSig account</div>
 
@@ -30,15 +32,17 @@ const OwnerSetting = () => {
                 </div>
                 <div className="grid grid-cols-[45%,45%,10%]">
                     <div>
-                        <button className="px-5 py-2 bg-primary text-white rounded-lg font-extralight w-[150px] flex items-center justify-center gap-x-1" onClick={() => {setChangeTresholdModal(true)}}>
-                            <img src="/icons/edit.svg" alt="" />
-                            Treshold
-                        </button>
+                        <Button className="py-2 font-extralight w-[150px] flex items-center justify-center gap-x-1" onClick={() => { setChangeTresholdModal(true) }}>
+                            <>
+                                <MdEdit />
+                                Treshold
+                            </>
+                        </Button>
                     </div>
                     <div>
-                        <button className="px-5 py-2 bg-primary text-white rounded-lg font-extralight w-[150px]" onClick={() => setAddOwnerModal(true)}>
+                        <Button className="py-2 px-5 font-extralight w-[150px]" onClick={() => setAddOwnerModal(true)}>
                             + Add owner
-                        </button>
+                        </Button>
                     </div>
                 </div>
             </div>
@@ -68,7 +72,7 @@ const OwnerSetting = () => {
                         <img src="/icons/editSetting.svg" alt="" />
                     </div>
                     <div className="cursor-pointer" onClick={() => {
-                        setRemovable({name: `Owner ${i + 1}`, address: e})
+                        setRemovable({ name: `Owner ${i + 1}`, address: e })
                         setRemoveModal(true)
                     }}>
                         <img src="/icons/trashSetting.svg" alt="" />

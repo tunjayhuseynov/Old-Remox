@@ -1,16 +1,22 @@
+import { motion } from "framer-motion";
 import { useState } from "react";
 import { IoIosArrowDown } from "react-icons/io";
 import { TransactionDirection, TransactionStatus } from "../../types";
 
+const variants = {
+    close: {
+        height: 0
+    }, 
+    open: {
+        height: "auto"
+    }
+}
 
-
-const Accordion = ({ children, date, dataCount, status, direction, grid = "grid-cols-[37%,33%,30%]" }: { children: JSX.Element, date: string, dataCount: number, status: TransactionStatus, direction: TransactionDirection, grid?: string }) => {
+const Accordion = ({ children, date, dataCount, status, direction, grid = "grid-cols-[37%,33%,30%]", method }: { method?: string, children: JSX.Element, date?: string, dataCount: number, status: TransactionStatus, direction?: TransactionDirection, grid?: string }) => {
 
     const [isOpen, setOpen] = useState(false)
-    const [bodyHeight, setBodyHeight] = useState("0px")
 
     const click = () => {
-        setBodyHeight(bodyHeight === "0px" ? "auto" : "0px")
         setOpen(!isOpen)
     }
 
@@ -24,20 +30,20 @@ const Accordion = ({ children, date, dataCount, status, direction, grid = "grid-
                     {dataCount === 1 ? "1 Payment" : `${dataCount} Payments`}
                 </div>
                 <div className="text-sm text-greylish">
-                    {TransactionDirection.In === direction ? "Received" : ""} {TransactionDirection.Out === direction ? "Executed" : ""} on {date}
+                    {method}
+                    {direction !== undefined && <>{TransactionDirection.Swap === direction ? "Swapped" : ""} {TransactionDirection.In === direction ? "Received" : ""} {TransactionDirection.Out === direction ? "Executed" : ""} on {date}</>}
                 </div>
                 <div className={`flex ${grid !== "grid-cols-[37%,33%,30%]" ? "justify-start" : "justify-end"} gap-x-2 items-center`}>
-                    {status === TransactionStatus.Completed ? <div className="bg-green-400 w-2 h-2 rounded-full"></div> : null}
+                    {status === TransactionStatus.Completed && <div className="bg-green-400 w-2 h-2 rounded-full"></div>}
+                    {status === TransactionStatus.Pending && <div className="bg-primary w-2 h-2 rounded-full"></div>}
                     {status}
                 </div>
                 <div></div>
             </div>
         </div>
-        <div className="overflow-hidden" style={{
-            height: bodyHeight
-        }}>
+        <motion.div className="overflow-hidden" variants={variants} initial={"close"} animate={isOpen ? "open" : "close"}>
             {children}
-        </div>
+        </motion.div>
     </div>
 }
 

@@ -9,6 +9,7 @@ import { Interval, Member } from "../../../types/sdk";
 import Dropdown from "../../dropdown";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
+import Button from "../../button";
 
 
 const EditMember = (props: Member & { onCurrentModal: Dispatch<boolean> }) => {
@@ -94,7 +95,7 @@ const EditMember = (props: Member & { onCurrentModal: Dispatch<boolean> }) => {
 
             try {
                 await updateMember(member).unwrap()
-                dispatch(changeSuccess(true))
+                dispatch(changeSuccess({ activate: true, text: "Member updated successfully" }))
             } catch (error) {
                 console.error(error)
             }
@@ -178,9 +179,9 @@ const EditMember = (props: Member & { onCurrentModal: Dispatch<boolean> }) => {
                 <div className="flex justify-center items-center pt-10">
                     <div className="flex justify-center">
                         <div>
-                            <button className="bg-primary w-full rounded-md text-white px-6 py-3">
-                                {updateLoading ? <ClipLoader /> : "Save"}
-                            </button>
+                            <Button isLoading={updateLoading} className="w-full px-6 py-3">
+                                Save
+                            </Button>
                         </div>
                     </div>
                 </div>

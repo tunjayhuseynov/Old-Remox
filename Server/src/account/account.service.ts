@@ -138,6 +138,20 @@ export class AccountService {
         }
     }
 
+    async getAccountDetails(accountId: string) {
+        try {
+            const result  = {}
+            await this.orbitService.config()
+            const {value} =await this.orbitService.getData(accountId)
+            result["surname"] = value.surname ? value.surname : ""
+            result["userName"] = value.userName ? value.userName : ""
+            result["companyName"] = value.companyName ? value.companyName : ""
+            return {result} 
+        } catch (e) {
+            throw new HttpException(e.message, HttpStatus.INTERNAL_SERVER_ERROR)
+        }
+    }
+
     async updateAccount(dto: UpdateAccountDto, accountId: string) {
         try {
             await this.orbitService.config()
@@ -163,8 +177,8 @@ export class AccountService {
         try {
             await this.orbitService.config()
 
-            const {time} =  await this.orbitService.getTime(accountId)
-            return { date:time }
+            const { time } = await this.orbitService.getTime(accountId)
+            return { date: time }
         } catch (e) {
             throw new HttpException(e.message, HttpStatus.INTERNAL_SERVER_ERROR)
         }

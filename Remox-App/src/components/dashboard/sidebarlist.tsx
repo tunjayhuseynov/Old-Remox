@@ -1,45 +1,51 @@
-import { Link, NavLink } from 'react-router-dom'
+import { useNavigate, NavLink } from 'react-router-dom'
 import { BiLogOut } from 'react-icons/bi'
 import { useDispatch } from 'react-redux'
 import { removeStorage } from '../../redux/reducers/storage'
 import { setMenu } from '../../redux/reducers/toggles'
 import { removeTransactions } from '../../redux/reducers/transactions'
 
-const Li = ({ children, onClick, className }: { children?: Array<any>, onClick?: () => void, className?: string }) => <li onClick={onClick} className={`mb-6 text-left font-light text-lg flex gap-3 cursor-pointer ${className}`}>{children}</li>
+const Li = ({ children, onClick, className }: { children?: Array<any>, onClick?: () => void, className?: string }) => <li onClick={onClick} className={`py-2 mb-4 pl-4 text-left font-light text-lg cursor-pointer ${className}`}>
+    <div className="flex gap-3">{children}</div>
+</li>
+
 const Sidebarlist = () => {
     const dispatch = useDispatch()
+    const navigator = useNavigate()
     return <>
         <ul>
-            <NavLink to="/dashboard" exact={true} activeClassName='text-primary'><Li><DashboardSVG />Dashboard</Li></NavLink>
-            <NavLink to="/dashboard/payroll" activeClassName='text-primary'><Li><PayrollSVG />Payroll</Li></NavLink>
-            <NavLink to="/dashboard/transactions" activeClassName='text-primary'><Li><TransactionsSVG />Transactions</Li></NavLink>
-            <NavLink to="/dashboard/swap" activeClassName='text-primary'><Li><SwapSVG />Swap</Li></NavLink>
-            <NavLink to="/dashboard/assets" activeClassName='text-primary'><Li><AssetsSVG />Assets</Li></NavLink>
-            <NavLink to="/dashboard/teams" activeClassName='text-primary'><Li><TeamsSVG />Teams</Li></NavLink>
-            <NavLink to="/dashboard/settings" activeClassName='text-primary'><Li><SettingSVG />Settings</Li></NavLink>
+            <NavLink to="/dashboard" end={true} className={({ isActive }) => isActive ? 'text-primary' : ''}>{({ isActive }) => <Li className="bg-greylish bg-opacity-10"><DashboardSVG active={isActive} />Dashboard</Li>}</NavLink>
+            <NavLink to="/dashboard/payroll" className={({ isActive }) => isActive ? 'text-primary' : ''}>{({ isActive }) => <Li><PayrollSVG active={isActive} />Payroll</Li>}</NavLink>
+            <NavLink to="/dashboard/transactions" className={({ isActive }) => isActive ? 'text-primary' : ''}>{({ isActive }) => <Li><TransactionsSVG active={isActive} />Transactions</Li>}</NavLink>
+            <NavLink to="/dashboard/swap" className={({ isActive }) => isActive ? 'text-primary' : ''}>{({ isActive }) => <Li><SwapSVG active={isActive} />Swap</Li>}</NavLink>
+            <NavLink to="/dashboard/assets" className={({ isActive }) => isActive ? 'text-primary' : ''}>{({ isActive }) => <Li><AssetsSVG active={isActive} />Assets</Li>}</NavLink>
+            <NavLink to="/dashboard/teams" className={({ isActive }) => isActive ? 'text-primary' : ''}>{({ isActive }) => <Li><TeamsSVG active={isActive} />Contributors</Li>}</NavLink>
+            <NavLink to="/dashboard/settings" className={({ isActive }) => isActive ? 'text-primary' : ''}>{({ isActive }) => <Li><SettingSVG active={isActive} />Settings</Li>}</NavLink>
             <Li onClick={() => {
                 dispatch(setMenu(false))
                 dispatch(removeTransactions())
                 dispatch(removeStorage())
+                navigator('/')
             }}><LogoutSVG />Log Out</Li>
         </ul>
     </>
 }
 
-const DashboardSVG = () => <img className="w-[28px] h-[28px]" src='/icons/dashboardicon.svg' alt='Dashboard' />
+const DashboardSVG = ({ active = false }) => <img className="w-[28px] h-[28px]" src={active ? '/icons/sidebar/dashboard_active.png' : '/icons/sidebar/dashboard.png'} alt='Dashboard' />
 
-const PayrollSVG = () => <img className="w-[28px] h-[28px]" src='/icons/runpayrollicon.svg' alt="Payroll" />
+const PayrollSVG = ({ active = false }) => <img className="w-[28px] h-[28px]" src={active ? '/icons/sidebar/payroll_active.png' : '/icons/sidebar/payroll.png'} alt="Payroll" />
 
-const TransactionsSVG = () => <img className="w-[28px] h-[28px]" src='/icons/Transactionsicon.svg' alt="Transaction" />
+const TransactionsSVG = ({ active = false }) => <img className="w-[28px] h-[28px]" src={active ? "/icons/sidebar/transaction_active.png" : '/icons/sidebar/transaction.png'} alt="Transaction" />
 
-const SwapSVG = () => <img className="w-[28px] h-[28px]" src='/icons/swap.svg' alt="Swap" />
+const SwapSVG = ({ active = false }) => <img className="w-[28px] h-[28px]" src={active ? '/icons/sidebar/swap_active.png' : '/icons/sidebar/swap.png'} alt="Swap" />
 
-const AssetsSVG = () => <img className="w-[28px] h-[28px]" src='/icons/stocksicon.svg' alt="Asset" />
+const AssetsSVG = ({ active = false }) => <img className="w-[28px] h-[28px]" src={active ? '/icons/sidebar/managment_active.png' : '/icons/sidebar/managment.png'} alt="Asset" />
 
-const TeamsSVG = () => <img className="w-[28px] h-[28px]" src='/icons/teamlogo.svg' alt="Teams" />
+const TeamsSVG = ({ active = false }) => <img className="w-[28px] h-[28px]" src={active ? '/icons/sidebar/team_active.png' : '/icons/sidebar/team.png'} alt="Teams" />
 
-const SettingSVG = () => <img className="w-[28px] h-[28px]" src='/icons/settings.svg' alt="" />
+const SettingSVG = ({ active = false }) => <img className="w-[28px] h-[28px]" src={active ? '/icons/sidebar/settings_active.png' : '/icons/sidebar/settings.png'} alt="" />
 
-const LogoutSVG = () => <BiLogOut className="w-[28px] h-[28px]" />
+const LogoutSVG = ({ active = false }) => <BiLogOut className="w-[28px] h-[28px]" />
 
 export default Sidebarlist;
+

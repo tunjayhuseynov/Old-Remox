@@ -63,20 +63,25 @@ export const accountAPI = createApi({
                 body: data
             })
         }),
-        setTime: builder.mutation<void, {time: string}>({
+        setTime: builder.mutation<void, { time: string }>({
             query: (data) => ({
                 url: `/account/setTime`,
                 method: 'PATCH',
                 body: data
             })
         }),
-        getTime: builder.query<{date: string}, void>({
+        getTime: builder.query<{ date: string }, void>({
             query: () => ({
                 url: `/account/time`,
+            })
+        }),
+        getDetails: builder.query<{ result: { userName: string, surname: string, companyName: string } }, void>({
+            query: () => ({
+                url: `/account/details`,
             })
         })
     }),
 })
 
 
-export const { useLazyGetTimeQuery, useSetTimeMutation , useSignInMutation, useAccountCreateMutation, useCreatePasswordMutation, useAccountExistMutation, useUnlockMutation, usePutAccountInfoMutation } = accountAPI
+export const { useLazyGetTimeQuery, useGetDetailsQuery, useLazyGetDetailsQuery, useSetTimeMutation, useSignInMutation, useAccountCreateMutation, useCreatePasswordMutation, useAccountExistMutation, useUnlockMutation, usePutAccountInfoMutation } = accountAPI

@@ -60,14 +60,14 @@ const NotificationCointainer = () => {
                             const sentTransactions = transactionObj.sent;
                             return <Fragment key={date}>
                                 {index < 3 && recievedTransactions.length > 0 && ++index &&
-                                    recievedTransactions.map(({ amountUSD, surplus, blockNumber }) => {
-                                        return <NotificationItem key={generate()} status={Status.OK} title={TransactionType.IncomingPayment} body={amountUSD[0] !== -1 ? `${surplus} ${amountUSD.reduce((a, e) => a + e).toFixed(4)} $` : ''} link={`/dashboard/transactions/${blockNumber}`} />
+                                    recievedTransactions.map(({ amountUSD, surplus, blockNumber, address }) => {
+                                        return <NotificationItem key={generate()} status={Status.OK} title={TransactionType.IncomingPayment} body={amountUSD[0] !== -1 ? `${surplus} ${amountUSD.reduce((a, e) => a + e).toFixed(4)} $` : ''} link={`/dashboard/transactions/${blockNumber}/${address}`} />
 
                                     })
                                 }
                                 {index < 3 && sentTransactions.length > 0 && ++index &&
-                                    sentTransactions.map(({ amountUSD, surplus, blockNumber }) => {
-                                        return <NotificationItem key={generate()} status={Status.OK} title={TransactionType.IncomingPayment} body={amountUSD[0] !== -1 ? `${surplus} ${amountUSD.reduce((a, e) => a + e).toFixed(4)} $` : ''} link={`/dashboard/transactions/${blockNumber}`} />
+                                    sentTransactions.map(({ amountUSD, surplus, blockNumber, address }) => {
+                                        return <NotificationItem key={generate()} status={Status.OK} title={TransactionType.IncomingPayment} body={amountUSD[0] !== -1 ? `${surplus} ${amountUSD.reduce((a, e) => a + e).toFixed(4)} $` : ''} link={`/dashboard/transactions/${blockNumber}/${address}`} />
 
                                     })
                                 }

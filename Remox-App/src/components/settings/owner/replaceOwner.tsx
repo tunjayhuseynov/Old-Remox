@@ -3,6 +3,7 @@ import { useDispatch } from "react-redux";
 import { ClipLoader } from "react-spinners";
 import useMultisig from "../../../hooks/useMultisig";
 import { changeError, changeSuccess } from "../../../redux/reducers/notificationSlice";
+import Button from "../../button";
 
 
 const ReplaceOwner = ({ onDisable, ownerAddress }: { onDisable: React.Dispatch<boolean>, ownerAddress: string }) => {
@@ -30,11 +31,11 @@ const ReplaceOwner = ({ onDisable, ownerAddress }: { onDisable: React.Dispatch<b
         </div>
         <div className="flex justify-center">
             <div className="grid grid-cols-1 gap-5 w-[30%] ">
-                <button className="px-3 py-2 bg-primary text-white rounded-xl" onClick={async () => {
+                <Button className="px-3 py-2" isLoading={isReplaceOwnerLoading} onClick={async () => {
                     if (address) {
                         try {
                             await replaceOwner(ownerAddress, address)
-                            dispatch(changeSuccess(true))
+                            dispatch(changeSuccess({activate: true, text: "Successfully"}))
                             refetch()
                             onDisable(false)
                         } catch (error : any) {
@@ -44,8 +45,8 @@ const ReplaceOwner = ({ onDisable, ownerAddress }: { onDisable: React.Dispatch<b
                         }
                     }
                 }}>
-                    {isReplaceOwnerLoading ? <ClipLoader /> : "Save"}
-                </button>
+                   Save
+                </Button>
             </div>
         </div>
     </div>

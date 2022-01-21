@@ -2,6 +2,7 @@ import { Dispatch } from "react";
 import { Coins } from "../../../types/coins";
 import { Member } from "../../../types/sdk";
 import Avatar from '../../avatar'
+import Button from "../../button";
 
 const Profile = (props: Member & { teamName: string, onDeleteModal: Dispatch<boolean>, onCurrentModal: Dispatch<boolean>, onEditModal: Dispatch<boolean> }) => {
 
@@ -67,25 +68,25 @@ const Profile = (props: Member & { teamName: string, onDeleteModal: Dispatch<boo
             <div className="flex justify-center items-center pt-10">
                 <div className="grid grid-cols-2 gap-y-3 gap-x-5 justify-center">
                     <div className="col-span-2">
-                        <button className="bg-primary px-6 py-3 rounded-xl text-white w-full">
+                        <Button className="px-6 py-3 w-full">
                             Pay Now
-                        </button>
+                        </Button>
                     </div>
                     <div>
-                        <button className="bg-primary w-full rounded-xl text-white px-6 py-3" onClick={() => {
+                        <Button className="w-full px-6 py-3" onClick={() => {
                             props.onEditModal(true)
                             props.onCurrentModal(false)
                         }}>
                             Edit
-                        </button>
+                        </Button>
                     </div>
                     <div>
-                        <button className="text-primary border border-primary w-full rounded-xl px-6 py-3" onClick={() => {
+                        <Button version="second" className="w-full px-6 py-3" onClick={() => {
                             props.onDeleteModal(true)
                             props.onCurrentModal(false)
                         }}>
                             Delete
-                        </button>
+                        </Button>
                     </div>
                 </div>
             </div>

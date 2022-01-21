@@ -1,5 +1,5 @@
 import { useDispatch, useSelector } from "react-redux"
-import { useParams, useHistory } from "react-router-dom"
+import { useParams, useNavigate } from "react-router-dom"
 import { useConfirmTransactionsMutation, useGetMultisigTransactionQuery, useRevokeTransactionsMutation } from "../../redux/api"
 import useMultisig from '../../hooks/useMultisig'
 import { SelectSelectedAccount } from "../../redux/reducers/selectedAccount"
@@ -10,14 +10,15 @@ import { AltCoins, Coins } from "../../types/coins"
 import { changeError, selectError } from "../../redux/reducers/notificationSlice"
 import Error from "../../components/error"
 import { generate } from "shortid"
+import Button from "../../components/button"
 
 const MultisigTransaction = () => {
-    const history = useHistory()
+    const history = useNavigate()
     const { id } = useParams<{ id: string }>()
     const selectedAddress = useSelector(SelectSelectedAccount)
     const storage = useSelector(selectStorage)
     const { signData, data, refetch: refreshMultisig } = useMultisig()
-    const { isLoading, isFetching, data: transactionData, refetch } = useGetMultisigTransactionQuery({ address: selectedAddress, id })
+    const { isLoading, isFetching, data: transactionData, refetch } = useGetMultisigTransactionQuery({ address: selectedAddress, id: (id ?? "0") })
     const [revokeTransaction, { isLoading: revokeLoading }] = useRevokeTransactionsMutation()
     const [confirmTransaction, { isLoading: confirmLoading }] = useConfirmTransactionsMutation()
 
@@ -49,7 +50,7 @@ const MultisigTransaction = () => {
             try {
                 await confirmTransaction({
                     multisigAddress: selectedAddress,
-                    transactionId: parseInt(id),
+                    transactionId: parseInt(id!),
                     phrase: storage!.encryptedPhrase
                 }).unwrap()
                 refetch()
@@ -63,7 +64,7 @@ const MultisigTransaction = () => {
             try {
                 await revokeTransaction({
                     multisigAddress: selectedAddress,
-                    transactionId: parseInt(id),
+                    transactionId: parseInt(id!),
                     phrase: storage!.encryptedPhrase
                 }).unwrap()
                 refetch()
@@ -135,14 +136,14 @@ const MultisigTransaction = () => {
             </div>
             <div className="flex justify-center space-x-5">
                 <div>
-                    <button className="border-2 rounded-xl border-primary px-5 py-2 w-[125px]" onClick={() => history.goBack()}>
+                    <Button version="second" className="px-5 py-2 w-[125px]" onClick={() => history(-1)}>
                         Back
-                    </button>
+                    </Button>
                 </div>
-                { transactionData?.txResult.executed ? null : <div>
-                    <button onClick={submitAction} className={`${!transactionData?.txResult.confirmations.includes(storage!.accountAddress) ? "bg-[#2D5EFF] border-[#2D5EFF]" : "bg-[#EF2727] border-[#EF2727]"} border-2 text-white px-5 py-2 rounded-xl w-[125px]`}>
+                {transactionData?.txResult.executed ? null : <div>
+                    <Button onClick={submitAction} className={`${!transactionData?.txResult.confirmations.includes(storage!.accountAddress) ? "bg-[#2D5EFF] border-[#2D5EFF] hover:border-primary" : "bg-[#EF2727] border-[#EF2727]"} border-2 text-white px-5 py-2 rounded-xl w-[125px]`}>
                         {revokeLoading || confirmLoading ? <ClipLoader size={15} /> : !transactionData?.txResult.confirmations.includes(storage!.accountAddress) ? "Approve" : "Revoke"}
-                    </button>
+                    </Button>
                 </div>}
             </div>
         </div>

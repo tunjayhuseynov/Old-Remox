@@ -17,7 +17,8 @@ import { SelectSelectedAccount } from "../../redux/reducers/selectedAccount";
 const Details = () => {
     const selectedAccount = useAppSelector(SelectSelectedAccount)
     const currencies = useAppSelector(SelectCurrencies)
-    const params = useParams<{ id: string }>()
+    let params = useParams<{ id: string, address: string }>() as { id: string, address: string }
+
 
     const [totalAmount, setTotalAmount] = useState<number>();
     const [transactionFee, setTransactionFee] = useState<number>();
@@ -37,7 +38,7 @@ const Details = () => {
             const res = lodash.groupBy(transactions.result, lodash.iteratee('blockNumber'))
             let newObject: { [name: string]: Transactions[] } = {}
             Object.entries(res).map(([key, value]) => {
-                const data = _(value).orderBy((o) => BigInt(o.value), ['desc']).uniqBy('hash').value()
+                const data = _(value).orderBy((o) => BigInt(o.value), ['desc']).uniqBy('hash').value().filter(s => s.to.toLowerCase() === params.address.toLowerCase() || s.from.toLowerCase() === params.address.toLowerCase())
                 newObject[key] = data
             })
             return newObject;
@@ -45,7 +46,7 @@ const Details = () => {
     }, [transactions?.result])
 
     useEffect(() => {
-        if(maList) setList(maList)
+        if (maList) setList(maList)
     }, [transactions?.result])
 
     useEffect(() => {

@@ -172,7 +172,7 @@ const Statistic = () => {
 
         <div>
             <div className="flex justify-between sm:pl-4">
-                <div className="text-greylish text-sm sm:text-base">Money in last month</div>
+                <div className="text-greylish text-sm sm:text-base">Money in (c.m.)</div>
             </div>
             <div className="flex justify-between shadow-custom rounded-xl px-8 py-4">
                 <div className="text-xl sm:text-2xl opacity-80">
@@ -183,7 +183,7 @@ const Statistic = () => {
 
         <div>
             <div className="flex justify-between sm:pl-4">
-                <div className="text-greylish text-sm sm:text-base">Money out last month</div>
+                <div className="text-greylish text-sm sm:text-base">Money out (c.m.)</div>
             </div>
             <div className="flex justify-between shadow-custom rounded-xl px-8 py-4">
                 <div className="text-greylish opacity-80 text-xl sm:text-2xl">

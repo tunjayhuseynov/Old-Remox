@@ -1,10 +1,10 @@
 import { Dropdown } from "../../components";
-import { Coins, CoinsNameVisual } from "../../types/coins";
+import { Coins } from "../../types/coins";
 import { DropDownItem } from '../../types'
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useGetConvertableTokenAmountMutation, useSwapCoinsMutation } from "../../redux/api";
 import { useDispatch, useSelector } from "react-redux";
-import { SelectBalances, SelectCurrencies } from "../../redux/reducers/currencies";
+import { SelectBalances } from "../../redux/reducers/currencies";
 import { selectStorage } from "../../redux/reducers/storage";
 import { changeError, changeSuccess, selectError, selectSuccess } from "../../redux/reducers/notificationSlice";
 import Success from "../../components/success";
@@ -13,13 +13,14 @@ import { ClipLoader } from "react-spinners";
 import Modal from "../../components/modal";
 import { useRefetchData, useModalSideExit } from '../../hooks';
 import useMultisig from "../../hooks/useMultisig";
+import Button from "../../components/button";
 
 const Swap = () => {
     const [token1, setToken1] = useState<DropDownItem>(Coins.cUSD)
-    const [token1Amount, setToken1Amount] = useState<number>(0)
+    const [token1Amount, setToken1Amount] = useState<number>()
     const [token2, setToken2] = useState<DropDownItem>(Coins.celo)
 
-    const {isMultisig} = useMultisig()
+    const { isMultisig } = useMultisig()
 
     const [refetch] = useRefetchData()
 
@@ -51,13 +52,13 @@ const Swap = () => {
     const [fetchCoin, { isLoading: coinLoading }] = useGetConvertableTokenAmountMutation()
     const [swap, { isLoading }] = useSwapCoinsMutation()
 
-    const change = async () => {
+    const change = async (value?: number) => {
         if (token1.value && token2.value) {
             try {
                 const data = await fetchCoin({
                     input: token1.value,
                     output: token2.value,
-                    amount: token1Amount.toString(),
+                    amount: (value || (token1Amount ?? 0)).toString(),
                     slippage: slippageArr.find(item => item.selected)!.value.toString(),
                     deadline: Math.floor(deadline * 60)
                 }).unwrap()
@@ -72,27 +73,28 @@ const Swap = () => {
     }
 
     const startSwap = async () => {
-        try {
-            if (token1.value && token2.value && token1Amount > 0) {
-                try {
-                    const data = await swap({
-                        input: token1.value,
-                        output: token2.value,
-                        amount: token1Amount.toString(),
-                        phrase: storage!.encryptedPhrase,
-                        slippage: slippageArr.find(item => item.selected)!.value.toString(),
-                        deadline: Math.floor(deadline * 60) 
-                    }).unwrap()
-                    dispatch(changeSuccess(true))
-                    setOpen(false)
-                    refetch()
-                } catch (error) {
-                    console.error(error)
-                    dispatch(changeError({ activate: true }))
-                }
-
+        if (token1.value && token2.value && token1Amount && token1Amount > 0) {
+            try {
+                const data = await swap({
+                    input: token1.value,
+                    output: token2.value,
+                    amount: token1Amount.toString(),
+                    phrase: storage!.encryptedPhrase,
+                    slippage: slippageArr.find(item => item.selected)!.value.toString(),
+                    deadline: Math.floor(deadline * 60)
+                }).unwrap()
+                dispatch(changeSuccess({
+                    activate: true, text: <div className="flex flex-col items-center">
+                        <div className="font-semobold text-xl">Successfully Swapped</div>
+                        <div className="text-primary text-sm font-semibold" onClick={() => window.open(`https://explorer.celo.org/tx/${data.hash}/token-transfers`, '_blank')} > View on Celo Explorer</div>
+                    </div>
+                }))
+                setOpen(false)
+                refetch()
+            } catch (error) {
+                console.error(error)
+                dispatch(changeError({ activate: true }))
             }
-        } catch (error) {
 
         }
     }
@@ -105,7 +107,18 @@ const Swap = () => {
 
     const settingRef = useModalSideExit(isSetting, setSetting)
 
-    if(isMultisig) return <div className="text-center py-2">We are working on bringing Swap into MultiSig account. Please, select a wallet account until we finish it</div>
+
+    const changeSwap = () => {
+        const token1_copy = { ...token1 }
+        const token2_copy = { ...token2 }
+        const token2_amount = parseFloat(appAmount)
+        setToken1(token2_copy)
+        setToken2(token1_copy)
+
+        setToken1Amount(parseFloat(token2_amount.toFixed(2)))
+    }
+
+    if (isMultisig) return <div className="text-center py-2">We are working on bringing Swap into MultiSig account. Please, select a wallet account until we finish it</div>
 
     return <div className="flex items-center justify-center">
         <div className="flex flex-col w-[50%]">
@@ -178,7 +191,7 @@ const Swap = () => {
                             }} parentClass="shadow-custom bg-white rounded-md" onSelect={setToken1} className="border-none py-1 space-x-4 text-sm" nameActivation={true} selected={token1} list={Object.values(Coins).map(w => ({ name: w.name, type: w.value, value: w.value, coinUrl: w.coinUrl, feeName: w.feeName, id: w.value, className: "text-sm" }))} />
                         </div>
                         <div>
-                            <input ref={token1Input} onChange={async (e) => { await change(); setToken1Amount(parseFloat((e.target.value || '0'))) }} type="number" className="bg-transparent text-center outline-none unvisibleArrow max-w-[130px]" placeholder="0" min="0" step="any" />
+                            <input ref={token1Input} value={token1Amount} onChange={async (e) => { setToken1Amount(parseFloat((e.target.value))); await change(parseFloat((e.target.value))); }} type="number" className="bg-transparent text-center outline-none unvisibleArrow max-w-[130px]" placeholder="0" min="0" step="any" />
                         </div>
                     </div>
                     <div className="flex flex-col space-y-2 items-end">
@@ -210,7 +223,7 @@ const Swap = () => {
                     </div>
                 </div>
                 <div className="flex items-center justify-center">
-                    <div className="bg-greylish bg-opacity-10 px-3 py-1 rounded-lg">
+                    <div className="bg-greylish bg-opacity-10 px-3 py-1 rounded-lg cursor-pointer" onClick={changeSwap}>
                         <img src="/icons/arrowdown.svg" alt="" />
                     </div>
                 </div>
@@ -229,7 +242,7 @@ const Swap = () => {
                                     <div className="text-center outline-none unvisibleArrow">
                                         {parseFloat(appAmount).toFixed(2)}
                                     </div>
-                                </> : <div className="text-center"><ClipLoader size="24" /></div>)
+                                </> : <div className="text-center"><ClipLoader size="24px" /></div>)
                             }
                         </div>
                     </div>
@@ -252,9 +265,9 @@ const Swap = () => {
                 </div>
             </div>
             <div className="text-center mx-8">
-                <button className="bg-primary w-full py-3 text-white rounded-xl" onClick={() => setOpen(true)}>
-                    {isLoading ? <ClipLoader /> : "Swap"}
-                </button>
+                <Button className="w-full" onClick={() => setOpen(true)} isLoading={isLoading}>
+                    Swap
+                </Button>
             </div>
         </div>
         {isOpen && <Modal onDisable={setOpen} title="Confirm Swap" className="lg:left-[55.5%]">
@@ -262,7 +275,7 @@ const Swap = () => {
                 <div className="flex flex-col py-2 pb-10 space-y-7 border-b-2 px-5">
                     <div className="grid grid-cols-[7%,73%,20%] items-center">
                         <div>
-                            <img src={`${token1.coinUrl}`} alt=""  className="w-[20px[ h-[20px]"  />
+                            <img src={`${token1.coinUrl}`} alt="" className="w-[20px[ h-[20px]" />
                         </div>
                         <div className="font-bold">
                             {token1Amount}
@@ -273,7 +286,7 @@ const Swap = () => {
                     </div>
                     <div className="grid grid-cols-[7%,73%,20%] items-center">
                         <div>
-                            <img src={`/icons/longdown.svg`} alt=""/>
+                            <img src={`/icons/longdown.svg`} alt="" />
                         </div>
                     </div>
                     <div className="grid grid-cols-[7%,73%,20%] items-center">
@@ -299,11 +312,11 @@ const Swap = () => {
                     </div>
                 </div>
                 <div className="flex justify-center">
-                    <button className="bg-primary w-3/5 py-3 text-white rounded-xl" onClick={startSwap}>{isLoading ? <ClipLoader /> : "Confirm Swap"}</button>
+                    <Button className="w-3/5" onClick={startSwap} isLoading={isLoading}>Confirm Swap</Button>
                 </div>
             </div>
         </Modal>}
-        {isSuccess && <Success onClose={(val: boolean) => dispatch(changeSuccess(val))} text="Successfully" />}
+        {isSuccess && <Success onClose={(val: boolean) => dispatch(changeSuccess({ activate: val }))} />}
         {isError && <Error onClose={(val: boolean) => dispatch(changeError({ activate: val }))} />}
     </div>
 }

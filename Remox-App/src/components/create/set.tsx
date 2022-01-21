@@ -1,12 +1,13 @@
 import { useMemo, Dispatch } from 'react';
 import Input from '../input'
-import { useHistory } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import { generate } from 'shortid'
 import { AccountCreate } from '../../types/sdk';
 import { SyntheticEvent } from 'react';
 import { PassDataFromSetToPhrase } from '../../types/create'
 import { useAccountCreateMutation } from '../../redux/api/account';
 import { ClipLoader } from 'react-spinners';
+import Button from '../button';
 
 // SET Component
 const Set = ({ setData }: { setData: Dispatch<PassDataFromSetToPhrase> }) => {
@@ -14,7 +15,7 @@ const Set = ({ setData }: { setData: Dispatch<PassDataFromSetToPhrase> }) => {
     const [createAccount, { isLoading }] = useAccountCreateMutation()
 
 
-    const router = useHistory()
+    const router = useNavigate()
 
     const list = useMemo<Array<{ title: string, type?: string, name: string }>>(() => [
         { title: "First Name", name: "userName" }, { title: "Last Name", name: "surname" },
@@ -70,8 +71,8 @@ const Set = ({ setData }: { setData: Dispatch<PassDataFromSetToPhrase> }) => {
                 {list.map(w => <Input key={generate()} {...w} />)}
             </div>
             <div className="flex sm:flex-row flex-col-reverse justify-center items-center gap-10 pt-8">
-                <button className="rounded-xl w-[150px] h-[50px] border-2 border-primary text-primary shadow-lg bg-white" onClick={() => router.push('/')}>Back</button>
-                <button type="submit" className="rounded-xl w-[150px] h-[50px] text-white shadow-lg bg-primary">Set Account</button>
+                <Button version="second" className="w-[150px] h-[50px]" onClick={() => router('/')}>Back</Button>
+                <Button className="w-[150px] h-[50px] px-2">Set Account</Button>
             </div>
         </section>
     </form> : <div className=" h-screen flex items-center justify-center"><ClipLoader /></div>}</>

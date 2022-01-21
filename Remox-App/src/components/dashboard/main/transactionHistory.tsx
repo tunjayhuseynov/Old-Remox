@@ -19,21 +19,29 @@ const TransactionHistory = ({ transactions }: { transactions: TransactionHook[] 
             <div><Link to="/dashboard/transactions" className="text-primary border border-primary px-10 py-2 rounded-xl">View All</Link></div>
         </div>
         <div className="grid grid-cols-1 pt-5">
-            {transactions && !Array.isArray(transactions) && Object.entries(transactions).map(([date, transactionObj]) => {
+            {transactions && !Array.isArray(transactions) && Object.entries(transactions).map(([block, transactionObj]) => {
                 const recievedTransactions = transactionObj.recieved;
                 const sentTransactions = transactionObj.sent;
-                return <Fragment key={generate()}>
-                    {index < 6 && recievedTransactions.length > 0 && ++index && <Accordion direction={TransactionDirection.In} date={date} dataCount={recievedTransactions.length} status={TransactionStatus.Completed}>
+                const swaps = transactionObj.swaps;
+                return <Fragment key={block}>
+                    {index < 6 && recievedTransactions.length > 0 && ++index && <Accordion direction={TransactionDirection.In} date={transactionObj.date} dataCount={recievedTransactions.length} status={TransactionStatus.Completed}>
                         <div>
-                            {recievedTransactions.map(({ amount, address, coinName, blockNumber, date, coin}) => {
-                                return <TransactionItem key={generate()} hash={blockNumber} address={address} amountCoin={amount} date={date} coinName={coinName} coin={coin}  status={TransactionStatus.Completed} />
+                            {recievedTransactions.map(({ amount, address, coinName, blockNumber, date, coin, hashs}) => {
+                                return <TransactionItem key={blockNumber+hashs.join(',')} blockNumber={blockNumber} address={address} amountCoin={amount} date={date} coinName={coinName} coin={coin}  status={TransactionStatus.Completed} />
                             })}
                         </div>
                     </Accordion>}
-                    {index < 6 && sentTransactions.length > 0 && ++index && <Accordion direction={TransactionDirection.Out} date={date} dataCount={sentTransactions.length} status={TransactionStatus.Completed}>
+                    {index < 6 && sentTransactions.length > 0 && ++index && <Accordion direction={TransactionDirection.Out} date={transactionObj.date} dataCount={sentTransactions.length} status={TransactionStatus.Completed}>
                         <div>
-                            {sentTransactions.map(({ amount, coinName, blockNumber, address, date, coin }) => {
-                                return <TransactionItem key={generate()} hash={blockNumber} address={address} date={date} amountCoin={amount} coinName={coinName} coin={coin} status={TransactionStatus.Completed} />
+                            {sentTransactions.map(({ amount, coinName, blockNumber, address, date, coin, hashs }) => {
+                                return <TransactionItem key={blockNumber+hashs.join(',')} blockNumber={blockNumber} address={address} date={date} amountCoin={amount} coinName={coinName} coin={coin} status={TransactionStatus.Completed} />
+                            })}
+                        </div>
+                    </Accordion>}
+                    {index < 6 && swaps.length > 0 && ++index && <Accordion direction={TransactionDirection.Swap} date={transactionObj.date} dataCount={swaps.length} status={TransactionStatus.Completed}>
+                        <div>
+                            {swaps.map(({ amount, coinName, blockNum, from, date, coin, hash, direction, swap  }) => {
+                                return <TransactionItem key={blockNum+hash} swap={swap} address={from} blockNumber={blockNum}  direction={direction} date={date} amountCoin={[amount.toFixed(2)]} coinName={[coinName]} coin={[coin]} status={TransactionStatus.Completed} />
                             })}
                         </div>
                     </Accordion>}

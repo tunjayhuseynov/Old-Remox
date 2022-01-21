@@ -6,6 +6,24 @@ import { MouseEventHandler } from 'react'
 import { CoinsURL } from '../types/coins'
 import { ClipLoader } from 'react-spinners'
 import { useModalSideExit } from '../hooks'
+import { motion } from "framer-motion";
+
+const variants = {
+    close: {
+        height: 0,
+        transition: {
+            staggerChildren: 0,
+            duration: 0
+        }
+    }, 
+    open: {
+        height: "auto",
+        transition: {
+            staggerChildren: 0.2,
+            type: 'tween'
+        }
+    }
+}
 
 const Li = forwardRef<HTMLLIElement, { children: Array<any> | any, onClick: MouseEventHandler, className: string }>(({ children, onClick, className }, ref) => <li ref={ref} onClick={onClick} className={`${className} text-left border px-3 py-2 bg-white hover:bg-gray-200 cursor-pointer`}>{children}</li>)
 
@@ -46,7 +64,7 @@ const Dropdown = ({ selected, list, nameActivation = false, onSelect, className,
                     <IoIosArrowDown className='transition' style={isOpen ? { transform: "rotate(180deg)" } : undefined} />
                 </div>}
             </div>
-            {isOpen && <div ref={customRef} className="absolute left-0 bottom-0 translate-y-full z-10 w-full overflow-hidden">
+            {<motion.div variants={variants} initial={"close"} animate={isOpen ? "open" : "close"} ref={customRef} className="absolute left-0 bottom-0 translate-y-full z-10 w-full overflow-hidden">
                 <ul id="ala" className="flex flex-col overflow-y-auto " style={list.length > 5 ?
                     { height: window.outerWidth > 768 ? `${liHeight * 5}px` : `${liHeight * 3}px` }
                     :
@@ -66,7 +84,7 @@ const Dropdown = ({ selected, list, nameActivation = false, onSelect, className,
                         if (i === 0) {
                             obj.ref = liRef
                         }
-                        return <Li {...obj} key={generate()} className={childClass} onClick={() => {
+                        return <Li {...obj} key={w.name} className={childClass} onClick={() => {
                             if (w.onClick) {
                                 w.onClick()
                                 setOpen(false)
@@ -81,7 +99,7 @@ const Dropdown = ({ selected, list, nameActivation = false, onSelect, className,
                     }
                     )}
                 </ul>
-            </div>}
+            </motion.div>}
         </div>
     )
 }

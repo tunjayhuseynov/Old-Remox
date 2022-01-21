@@ -6,7 +6,8 @@ import { IStorage, setStorage } from '../../redux/reducers/storage';
 import { useDispatch } from 'react-redux';
 import { setUnlock } from '../../redux/reducers/unlock';
 import { changeAccount } from '../../redux/reducers/selectedAccount';
-
+import { useNavigate } from 'react-router-dom';
+import Button from '../button';
 
 const Login = ({ phrase }: { phrase: string }) => {
     const [signin, { isLoading }] = useSignInMutation()
@@ -16,6 +17,7 @@ const Login = ({ phrase }: { phrase: string }) => {
     const [input, setInput] = useState<string>()
     const [incorrrect, setIncorrect] = useState(false)
 
+    const router = useNavigate()
 
     const Submitted = async () => {
         if (input && phrase) {
@@ -33,6 +35,7 @@ const Login = ({ phrase }: { phrase: string }) => {
                 dispatch(changeAccount(data!.accountAddress));
                 dispatch(setUnlock(true))
                 dispatch(setStorage(JSON.stringify(obj)))
+                router('/dashboard')
 
             } catch (error) {
                 console.error(error);
@@ -55,7 +58,7 @@ const Login = ({ phrase }: { phrase: string }) => {
                 }} onChange={(e) => setInput(e.target.value)} type="password" autoComplete='new-password' className="bg-greylish bg-opacity-10 px-3 py-2 rounded-lg outline-none" /></div>
                 {incorrrect && <div className="text-red-600">Password is Incorrect</div>}
                 <div className="flex justify-center">
-                    <button onClick={Submitted} className="bg-primary shadow-lg px-5 py-2 text-white rounded-lg">{isLoading ? <ClipLoader /> : 'Unlock'}</button>
+                    <Button onClick={Submitted} className="px-5 py-2" isLoading={isLoading}>Unlock</Button>
                 </div>
             </div>
         </section>

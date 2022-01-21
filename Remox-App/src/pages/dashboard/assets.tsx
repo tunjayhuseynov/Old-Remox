@@ -1,4 +1,5 @@
 import { useSelector } from "react-redux";
+import { ClipLoader } from "react-spinners";
 import { generate } from "shortid";
 import { IBalanceItem, SelectBalances } from "../../redux/reducers/currencies";
 
@@ -19,6 +20,8 @@ const Assets = () => {
                 </div>
                 <div className="pb-5 px-2 sm:px-8 shadow-custom rounded-xl">
                     {Object.values(selectBalance).map((item: IBalanceItem, index) => {
+                        if (!item && index == 0) return <div className="flex justify-center py-1"> <ClipLoader /></div>
+                        if (!item) return <></>
                         return <div key={generate()} className="grid grid-cols-[35%,25%,20%,20%] sm:grid-cols-[25%,15%,15%,20%,12.5%,12.5%] border-b border-black py-5" >
                             <div className="flex space-x-3 items-center">
                                 <div><img src={item?.coins?.coinUrl} width={30} height={30} alt="" /></div>
@@ -28,16 +31,16 @@ const Assets = () => {
                                 $ {(item.amount * item.tokenPrice).toFixed(2)}
                             </div>
                             <div>
-                                {(item.amount||0).toFixed(2)}
+                                {(item.amount || 0).toFixed(2)}
                             </div>
                             <div className="hidden sm:block">
-                                $ {(item.tokenPrice||0).toFixed(2)}
+                                $ {(item.tokenPrice || 0).toFixed(2)}
                             </div>
                             <div className="hidden sm:block">
-                               % {(item.per_24||0).toFixed(2)}
+                                % {(item.per_24 || 0).toFixed(2)}
                             </div>
                             <div>
-                               % {(item.percent||0).toFixed(2)}
+                                % {(item.percent || 0).toFixed(2)}
                             </div>
                         </div>
                     })}

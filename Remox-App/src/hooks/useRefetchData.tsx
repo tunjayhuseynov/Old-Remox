@@ -125,7 +125,7 @@ const useRefetchData = (disableInterval = false) => {
                 price: d.price,
                 percent_24: d.percent_24
             }))
-            updatedCurrency.push({price: 0, percent_24: 0})
+            
             if (!currencies.CELO || Object.values(currencies).some((w, i) => {
                 return w.price !== updatedCurrency[i].price
             })) {

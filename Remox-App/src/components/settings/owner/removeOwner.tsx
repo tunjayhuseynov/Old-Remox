@@ -3,6 +3,7 @@ import { ClipLoader } from "react-spinners";
 import useMultisig from "../../../hooks/useMultisig";
 import { changeError, changeSuccess } from "../../../redux/reducers/notificationSlice";
 import Avatar from "../../avatar";
+import Button from "../../button";
 
 
 const RemoveOwner = ({ name, address, onDisable }: { name: string, address: string, onDisable: React.Dispatch<boolean> }) => {
@@ -29,11 +30,11 @@ const RemoveOwner = ({ name, address, onDisable }: { name: string, address: stri
         </div>
         <div className="flex justify-center">
             <div className="grid grid-cols-1 gap-5 w-[35%] ">
-                <button className="px-3 py-2 bg-red-500 text-white rounded-xl" onClick={async () => {
+                <Button className="px-3 py-2 bg-red-500 hover:text-red-500 hover:bg-white hover:border-red-500" isLoading={isRemoveLoading} onClick={async () => {
                     try {
                         await removeOwner(address)
                         refetch()
-                        dispatch(changeSuccess(true))
+                        dispatch(changeSuccess({activate: true, text: "Successfully"}))
                         onDisable(false)
                     } catch (error: any) {
                         console.error(error)
@@ -41,8 +42,8 @@ const RemoveOwner = ({ name, address, onDisable }: { name: string, address: stri
                         onDisable(false)
                     }
                 }}>
-                    {!isRemoveLoading ? "Delete" : <ClipLoader />}
-                </button>
+                    Delete
+                </Button>
             </div>
         </div>
     </div>

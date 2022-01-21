@@ -15,7 +15,7 @@ export const multisigSlice = createSlice({
     initialState: initialState,
     reducers: {
         setTransactions: (state, action) => {
-            if(action.payload !== undefined || action.payload !== []){
+            if(action.payload !== undefined && action.payload?.length !== 0){
                 if(state.transactions) state.transactions = [...state.transactions, ...action.payload];
                 else state.transactions = [...action.payload];
             }else state.transactions = action.payload

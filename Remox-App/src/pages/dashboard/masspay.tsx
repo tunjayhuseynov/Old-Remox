@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect, SyntheticEvent } from "react";
 import Dropdown from "../../components/dropdown";
 import { generate } from 'shortid'
-import { useHistory, useLocation } from 'react-router-dom'
+import { useNavigate, useLocation } from 'react-router-dom'
 import ClipLoader from "react-spinners/ClipLoader";
 import Success from "../../components/success";
 import Error from "../../components/error";
@@ -18,18 +18,19 @@ import { changeError, selectError } from "../../redux/reducers/notificationSlice
 import Initalization from "../../utility/init";
 import { SelectSelectedAccount } from "../../redux/reducers/selectedAccount";
 import { useRefetchData } from "../../hooks";
+import Button from "../../components/button";
 
 
 const MassPay = () => {
 
-    const { state } : {state: {memberList?: Member[]}} = useLocation()
+    const { state } = useLocation() as { state: { memberList?: Member[] } }
     const memberList = state?.memberList
-    
+
     const storage = useAppSelector(selectStorage)
     const selectedAccount = useAppSelector(SelectSelectedAccount)
     const isError = useAppSelector(selectError)
     const balance = useAppSelector(SelectBalances)
-    const router = useHistory();
+    const router = useNavigate();
     const dispatch = useAppDispatch()
 
     // const { data, refetch } = useGetBalanceQuery()
@@ -56,7 +57,7 @@ const MassPay = () => {
     // const resMember = useRef<Array<Member & { selected: boolean }>>([])
     const [resMember, setResMember] = useState<Array<Member & { selected: boolean }>>(memberList ? memberList.map(w => ({ ...w, selected: false })) : [])
     const [members, setMembers] = useState<Member[] | undefined>(memberList);
-    const [selectedId, setSelectedId] = useState<string[]>([]);
+    const [selectedId, setSelectedId] = useState<string[]>(memberList ? memberList.map(w => w.id) : []);
 
     const [list, setList] = useState<Array<DropDownItem>>([]);
 
@@ -241,12 +242,12 @@ const MassPay = () => {
                                             if (e.target.checked) setSelectedId(resMember.map(w => w.id))
                                             else setSelectedId([])
                                         }} />
-                                        <button type="button">
+                                        <div>
                                             Select All
-                                        </button>
+                                        </div>
                                     </div>
                                 </div>
-                                <div className="grid grid-cols-2 sm:grid-cols-[25%,45%,25%,5%] gap-5">
+                                <div className="grid grid-cols-2 sm:grid-cols-[20%,42%,33%,5%] gap-5">
                                     <div className="hidden sm:block font-semibold">Name</div>
                                     <div className="hidden sm:block font-semibold">Address</div>
                                     <div className="hidden sm:block font-semibold">Disbursement</div>
@@ -254,6 +255,17 @@ const MassPay = () => {
                                     {teams && resMember && members && members.length > 0 ? resMember.map((w, i) => <TeamInput generalWallet={selectedWallet!} setGeneralWallet={setSelectedWallet} selectedId={selectedId} setSelectedId={setSelectedId} key={w.id} index={i} {...w} members={resMember} setMembers={setResMember} />) : 'No Member Yet'}
                                 </div>
                             </div>
+                            <span className="text-lg">Total: $ {Object.values(resMember.filter(s => selectedId.includes(s.id))).reduce((a, e, i) => {
+                                if (e.secondaryCurrency && e.secondaryAmount) {
+                                    if (e.secondaryUsdBase) {
+                                        a += parseFloat(e.secondaryAmount)
+                                    } else {
+                                        a += parseFloat(e.secondaryAmount) * (balance[Coins[e.secondaryCurrency as keyof Coins].name as keyof typeof balance]?.tokenPrice ?? 1)
+                                    }
+                                }
+                                if (e.usdBase) return a + parseFloat(e.amount);
+                                return a + parseFloat(e.amount) * (balance[Coins[e.currency as keyof Coins].name as keyof typeof balance]?.tokenPrice ?? 1);
+                            }, 0).toFixed(2)}</span>
                             <div className="flex flex-col">
                                 <span className="text-left">Description (Optional)</span>
                                 <div className="grid grid-cols-1">
@@ -263,15 +275,15 @@ const MassPay = () => {
                         </div>
                             <div className="flex justify-center">
                                 <div className="flex flex-col-reverse sm:grid sm:grid-cols-2 w-[400px] justify-center gap-5">
-                                    <button type="button" className="border-2 border-primary px-3 py-2 text-primary rounded-lg" onClick={() => router.goBack()}>Close</button>
-                                    <button type="submit" className="bg-primary px-3 py-2 text-white flex items-center justify-center rounded-lg">{isPaying ? <ClipLoader /> : 'Pay'}</button>
+                                    <Button version="second" onClick={() => router(-1)}>Close</Button>
+                                    <Button type="submit" isLoading={isPaying}>Pay</Button>
                                 </div>
                             </div> </>}
                     </div>
                 </div>
             </div>
         </form>
-        {isSuccess && <Success onClose={setSuccess} onAction={() => { router.goBack() }} />}
+        {isSuccess && <Success onClose={setSuccess} onAction={() => { router(-1) }} />}
         {isError && <Error onClose={(val) => dispatch(changeError({ activate: false, text: '' }))} />}
     </div>
 

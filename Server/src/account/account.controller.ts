@@ -78,4 +78,13 @@ export class AccountController {
         const result = await this.accountService.getNotificationTime(req.user.userId);
         return res.status(HttpStatus.OK).json(result)
     }
+
+    @UseGuards(AuthGuard('jwt'))
+    @ApiForbiddenResponse({ description: 'Forbidden.' })
+    @ApiBearerAuth('JWT-auth')
+    @Get('details')
+    async getAccountDetails(@Req() req: any,@Res() res: Response): Promise<Response> {
+        const result = await this.accountService.getAccountDetails(req.user.userId);
+        return res.status(HttpStatus.OK).json(result)
+    }
 }

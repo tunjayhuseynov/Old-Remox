@@ -11,8 +11,13 @@ export const BlockScoutApi = createApi({
 			query: (data) => ({
 				url: `?module=account&action=tokentx&address=`+data
 			})
+		}),
+		getTransactionBuHash: builder.query<GetTransactions, string>({
+			query: (data) => ({
+				url: `?module=transaction&action=gettxinfo&txhash=`+data
+			})
 		})
 	})
 });
 
-export const { useGetTransactionsQuery, useLazyGetTransactionsQuery } = BlockScoutApi;
+export const { useGetTransactionsQuery, useLazyGetTransactionsQuery, useLazyGetTransactionBuHashQuery, useGetTransactionBuHashQuery } = BlockScoutApi;

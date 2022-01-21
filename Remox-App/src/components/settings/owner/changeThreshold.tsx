@@ -1,10 +1,10 @@
 import { useEffect, useState } from "react";
 import { useDispatch } from "react-redux";
-import { ClipLoader } from "react-spinners"
 import { Dropdown } from "../..";
 import useMultisig from "../../../hooks/useMultisig";
 import { changeError, changeSuccess } from "../../../redux/reducers/notificationSlice";
 import { DropDownItem } from "../../../types";
+import Button from "../../button";
 
 
 const ChangeTreshold = ({ onDisable }: { onDisable: React.Dispatch<boolean> }) => {
@@ -43,7 +43,7 @@ const ChangeTreshold = ({ onDisable }: { onDisable: React.Dispatch<boolean> }) =
         </div>
         <div className="flex justify-center">
             <div className="grid grid-cols-1 gap-5 w-[30%] ">
-                <button className="px-3 py-2 bg-primary text-white rounded-xl" onClick={async () => {
+                <Button className="px-3 py-2" isLoading={isChangeSignLoading} onClick={async () => {
                     if (sign.name && internalSign.name) {
                         try {
                             await changeSigns(
@@ -51,7 +51,7 @@ const ChangeTreshold = ({ onDisable }: { onDisable: React.Dispatch<boolean> }) =
                                 parseInt(internalSign.name)
                             )
                             refetch()
-                            dispatch(changeSuccess(true))
+                            dispatch(changeSuccess({ activate: true, text: "Successfully" }))
                             onDisable(false)
                         } catch (error: any) {
                             console.error(error)
@@ -60,8 +60,8 @@ const ChangeTreshold = ({ onDisable }: { onDisable: React.Dispatch<boolean> }) =
                         }
                     }
                 }}>
-                    {isChangeSignLoading ? <ClipLoader /> : "Save"}
-                </button>
+                    Save
+                </Button>
             </div>
         </div>
     </div>

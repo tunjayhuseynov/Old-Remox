@@ -21,7 +21,7 @@ import { abi, AltToken, tokenAdress, TokenNameAddress } from '../contractTokenAb
 import fs from 'fs';
 import path from 'path';
 import { IGetBalance } from './interface';
-import { ChainId, Fetcher, Fraction, JSBI, Percent, Route, Router, TokenAmount, Trade, TradeType,Pair } from '@ubeswap/sdk';
+import { ChainId, Fetcher, Fraction, JSBI, Percent, Route, Router, TokenAmount, Trade, TradeType, Pair } from '@ubeswap/sdk';
 import { excAbi } from '../abi';
 import { ContractKit as contractkit } from '@celo/contractkit';
 import { AbiItem } from "web3-utils";
@@ -53,7 +53,7 @@ export class TransactionService {
         try {
             let balances = {};
             let obj = {};
-            
+
             for (const item of tokenAdress) {
                 obj = {};
                 const ethers = new Contract(item.address, abi, this.provider);
@@ -127,6 +127,7 @@ export class TransactionService {
             const isAddressExist = this.web3.utils.isAddress(toAddress);
             if (!isAddressExist) {
                 if (toAddress.slice(0, 2) != "0x") {
+                    toAddress = toAddress.slice(toAddress.length - 4) == ".nom" ? toAddress.slice(0, toAddress.length - 4) : toAddress
                     const bytes = utils.formatBytes32String(toAddress);
                     toAddress = await this.nomContract.methods.resolve(bytes).call();
 
@@ -183,7 +184,7 @@ export class TransactionService {
                 }
                 else throw new HttpException('There is not any wallet belong this address', HttpStatus.BAD_REQUEST);
             }
-    
+
             const amountWei = this.kit.web3.utils.toWei(amount, 'ether');
 
             let stabletoken = await this.kit.contracts.getStableToken(dto.stableTokenType);
@@ -288,7 +289,7 @@ export class TransactionService {
                     if (toAddress.slice(0, 2) != "0x") {
                         const bytes = utils.formatBytes32String(toAddress);
                         toAddress = await this.nomContract.methods.resolve(bytes).call();
-    
+
                         if (toAddress.slice(0, 7) == "0x00000") throw new HttpException('There is not any wallet belong this address', HttpStatus.BAD_REQUEST);
                     }
                     else throw new HttpException('There is not any wallet belong this address', HttpStatus.BAD_REQUEST);
@@ -363,7 +364,7 @@ export class TransactionService {
             this.kit.defaultAccount = walletMnemonic.address;
 
             let inputAddress = TokenNameAddress[dto.input];
-            const input = await Fetcher.fetchTokenData(ChainId.MAINNET,getAddress(inputAddress), this.provider);
+            const input = await Fetcher.fetchTokenData(ChainId.MAINNET, getAddress(inputAddress), this.provider);
 
             let outputAddress = TokenNameAddress[dto.output];
             const output = await Fetcher.fetchTokenData(ChainId.MAINNET, getAddress(outputAddress), this.provider);
@@ -467,7 +468,7 @@ export class TransactionService {
             let outputAddress = TokenNameAddress[dto.output];
             const output = await Fetcher.fetchTokenData(ChainId.MAINNET, getAddress(outputAddress), this.provider);
 
-            const pair = await Fetcher.fetchPairData(output, input, this.provider); 
+            const pair = await Fetcher.fetchPairData(output, input, this.provider);
             const route = new Route([pair], input);
 
             let minimumAmountOut = "0";

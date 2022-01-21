@@ -11,6 +11,7 @@ import Error from "../../error";
 import { AddMember, Interval } from "../../../types/sdk";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
+import Button from "../../button";
 
 const AddMemberModal = ({ onDisable }: { onDisable: React.Dispatch<boolean> }) => {
 
@@ -100,7 +101,7 @@ const AddMemberModal = ({ onDisable }: { onDisable: React.Dispatch<boolean> }) =
 
                     await addMember(sent).unwrap()
 
-                    dispatch(changeSuccess(true))
+                    dispatch(changeSuccess({activate: true, text: "Member added successfully"}))
                     onDisable(false)
                 } catch (error: any) {
                     console.error(error)
@@ -185,9 +186,9 @@ const AddMemberModal = ({ onDisable }: { onDisable: React.Dispatch<boolean> }) =
                 </div>
                 {/* {isError && <Error onClose={(val)=>dispatch(changeError({activate: val, text: ''}))} />} */}
                 <div className="flex justify-center">
-                    <button className="px-8 py-3 bg-primary rounded-xl text-white">
-                        {addMemberLoading ? <ClipLoader /> : "Add Person"}
-                    </button>
+                    <Button className="px-8 py-3" isLoading={addMemberLoading}>
+                        Add Person
+                    </Button>
                 </div>
             </div>
         </form>

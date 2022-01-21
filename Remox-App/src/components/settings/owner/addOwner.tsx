@@ -4,9 +4,10 @@ import { ClipLoader } from "react-spinners";
 import useMultisig from "../../../hooks/useMultisig";
 import { changeError, changeSuccess } from "../../../redux/reducers/notificationSlice";
 import Avatar from "../../avatar";
+import Button from "../../button";
 
 
-const AddOwner = ({onDisable} : {onDisable: React.Dispatch<boolean>}) => {
+const AddOwner = ({ onDisable }: { onDisable: React.Dispatch<boolean> }) => {
 
     const { signData, data, addOwner, isAddOwnerLoading, refetch } = useMultisig()
 
@@ -14,7 +15,7 @@ const AddOwner = ({onDisable} : {onDisable: React.Dispatch<boolean>}) => {
 
     const dispatch = useDispatch()
 
-    const [name, setName] = useState("");
+
     const [address, setAddress] = useState("");
 
     return <div className="-my-5 flex flex-col space-y-7">
@@ -34,16 +35,14 @@ const AddOwner = ({onDisable} : {onDisable: React.Dispatch<boolean>}) => {
             </div>
             <div className="flex justify-center">
                 <div className="grid grid-cols-2 gap-5 w-[50%] ">
-                    <button className="px-3 py-2 border border-primary bg-transparent text-primary rounded-xl" onClick={()=>onDisable(false)}>
-                        Close
-                    </button>
-                    <button className="px-3 py-2 bg-primary text-white rounded-xl" onClick={() => {
+                    <Button version="second" className={'!px-3 !py-2'} onClick={() => onDisable(false)}>Close</Button>
+                    <Button className="!px-3 !py-2" onClick={() => {
                         if (address) {
                             setPageIndex(1)
                         }
                     }}>
                         Next
-                    </button>
+                    </Button>
                 </div>
             </div></>}
         {pageIndex === 1 && <>
@@ -65,14 +64,14 @@ const AddOwner = ({onDisable} : {onDisable: React.Dispatch<boolean>}) => {
             </div>
             <div className="flex justify-center">
                 <div className="grid grid-cols-2 gap-5 w-[50%] ">
-                    <button className="px-3 py-2 border border-primary bg-transparent text-primary rounded-xl">
+                    <Button version="second" className="!px-3 !py-2" onClick={() => setPageIndex(0)}>
                         Back
-                    </button>
-                    <button className="px-3 py-2 bg-primary text-white rounded-xl" onClick={async () => {
+                    </Button>
+                    <Button className="!px-3 !py-2" isLoading={isAddOwnerLoading} onClick={async () => {
                         try {
                             await addOwner(address)
                             refetch()
-                            dispatch(changeSuccess(true))
+                            dispatch(changeSuccess({ activate: true, text: "Owner added successfully" }))
                             onDisable(false)
                         } catch (error: any) {
                             console.error(error)
@@ -80,8 +79,8 @@ const AddOwner = ({onDisable} : {onDisable: React.Dispatch<boolean>}) => {
                             onDisable(false)
                         }
                     }}>
-                        {!isAddOwnerLoading ? "Confirm" : <ClipLoader />}
-                    </button>
+                        Confirm
+                    </Button>
                 </div>
             </div></>}
     </div>

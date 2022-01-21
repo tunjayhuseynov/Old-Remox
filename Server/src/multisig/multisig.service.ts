@@ -9,7 +9,7 @@ import { decrypt } from '../utils/crypto';
 import { Contract, Wallet } from 'ethers';
 import { stringToSolidityBytes } from '@celo/contractkit/lib/wrappers/BaseWrapper';
 import { TokenType } from '../transaction/transaction.entity';
-import { abi as multiSigABI, bytecode as multiSigBytecode } from '../MultiSig.json'
+import { abi as multiSigABI, bytecode as multiSigBytecode } from '../Multisig.json'
 import { abi as proxyABI, bytecode as proxyBytecode } from '../Proxy-v1.json'
 import { MethodIds } from '../multisigMethodIds'
 import { abi, AltToken, tokenAdress } from '../contractTokenAbi';

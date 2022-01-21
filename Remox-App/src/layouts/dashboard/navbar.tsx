@@ -15,6 +15,7 @@ import { deleteBalance } from '../../redux/reducers/currencies';
 import { removeTransactions } from '../../redux/reducers/transactions';
 import { AddressReducer } from '../../utility'
 import Visitcard from '../../components/dashboard/visitcard';
+import Button from '../../components/button';
 
 const Navbar = () => {
     const storage = useAppSelector(selectStorage)
@@ -64,12 +65,14 @@ export const NavbarDropdown = () => {
 
 
     return <div className="relative">
-        <button onClick={() => setOpen(!isOpen)} className="bg-primary text-white px-6 py-3 rounded-xl flex items-center gap-x-2">
-            Move Crypto
-            <div>
-                <IoIosArrowDown className='transition' style={isOpen ? { transform: "rotate(180deg)" } : undefined} />
-            </div>
-        </button>
+        <Button onClick={() => setOpen(!isOpen)} className="bg-primary text-white px-6 py-3 rounded-xl flex items-center gap-x-2">
+            <>
+                Move Crypto
+                <div>
+                    <IoIosArrowDown className='transition' style={isOpen ? { transform: "rotate(180deg)" } : undefined} />
+                </div>
+            </>
+        </Button>
         {isOpen && <div ref={divRef} className="absolute w-[150%] rounded-2xl sm:-left-1/4  -bottom-1 translate-y-full shadow-xl z-50">
             <ul>
                 <Li link={'/pay'}><PaySVG /> Pay Someone</Li>

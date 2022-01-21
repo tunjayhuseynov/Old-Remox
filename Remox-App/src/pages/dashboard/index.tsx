@@ -10,6 +10,7 @@ import { selectStorage } from '../../redux/reducers/storage';
 import { ClipLoader } from 'react-spinners';
 import NotificationCointainer from '../../components/notification';
 import Visitcard from '../../components/dashboard/visitcard';
+import { Outlet } from 'react-router-dom'
 
 const Dashboard = ({ children }: { children?: JSX.Element | JSX.Element[] }) => {
     const toggle = useAppSelector(selectToggle)
@@ -37,7 +38,7 @@ const Dashboard = ({ children }: { children?: JSX.Element | JSX.Element[] }) => 
             <div className="grid grid-cols-2 md:grid-cols-11 md:gap-12">
                 <div className="hidden md:block md:col-span-2"><Sidebar /></div>
                 <div className="col-span-11 md:col-span-8 pl-2 md:pl-7 pr-2">
-                    {children}
+                    <Outlet />
                 </div>
             </div>
         </div>

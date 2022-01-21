@@ -1,5 +1,5 @@
 import Input from "../input"
-import { useHistory } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import { useState } from 'react'
 import { ClipLoader } from "react-spinners";
 import { SyntheticEvent } from "react";
@@ -8,12 +8,13 @@ import { IStorage, setStorage } from "../../redux/reducers/storage";
 import { useAppDispatch } from "../../redux/hooks";
 import { setUnlock } from "../../redux/reducers/unlock";
 import { changeAccount } from "../../redux/reducers/selectedAccount";
+import Button from "../button";
 
 const CreatePassword = ({ phrase }: { phrase: string }) => {
     const [createPassword, { isLoading }] = useCreatePasswordMutation();
 
     const dispatch = useAppDispatch()
-    const router = useHistory();
+    const router = useNavigate();
 
     const [isValid, setValid] = useState(false)
 
@@ -21,7 +22,7 @@ const CreatePassword = ({ phrase }: { phrase: string }) => {
     const Submitted = async (e: SyntheticEvent<HTMLFormElement>) => {
         e.preventDefault();
         const target = e.target as HTMLFormElement;
-        if(!isValid) return;
+        if (!isValid) return;
 
         try {
             const data = await createPassword({ phrase: phrase.trim(), password: target["password"]?.value?.trim() }).unwrap()
@@ -36,7 +37,7 @@ const CreatePassword = ({ phrase }: { phrase: string }) => {
             dispatch(setUnlock(true))
             dispatch(setStorage(JSON.stringify(obj)))
 
-            // router.push('/dashboard')
+            router('/dashboard')
         } catch (error) {
             console.error(error)
         }
@@ -51,11 +52,11 @@ const CreatePassword = ({ phrase }: { phrase: string }) => {
                     <div className="text-center text-greylish tracking-wide font-light text-lg">This password encrypts your accounts on this device.</div>
                 </div>
                 <div className="grid sm:grid-cols-2 gap-x-24 gap-y-8">
-                    <Input title="Password" name="password" type="password" validation={setValid} className="w-[100%] sm:w-[200px]" limit={6} required={true}/>
+                    <Input title="Password" name="password" type="password" validation={setValid} className="w-[100%] sm:w-[200px]" limit={6} required={true} />
                 </div>
                 <div className="flex sm:flex-row flex-col-reverse justify-center items-center gap-10 pt-8">
-                    <button className="rounded-xl w-[150px] h-[50px] border-2 border-primary text-primary shadow-lg bg-white" onClick={() => router.push('/')}>Back</button>
-                    <button type="submit" className="rounded-xl w-[150px] h-[50px] text-white shadow-lg bg-primary">{isLoading ? <ClipLoader /> : 'Set Password'}</button>
+                    <Button version="second" className="w-[150px] h-[50px] px-2" onClick={() => router('/')}>Back</Button>
+                    <Button type="submit" className="w-[150px] h-[50px] px-2" isLoading={isLoading}>Set Password</Button>
                 </div>
             </section>
         </form>

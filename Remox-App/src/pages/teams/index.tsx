@@ -12,6 +12,7 @@ import { changeError, changeSuccess, selectError, selectSuccess } from '../../re
 import Error from '../../components/error';
 import { useLazyGetTeamsWithMembersQuery } from '../../redux/api';
 import { result } from 'lodash';
+import Button from '../../components/button';
 
 
 const Teams = () => {
@@ -42,13 +43,13 @@ const Teams = () => {
             } else {
                 setTeams(result.data.teams)
             }
-            dispatch(changeSuccess(false))
+            dispatch(changeSuccess({ activate: false }))
         }
     }, [result.data])
 
     useEffect(() => {
-            skipRef.current = skipCount
-            trigger({ take: teamCount, skip: skipCount })
+        skipRef.current = skipCount
+        trigger({ take: teamCount, skip: skipCount })
     }, [skipCount])
 
 
@@ -63,8 +64,8 @@ const Teams = () => {
     return <div>
         <div className="flex sm:justify-between pb-5 space-x-3 md:space-x-0">
             <div className="grid grid-cols-2 md:grid-cols-3 sm:gap-10 gap-1 col-span-4">
-                <button className="bg-primary px-6 py-2 rounded-xl text-white text-xs sm:text-base" onClick={() => setAddTeamModal(true)}>Add Team</button>
-                <button className="bg-primary px-6 py-2 rounded-xl text-white text-xs sm:text-base" onClick={() => setAddMemberModal(true)}>Add Person</button>
+                <Button className="text-xs sm:text-base !py-2 !px-6" onClick={() => setAddTeamModal(true)}>Add Team</Button>
+                <Button className="text-xs sm:text-base !py-2 !px-6" onClick={() => setAddMemberModal(true)}>Add Person</Button>
             </div>
             {/* <button className="px-5 py-2 bg-greylish bg-opacity-5 rounded-xl">
                 Export
@@ -85,7 +86,7 @@ const Teams = () => {
             </div>
         </div>
         {(!result.isLoading && !result.isFetching) && (teams.length ?? 0) < maxTeamCount.current && <div className="flex justify-center py-4">
-            <button className="text-primary px-5 py-3 rounded-xl border border-primary" onClick={() => {
+            <Button version="second" className="rounded-xl" onClick={() => {
                 if (maxTeamCount.current - (teams.length ?? 0) < teamCount) {
                     setSkipCount(maxTeamCount.current - (maxTeamCount.current - teams.length))
                 } else {
@@ -93,7 +94,7 @@ const Teams = () => {
                 }
             }}>
                 Load More
-            </button>
+            </Button>
         </div>}
         {addTeamModal &&
             <Modal onDisable={setAddTeamModal}>
@@ -103,8 +104,8 @@ const Teams = () => {
             <Modal onDisable={setAddMemberModal}>
                 <AddMemberModal onDisable={setAddMemberModal} />
             </Modal>}
-        {isSuccess && <Success onClose={(val: boolean) => dispatch(changeSuccess(val))} text="Successfully" />}
-        {isError && <Error onClose={(val: boolean) => dispatch(changeError({activate: val}))} />}
+        {isSuccess && <Success onClose={(val: boolean) => dispatch(changeSuccess({ activate: val }))} />}
+        {isError && <Error onClose={(val: boolean) => dispatch(changeError({ activate: val }))} />}
     </div>
 }
 

@@ -1,12 +1,13 @@
 import PhraseBar from '../components/phraseBar';
 import Header from '../layouts/home/header'
 import { useRef, useState, useEffect } from 'react'
-import { useLocation, useHistory } from 'react-router-dom'
+import { useLocation, useNavigate } from 'react-router-dom'
 import { ClipLoader } from 'react-spinners';
 import { selectStorage, setStorage } from '../redux/reducers/storage';
 import { useUnlockMutation } from '../redux/api';
 import { selectUnlock, setUnlock } from '../redux/reducers/unlock';
 import { useAppDispatch, useAppSelector } from '../redux/hooks';
+import Button from '../components/button';
 
 const Unlock = () => {
     const unlockState = useAppSelector(selectUnlock)
@@ -17,12 +18,12 @@ const Unlock = () => {
     const dispatch = useAppDispatch();
     const inputRef = useRef<HTMLInputElement>(null)
     const location = useLocation()
-    const router = useHistory()
+    const router = useNavigate()
     const [incorrrect, setIncorrect] = useState(false)
 
     useEffect(() => {
-        if (router && !storage) router.push('/')
-    }, [unlockState, location, router, storage])
+        if (!storage) router('/')
+    }, [unlockState, location, storage])
 
     const Submit = async () => {
         if (inputRef.current && storage?.accountAddress) {
@@ -37,7 +38,7 @@ const Unlock = () => {
                 dispatch(setStorage(JSON.stringify({ ...storage, token: data!.token })))
 
                 dispatch(setUnlock(true))
-                router.push('/');
+                router('/dashboard');
             } catch (error) {
                 setIncorrect(true);
                 console.error(error)
@@ -62,7 +63,7 @@ const Unlock = () => {
                 }} ref={inputRef} type="password" autoComplete='new-password' autoFocus className="bg-greylish bg-opacity-10 px-3 py-2 rounded-lg outline-none" /></div>
                 {incorrrect && <div className="text-red-600 text-center">Password is Incorrect</div>}
                 <div className="flex justify-center">
-                    <button onClick={Submit} className="bg-primary shadow-lg px-5 py-2 text-white rounded-lg">{isLoading ? <ClipLoader /> : 'Unlock'}</button>
+                    <Button onClick={Submit} className="px-5 py-2" isLoading={isLoading}>Unlock</Button>
                 </div>
             </div>
         </section>
