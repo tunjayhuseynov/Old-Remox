@@ -179,7 +179,7 @@ const EditMember = (props: Member & { onCurrentModal: Dispatch<boolean> }) => {
                 <div className="flex justify-center items-center pt-10">
                     <div className="flex justify-center">
                         <div>
-                            <Button isLoading={updateLoading} className="w-full px-6 py-3">
+                            <Button type='submit' isLoading={updateLoading} className="w-full px-6 py-3">
                                 Save
                             </Button>
                         </div>

@@ -72,7 +72,7 @@ const Set = ({ setData }: { setData: Dispatch<PassDataFromSetToPhrase> }) => {
             </div>
             <div className="flex sm:flex-row flex-col-reverse justify-center items-center gap-10 pt-8">
                 <Button version="second" className="w-[150px] h-[50px]" onClick={() => router('/')}>Back</Button>
-                <Button className="w-[150px] h-[50px] px-2">Set Account</Button>
+                <Button type="submit" className="w-[150px] h-[50px] px-2">Set Account</Button>
             </div>
         </section>
     </form> : <div className=" h-screen flex items-center justify-center"><ClipLoader /></div>}</>

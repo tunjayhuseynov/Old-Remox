@@ -186,7 +186,7 @@ const AddMemberModal = ({ onDisable }: { onDisable: React.Dispatch<boolean> }) =
                 </div>
                 {/* {isError && <Error onClose={(val)=>dispatch(changeError({activate: val, text: ''}))} />} */}
                 <div className="flex justify-center">
-                    <Button className="px-8 py-3" isLoading={addMemberLoading}>
+                    <Button type="submit" className="px-8 py-3" isLoading={addMemberLoading}>
                         Add Person
                     </Button>
                 </div>
