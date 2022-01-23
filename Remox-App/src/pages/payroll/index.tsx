@@ -59,10 +59,8 @@ const Payroll = () => {
                         return acc;
                     }
                     let amount = parseFloat(curr.amount)
-
                     if (curr.usdBase) {
-                        console.log(curr.currency, balance[curr.currency as keyof typeof balance]?.tokenPrice ?? "1")
-                        amount /= (balance[curr.currency as keyof typeof balance]?.tokenPrice ?? 1)
+                        amount /= (balance[Coins[curr.currency as keyof Coins].name as keyof typeof balance]?.tokenPrice ?? 1)
                     }
 
                     return acc + amount;
@@ -80,10 +78,8 @@ const Payroll = () => {
                         return acc;
                     }
                     let amount = (parseFloat(curr!.secondaryAmount!))
-
                     if (curr.secondaryUsdBase) {
-                        console.log(curr.secondaryCurrency, balance[curr.secondaryCurrency as keyof typeof balance]?.tokenPrice ?? "1")
-                        amount /= (balance[curr.secondaryCurrency! as keyof typeof balance]?.tokenPrice ?? 1)
+                        amount /= (balance[Coins[curr.secondaryCurrency! as keyof Coins].name as keyof typeof balance]?.tokenPrice ?? 1)
                     }
 
                     return acc + amount
@@ -99,6 +95,7 @@ const Payroll = () => {
             let res: any = {}
 
             first.forEach((item) => {
+                console.log(item)
                 if (!res[item.currency]) {
                     res[item.currency] = item.totalAmount
                 } else {

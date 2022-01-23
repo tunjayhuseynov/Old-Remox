@@ -314,9 +314,9 @@ export class OrbitService {
                 account.teams[index].members = [];
             }
             if (dto.secondaryAmount == undefined) {
-                dto.secondaryAmount = ""
-                dto.secondaryCurrency = TokenType.celo
-                dto.secondaryUsdBase = false
+                delete dto.secondaryAmount
+                delete dto.secondaryCurrency
+                delete dto.secondaryUsdBase
             }
 
             delete dto.teamId

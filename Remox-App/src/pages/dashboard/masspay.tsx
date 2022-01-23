@@ -109,7 +109,7 @@ const MassPay = () => {
             for (let index = 0; index < mems.length; index++) {
                 let amount;
                 if (mems[index].usdBase) {
-                    amount = (parseFloat(mems[index].amount) * (balance[mems[index].currency as keyof typeof balance]?.tokenPrice ?? 1)).toString()
+                    amount = (parseFloat(mems[index].amount) * (balance[Coins[mems[index].currency as keyof Coins].name as keyof typeof balance]?.tokenPrice ?? 1)).toString()
                 } else {
                     amount = mems[index].amount
                 }
@@ -123,7 +123,7 @@ const MassPay = () => {
 
                 if (secAmount && secCurrency) {
                     if (mems[index].secondaryAmount) {
-                        secAmount = (parseFloat(secAmount) * (balance[mems[index].secondaryCurrency as keyof typeof balance]?.tokenPrice ?? 1)).toString()
+                        secAmount = (parseFloat(secAmount) * (balance[Coins[mems[index].secondaryCurrency as keyof Coins].name as keyof typeof balance]?.tokenPrice ?? 1)).toString()
                     }
 
                     result.push({

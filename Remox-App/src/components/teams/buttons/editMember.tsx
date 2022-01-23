@@ -29,7 +29,7 @@ const EditMember = (props: Member & { onCurrentModal: Dispatch<boolean> }) => {
 
     const [selectedFrequency, setSelectedFrequency] = useState<DropDownItem>({ name: "Monthly", type: Interval.monthly })
     const [selectedWallet, setSelectedWallet] = useState<DropDownItem>({ name: Coins[props.currency].name, type: Coins[props.currency].value, value: Coins[props.currency].value, id: Coins[props.currency].value, coinUrl: Coins[props.currency].coinUrl });
-    const [selectedWallet2, setSelectedWallet2] = useState<DropDownItem>();
+    const [selectedWallet2, setSelectedWallet2] = useState<DropDownItem>({ name: Coins[props.currency].name, type: Coins[props.currency].value, value: Coins[props.currency].value, id: Coins[props.currency].value, coinUrl: Coins[props.currency].coinUrl });
 
     const [selectedType, setSelectedType] = useState(props.usdBase)
     useEffect(() => {
@@ -154,7 +154,7 @@ const EditMember = (props: Member & { onCurrentModal: Dispatch<boolean> }) => {
 
                         </div>
                     </div>
-                    {secondActive && selectedWallet2 ?
+                    {secondActive ?
                         <div className="col-span-2 flex flex-col space-y-4 w-2/3">
                             <div className={`border text-black py-1 rounded-md grid ${selectedType ? "grid-cols-[40%,15%,45%]" : "grid-cols-[50%,50%]"}`}>
                                 <input type="number" defaultValue={member.member!.secondaryAmount} name="amount2" className="outline-none unvisibleArrow pl-2" placeholder="Amount" required step={'any'} min={0} />
